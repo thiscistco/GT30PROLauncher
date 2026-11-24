@@ -32,6 +32,13 @@ preview/               mockup web 1:1 Infinix GT 30 Pro (diskusi desain)
 .github/workflows/     CI build APK di GitHub Actions
 ```
 
+## Unduh APK
+
+APK siap pakai tersedia di folder [`apk/`](apk/) di repo ini
+(mis. `apk/v0.1.0/GT30PROLauncher-v0.1.0-release.apk`) — unduh langsung dari
+HP lewat GitHub. Rilis GitHub (`Releases`) otomatis berisi APK saat build CI
+dijalankan dengan tag `v*`.
+
 ## Build
 
 ### Di GitHub (CI)
