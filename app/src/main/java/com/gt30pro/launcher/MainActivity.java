@@ -2,18 +2,12 @@ package com.gt30pro.launcher;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.BatteryManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -28,18 +22,6 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
     private GestureDetector detector;
-    private DotMatrixView batteryLed;
-
-    private final BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-            int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100);
-            if (level >= 0 && scale > 0 && batteryLed != null) {
-                batteryLed.setText((level * 100 / scale) + "%");
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,15 +30,6 @@ public class MainActivity extends Activity {
 
         ImageView wallpaper = findViewById(R.id.wallpaper);
         wallpaper.setImageBitmap(Wallpapers.load(this));
-
-        // Indikator baterai LED dot-matrix di area USB-C (dekat tepi bawah)
-        batteryLed = new DotMatrixView(this);
-        FrameLayout.LayoutParams ledParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.052f);
-        ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
 
         View root = findViewById(R.id.root);
         detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
@@ -88,18 +61,6 @@ public class MainActivity extends Activity {
             }
         });
         root.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(batteryReceiver);
     }
 
     private void openSuperApp() {

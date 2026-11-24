@@ -16,8 +16,6 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 
 - **Homescreen minimalis** — hanya wallpaper render GT 30 Pro, **tanpa ikon,
   dock, atau widget** (persis seperti preview di `preview/index.html`).
-- **Indikator baterai LED dot-matrix** — angka persentase baterai (live) dengan
-  gaya LED dot-matrix 5×7 + glow, terletak di area USB-C dekat tepi bawah layar.
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
   long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).
 - **App Drawer** — daftar semua aplikasi terpasang + pencarian real-time.
