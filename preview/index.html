@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>GT30 PRO Launcher — Device Preview (1:1 Real Size)</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -18,7 +21,7 @@
   .bg {
     position: fixed;
     inset: -6%;
-    background: url("assets/gt30pro-internals.jpg") center/cover no-repeat;
+    background: url("assets/gt30pro-internals.jpg?v=2") center/cover no-repeat;
     filter: blur(52px) saturate(1.15) brightness(0.34);
     transform: scale(1.08);
     z-index: 0;
@@ -163,9 +166,15 @@
     bottom: 3.0mm;
     border-radius: 8.4mm;
     overflow: hidden;
-    background: url("assets/gt30pro-internals.jpg") center/cover no-repeat;
     box-shadow: inset 0 0 0 0.25mm rgba(0, 0, 0, 0.85);
     z-index: 2;
+  }
+  .wallpaper {
+    position: absolute;
+    inset: 0;
+    background: url("assets/gt30pro-internals.jpg?v=2") center/cover no-repeat;
+    transition: transform .12s ease-out, filter .12s ease-out;
+    will-change: transform, filter;
   }
   .sheen {
     position: absolute;
