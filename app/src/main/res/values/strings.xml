@@ -17,4 +17,7 @@
     <string name="label_super_app">Super App</string>
     <string name="label_all_apps">Semua</string>
     <string name="label_settings">Setelan</string>
+    <string name="menu_super_app">Super App</string>
+    <string name="menu_all_apps">Semua Aplikasi</string>
+    <string name="menu_settings">Setelan</string>
 </resources>

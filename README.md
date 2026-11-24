@@ -14,8 +14,10 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 
 ## Fitur v0.1
 
-- **Homescreen** — jam & tanggal (locale Indonesia), wallpaper render GT 30 Pro,
-  pintasan favorit (Telepon, Pesan, Kamera, Browser), kartu Super App, dan dock.
+- **Homescreen minimalis** — hanya wallpaper render GT 30 Pro, **tanpa ikon,
+  dock, atau widget** (persis seperti preview di `preview/index.html`).
+- **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
+  long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).
 - **App Drawer** — daftar semua aplikasi terpasang + pencarian real-time.
 - **Super App** — pusat modul layanan (Pembayaran, Belanja, Games, Musik, Video,
   Travel, Kuliner, Utilitas, Chat, Berita). Masih placeholder "segera hadir"
