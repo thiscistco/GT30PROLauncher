@@ -1,0 +1,17 @@
+# Build outputs
+build/
+dist/
+
+# Keystore (jangan pernah di-commit)
+*.keystore
+*.jks
+
+# Toolchain / dependency lokal
+node_modules/
+.gradle/
+local.properties
+
+# Editor
+.idea/
+*.iml
+.DS_Store

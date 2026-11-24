@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GT30 PRO Launcher</string>
+    <string name="search_hint">Cari aplikasi…</string>
+    <string name="super_app_title">SUPER APP</string>
+    <string name="super_app_subtitle">Semua layanan dalam satu tempat</string>
+    <string name="open_super_app">Buka Super App →</string>
+    <string name="drawer_title">Semua Aplikasi</string>
+    <string name="modules_subtitle">Pilih layanan yang Anda butuhkan</string>
+    <string name="back">←  Kembali</string>
+    <string name="coming_soon">%1$s — segera hadir</string>
+    <string name="app_not_found">Aplikasi tidak ditemukan</string>
+    <string name="label_phone">Telepon</string>
+    <string name="label_messages">Pesan</string>
+    <string name="label_camera">Kamera</string>
+    <string name="label_browser">Browser</string>
+    <string name="label_super_app">Super App</string>
+    <string name="label_all_apps">Semua</string>
+    <string name="label_settings">Setelan</string>
+</resources>

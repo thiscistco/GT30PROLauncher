@@ -1,0 +1,42 @@
+name: Build APK
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Bootstrap toolchain
+        run: bash tools/bootstrap_toolchain.sh
+
+      - name: Build APK (debug + release)
+        run: bash tools/build_local.sh
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gt30pro-launcher-apks
+          path: dist/*.apk
+
+      - name: Buat GitHub Release (tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "GT30 PRO Launcher $GITHUB_REF_NAME" \
+            --notes "APK debug & release hasil build otomatis." || true

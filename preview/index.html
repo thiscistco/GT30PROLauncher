@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GT30 PRO Launcher — Device Preview (1:1 Real Size)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #0a0c0f;
+    color: #e9ecf1;
+    overflow-x: hidden;
+  }
+
+  /* ===== Latar halaman: wallpaper yang sama, di-blur & digelapkan ===== */
+  .bg {
+    position: fixed;
+    inset: -6%;
+    background: url("assets/gt30pro-internals.jpg") center/cover no-repeat;
+    filter: blur(52px) saturate(1.15) brightness(0.34);
+    transform: scale(1.08);
+    z-index: 0;
+  }
+  .bg-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(120% 90% at 50% 0%, rgba(10,12,15,0.25), rgba(10,12,15,0.78) 75%);
+    z-index: 1;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 32px;
+    gap: 18px;
+  }
+
+  header { text-align: center; }
+  .kicker {
+    font-size: 11px;
+    letter-spacing: 2.6px;
+    text-transform: uppercase;
+    color: #f7a23b;
+    font-weight: 600;
+  }
+  h1 { font-size: clamp(18px, 3vw, 25px); font-weight: 700; margin-top: 6px; letter-spacing: 0.2px; }
+  .sub { margin-top: 6px; font-size: 12.5px; color: #a7aeba; max-width: 620px; line-height: 1.55; }
+
+  /* ===== Toggle mode ===== */
+  .mode-toggle {
+    display: inline-flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 999px;
+    padding: 4px;
+  }
+  .mode-toggle button {
+    border: 0;
+    background: transparent;
+    color: #aab2be;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all .18s ease;
+  }
+  .mode-toggle button.active {
+    background: #f7a23b;
+    color: #14161a;
+    box-shadow: 0 4px 14px rgba(247, 162, 59, 0.35);
+  }
+  .mode-toggle button:hover:not(.active) { color: #e9ecf1; background: rgba(255,255,255,0.07); }
+
+  /* ===== Panggung ===== */
+  .stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(22px, 4vw, 52px);
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  /* ===== SKALA NYATA 1:1 (satuan CSS mm — 1mm = 3,7795 px @96dpi) ===== */
+  .phone-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: transform .25s ease;
+  }
+
+  /* Wrapper dimensi vertikal */
+  .phone-row { display: flex; align-items: stretch; gap: 8px; }
+
+  .dim-v {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 10.5px;
+    letter-spacing: 0.6px;
+    color: #f7a23b;
+    font-weight: 600;
+  }
+  .dim-v::before, .dim-v::after {
+    content: "";
+    flex: 1;
+    width: 0.25mm;
+    background: linear-gradient(rgba(247,162,59,0), rgba(247,162,59,0.8), rgba(247,162,59,0));
+    min-height: 14mm;
+  }
+
+  .dim-h {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10.5px;
+    letter-spacing: 0.6px;
+    color: #f7a23b;
+    font-weight: 600;
+  }
+  .dim-h::before, .dim-h::after {
+    content: "";
+    flex: 1;
+    height: 0.25mm;
+    min-width: 10mm;
+    background: linear-gradient(90deg, rgba(247,162,59,0), rgba(247,162,59,0.8), rgba(247,162,59,0));
+  }
+
+  /* ===== Bodi ponsel — ukuran asli 75,8 × 163,7 mm ===== */
+  .phone {
+    position: relative;
+    width: 75.8mm;
+    height: 163.7mm;
+    border-radius: 10.5mm;
+    background:
+      linear-gradient(152deg, #33373d 0%, #1b1e22 26%, #111316 62%, #1d2126 100%);
+    box-shadow:
+      inset 0 0 0 0.3mm rgba(255, 255, 255, 0.10),
+      inset 0 0 0 1mm rgba(0, 0, 0, 0.55),
+      0 34px 70px rgba(0, 0, 0, 0.62),
+      0 8px 22px rgba(0, 0, 0, 0.45);
+  }
+
+  /* ===== Layar: bezel nyata ± 2,5 mm samping / ± 3 mm atas-bawah ===== */
+  .screen {
+    position: absolute;
+    left:  2.45mm;
+    right: 2.45mm;
+    top:    3.0mm;
+    bottom: 3.0mm;
+    border-radius: 8.4mm;
+    overflow: hidden;
+    background: url("assets/gt30pro-internals.jpg") center/cover no-repeat;
+    box-shadow: inset 0 0 0 0.25mm rgba(0, 0, 0, 0.85);
+    z-index: 2;
+  }
+  .sheen {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background:
+      linear-gradient(118deg,
+        rgba(255, 255, 255, 0.10) 0%,
+        rgba(255, 255, 255, 0.02) 22%,
+        transparent 45%,
+        transparent 78%,
+        rgba(255, 255, 255, 0.05) 100%);
+    border-radius: inherit;
+  }
+
+  /* ===== Punch-hole kamera depan 13 MP (tengah atas) ===== */
+  .punch-hole {
+    position: absolute;
+    top: 2.7mm;
+    left: 50%;
+    transform: translateX(-50%);
+    width:  3.9mm;
+    height: 3.9mm;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #2e343d 0%, #0b0e13 52%, #04060a 100%);
+    box-shadow:
+      0 0 0 0.5mm rgba(0, 0, 0, 0.9),
+      inset 0 0 0.7mm rgba(90, 130, 220, 0.28);
+    z-index: 5;
+  }
+  .punch-hole::after {
+    content: "";
+    position: absolute;
+    top: 22%; left: 26%;
+    width: 26%; height: 26%;
+    border-radius: 50%;
+    background: rgba(140, 180, 255, 0.5);
+    filter: blur(0.1mm);
+  }
+
+  /* ===== Tombol sisi kanan: Volume +, Volume −, Power ===== */
+  .side-btn {
+    position: absolute;
+    right: -1.35mm;
+    width: 1.8mm;
+    border-radius: 0.9mm;
+    background: linear-gradient(90deg, #43484f 0%, #262a30 55%, #14171b 100%);
+    box-shadow:
+      inset 0 0.3mm 0.3mm rgba(255, 255, 255, 0.22),
+      0.6mm 0.8mm 2mm rgba(0, 0, 0, 0.55);
+    z-index: 1;
+  }
+  .vol-up   { top: 27mm;  height: 11mm; }
+  .vol-down { top: 39.5mm; height: 11mm; }
+  .power    { top: 58.5mm; height: 13.5mm; width: 2.05mm; }
+
+  .caption { font-size: 11.5px; color: #9aa3b0; letter-spacing: 0.4px; text-align: center; }
+  .caption b { color: #d7dde6; font-weight: 600; }
+
+  /* ===== Penggaris 10 cm (nyata) ===== */
+  .ruler-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+  }
+  .ruler-title {
+    font-size: 10px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: #8b93a1;
+    font-weight: 600;
+  }
+  .ruler {
+    width: 100mm;
+    height: 9mm;
+    border: 0.25mm solid rgba(247, 162, 59, 0.5);
+    border-top: 0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(247,162,59,0.95) 0 0.22mm, transparent 0.22mm 5mm),
+      repeating-linear-gradient(90deg, rgba(247,162,59,0.55) 0 0.18mm, transparent 0.18mm 1mm);
+    background-size: 100% 5.5mm, 100% 3mm;
+    background-position: 0 0, 0 0;
+    background-repeat: no-repeat;
+  }
+  .ruler-labels {
+    width: 100mm;
+    display: flex;
+    font-size: 8.5px;
+    color: #c99a5c;
+    letter-spacing: 0.4px;
+  }
+  .ruler-labels span { width: 10mm; text-align: left; transform: translateX(-2px); }
+  .ruler-labels span:last-child { transform: translateX(-100%); text-align: right; }
+
+  /* ===== Legenda ===== */
+  .legend {
+    width: min(330px, 92vw);
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 18px;
+    padding: 22px 22px 18px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .legend h2 { font-size: 14px; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 12px; }
+  .legend ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .legend li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #c3cad4;
+  }
+  .legend .ico {
+    flex: 0 0 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: rgba(247, 162, 59, 0.14);
+    border: 1px solid rgba(247, 162, 59, 0.32);
+    border-radius: 7px;
+  }
+  .legend b { color: #f0f3f7; font-weight: 600; }
+
+  .footer-note {
+    font-size: 11px;
+    color: #7c8492;
+    text-align: center;
+    line-height: 1.65;
+    max-width: 560px;
+  }
+  .dot-sep { color: #f7a23b; }
+
+  @media (max-width: 760px) {
+    .legend { order: 2; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="bg-overlay"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="kicker">GT30 PRO Launcher · Device Preview</div>
+      <h1>Infinix GT 30 Pro — Dimensi Nyata 1:1</h1>
+      <div class="sub">Digambar dalam satuan milimeter sesungguhnya: bodi tepat <b>75,8 × 163,7 mm</b>,
+        bezel ± 2,5 mm, punch-hole 3,9 mm di tengah atas. Ukur dengan penggaris asli untuk memverifikasi.</div>
+      <div style="margin-top: 12px;">
+        <div class="mode-toggle" role="group" aria-label="Mode ukuran">
+          <button id="btn-real" class="active" type="button">Ukuran nyata 1:1</button>
+          <button id="btn-fit" type="button">Sesuaikan layar</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="stage">
+      <div class="phone-col" id="phone-col">
+        <div class="phone-row">
+          <div class="dim-v">163,7 mm</div>
+          <div class="phone">
+            <div class="side-btn vol-up"></div>
+            <div class="side-btn vol-down"></div>
+            <div class="side-btn power"></div>
+            <div class="screen">
+              <div class="punch-hole"></div>
+              <div class="sheen"></div>
+            </div>
+          </div>
+        </div>
+        <div class="dim-h">75,8 mm</div>
+        <div class="caption"><b>Infinix GT 30 Pro</b> &nbsp;·&nbsp; 163,7 × 75,8 × 8,0 mm &nbsp;·&nbsp; Layar 6,78" &nbsp;·&nbsp; Dark Flare</div>
+
+        <div class="ruler-box">
+          <div class="ruler-title">Penggaris 10 cm · skala nyata</div>
+          <div class="ruler"></div>
+          <div class="ruler-labels">
+            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            <span>6</span><span>7</span><span>8</span><span>9</span><span>10 cm</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="legend">
+        <h2>Detail perangkat (ukuran asli)</h2>
+        <ul>
+          <li><span class="ico">📐</span><span><b>Bodi 75,8 × 163,7 × 8,0 mm, 189 g</b> — mockup ini digambar 1:1 dalam CSS mm.</span></li>
+          <li><span class="ico">🖼️</span><span><b>Bezel 2,45 mm samping · 3,0 mm atas-bawah</b> — screen-to-body ~89,4% (dihitung dari dimensi nyata).</span></li>
+          <li><span class="ico">📷</span><span><b>Punch-hole ⌀ 3,9 mm</b> — kamera depan 13 MP, jarak 2,7 mm dari tepi atas layar, posisi tengah.</span></li>
+          <li><span class="ico">🔘</span><span><b>Tombol kanan:</b> Volume&nbsp;+ (11 mm), Volume&nbsp;− (11 mm), Power (13,5 mm) — menonjol 1,35 mm.</span></li>
+          <li><span class="ico">📱</span><span><b>Layar 6,78" AMOLED</b> 1224 × 2720 px (≈ 445 × 989 dp), 144 Hz, rasio 20:9.</span></li>
+          <li><span class="ico">✅</span><span><b>Verifikasi:</b> letakkan penggaris di layar — lebar bodi harus tepat 7,58 cm (zoom browser 100%).</span></li>
+        </ul>
+      </aside>
+    </div>
+
+    <div class="footer-note">
+      Preview statis untuk diskusi desain <span class="dot-sep">·</span> belum ada kode aplikasi
+      <br>Akurasi fisik tergantung kalibrasi DPI layar &amp; zoom browser — disarankan zoom 100%.
+      Gaming triggers (pressure zones) belum digambar.
+    </div>
+  </div>
+
+<script>
+  var phoneCol = document.getElementById('phone-col');
+  var btnReal = document.getElementById('btn-real');
+  var btnFit = document.getElementById('btn-fit');
+  var fitMode = false;
+
+  function applyScale() {
+    if (!fitMode) {
+      phoneCol.style.transform = 'none';
+      phoneCol.style.marginBottom = '0px';
+      return;
+    }
+    var natural = phoneCol.offsetHeight; // tinggi layout tanpa transform
+    var available = window.innerHeight - 190;
+    var k = Math.min(1, available / natural);
+    phoneCol.style.transformOrigin = 'top center';
+    phoneCol.style.transform = 'scale(' + k + ')';
+    phoneCol.style.marginBottom = (natural * (k - 1)) + 'px';
+  }
+
+  btnReal.addEventListener('click', function () {
+    fitMode = false;
+    btnReal.classList.add('active');
+    btnFit.classList.remove('active');
+    applyScale();
+  });
+  btnFit.addEventListener('click', function () {
+    fitMode = true;
+    btnFit.classList.add('active');
+    btnReal.classList.remove('active');
+    applyScale();
+  });
+  window.addEventListener('resize', applyScale);
+</script>
+</body>
+</html>
