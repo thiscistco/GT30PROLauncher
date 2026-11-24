@@ -263,6 +263,100 @@
   .ruler-labels span { width: 10mm; text-align: left; transform: translateX(-2px); }
   .ruler-labels span:last-child { transform: translateX(-100%); text-align: right; }
 
+  /* ===== Panel atur sketsa ===== */
+  .adjust-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 30;
+    border: 1px solid rgba(247, 162, 59, 0.4);
+    background: rgba(247, 162, 59, 0.16);
+    color: #f7a23b;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 11px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .adjust-panel {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 31;
+    width: min(300px, 92vw);
+    background: rgba(18, 21, 26, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 16px 18px 14px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+    display: none;
+  }
+  .adjust-panel.open { display: block; }
+  .adjust-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #f0f3f7;
+    margin-bottom: 10px;
+  }
+  .adjust-head button {
+    border: 0;
+    background: rgba(255, 255, 255, 0.08);
+    color: #aab2be;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .adjust-body label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #8b93a1;
+    margin: 10px 0 4px;
+    font-weight: 600;
+  }
+  .adjust-body label span { color: #f7a23b; }
+  .adjust-body input[type="range"] {
+    width: 100%;
+    accent-color: #f7a23b;
+    height: 22px;
+  }
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .presets button {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: #c3cad4;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 7px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .presets button:hover { border-color: rgba(247, 162, 59, 0.6); color: #f7a23b; }
+  .adjust-hint {
+    margin-top: 10px;
+    font-size: 10px;
+    color: #7c8492;
+    line-height: 1.5;
+  }
+
   /* ===== Legenda ===== */
   .legend {
     width: min(330px, 92vw);
@@ -337,6 +431,7 @@
             <div class="side-btn vol-down"></div>
             <div class="side-btn power"></div>
             <div class="screen">
+              <div class="wallpaper" id="wallpaper"></div>
               <div class="punch-hole"></div>
               <div class="sheen"></div>
             </div>
@@ -366,6 +461,34 @@
           <li><span class="ico">✅</span><span><b>Verifikasi:</b> letakkan penggaris di layar — lebar bodi harus tepat 7,58 cm (zoom browser 100%).</span></li>
         </ul>
       </aside>
+    </div>
+
+    <button class="adjust-fab" id="openAdjust">🎛️ Atur Sketsa</button>
+
+    <div class="adjust-panel" id="adjustPanel">
+      <div class="adjust-head">
+        <span>🎛️ Atur Tampilan Sketsa</span>
+        <button id="closeAdjust" type="button">✕</button>
+      </div>
+      <div class="adjust-body">
+        <label>Zoom <span id="valZoom">1,00×</span></label>
+        <input type="range" id="sldZoom" min="100" max="220" value="100">
+        <label>Posisi horizontal <span id="valX">0%</span></label>
+        <input type="range" id="sldX" min="-25" max="25" value="0">
+        <label>Posisi vertikal <span id="valY">0%</span></label>
+        <input type="range" id="sldY" min="-25" max="25" value="0">
+        <label>Kecerahan <span id="valB">1,00×</span></label>
+        <input type="range" id="sldB" min="45" max="160" value="100">
+        <div class="presets">
+          <button data-preset="default">Pas</button>
+          <button data-preset="battery">Fokus Baterai</button>
+          <button data-preset="full">Zoom Penuh</button>
+          <button data-preset="bright">Terang</button>
+          <button data-preset="dark">Gelap</button>
+        </div>
+        <div class="adjust-hint">Atur sesuai selera Anda, lalu beri tahu saya —
+          nilainya akan saya kunci ke versi final preview &amp; APK.</div>
+      </div>
     </div>
 
     <div class="footer-note">
@@ -408,6 +531,73 @@
     applyScale();
   });
   window.addEventListener('resize', applyScale);
+</script>
+
+<script>
+  // ===== Panel atur tampilan sketsa =====
+  (function () {
+    var wp = document.getElementById('wallpaper');
+    var panel = document.getElementById('adjustPanel');
+    var fab = document.getElementById('openAdjust');
+    var sld = {
+      zoom: document.getElementById('sldZoom'),
+      x: document.getElementById('sldX'),
+      y: document.getElementById('sldY'),
+      b: document.getElementById('sldB')
+    };
+    var val = {
+      zoom: document.getElementById('valZoom'),
+      x: document.getElementById('valX'),
+      y: document.getElementById('valY'),
+      b: document.getElementById('valB')
+    };
+
+    function fmt(n) { return (Math.round(n * 100) / 100).toFixed(2).replace('.', ','); }
+
+    function apply() {
+      var z = sld.zoom.value / 100;
+      var x = +sld.x.value;
+      var y = +sld.y.value;
+      var b = sld.b.value / 100;
+      wp.style.transform = 'translate(' + x + '%,' + y + '%) scale(' + z + ')';
+      wp.style.filter = 'brightness(' + b + ')';
+      val.zoom.textContent = fmt(z) + '×';
+      val.x.textContent = x + '%';
+      val.y.textContent = y + '%';
+      val.b.textContent = fmt(b) + '×';
+    }
+
+    Object.keys(sld).forEach(function (k) {
+      sld[k].addEventListener('input', apply);
+    });
+
+    var presets = {
+      default: { zoom: 100, x: 0, y: 0, b: 100 },
+      battery: { zoom: 150, x: 0, y: -14, b: 100 },
+      full: { zoom: 200, x: 0, y: 0, b: 100 },
+      bright: { zoom: 100, x: 0, y: 0, b: 130 },
+      dark: { zoom: 100, x: 0, y: 0, b: 70 }
+    };
+    document.querySelectorAll('.presets button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var p = presets[btn.getAttribute('data-preset')];
+        if (!p) return;
+        sld.zoom.value = p.zoom; sld.x.value = p.x; sld.y.value = p.y; sld.b.value = p.b;
+        apply();
+      });
+    });
+
+    fab.addEventListener('click', function () {
+      panel.classList.add('open');
+      fab.style.display = 'none';
+    });
+    document.getElementById('closeAdjust').addEventListener('click', function () {
+      panel.classList.remove('open');
+      fab.style.display = '';
+    });
+
+    apply();
+  })();
 </script>
 </body>
 </html>
