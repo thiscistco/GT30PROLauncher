@@ -121,8 +121,8 @@ public class MainActivity extends Activity {
                 LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, (int) (1.2f * density)));
         sepParams.topMargin = 0;
         sepParams.bottomMargin = (int) (3.2f * density);
-        sepParams.leftMargin = (int) (0.8f * density);
-        sepParams.rightMargin = (int) (0.8f * density);
+        sepParams.leftMargin = 0;
+        sepParams.rightMargin = (int) (0.8f * density) * 2;
         clockSep.setLayoutParams(sepParams);
         clockSep.setBackgroundColor(0xFFF0A060);
         clockBox.addView(clockSep);
