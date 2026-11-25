@@ -20,6 +20,6 @@
     <string name="menu_super_app">Super App</string>
     <string name="menu_all_apps">Semua Aplikasi</string>
     <string name="menu_settings">Setelan</string>
-    <string name="menu_amber_off">Matikan cahaya jingga</string>
-    <string name="menu_amber_on">Nyalakan cahaya jingga</string>
+    <string name="menu_amber_off">Matikan animasi sirkuit</string>
+    <string name="menu_amber_on">Nyalakan animasi sirkuit</string>
 </resources>

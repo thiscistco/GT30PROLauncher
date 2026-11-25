@@ -2,11 +2,13 @@
 """Generate a transparent animation overlay for the current wallpaper's LEDs.
 
 Usage: python tools/create_amber_glow.py WALLPAPER.png OVERLAY.png
-The source wallpaper is not modified. Regions restrict the halo to circuit lights
-and frame edges; in particular, the battery and gold/black flex cables are excluded.
+The source wallpaper is not modified. Circuit paths are loaded from the shared
+preview configuration; battery and gold/black flex cables are excluded.
 Requires Pillow.
 """
+import json
 import sys
+from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 if len(sys.argv) != 3:
@@ -50,5 +52,32 @@ alpha = ImageChops.lighter(mask.point(lambda v: int(v * 0.48)), soft.point(lambd
 alpha = ImageChops.multiply(alpha, allowed)
 overlay = Image.new('RGBA', (w, h), (255, 125, 67, 0))
 overlay.putalpha(alpha)
+
+# The two broad metallic PCB traces are different from the orange LEDs.
+# Paint a thin, soft transparent highlight along their measured centre lines.
+config = json.loads((Path(__file__).resolve().parents[1] / 'preview/assets/circuit-paths.json').read_text())
+copper_core = Image.new('L', (w, h), 0)
+copper_draw = ImageDraw.Draw(copper_core)
+seen = set()
+for path in config['paths']:
+    if path.get('kind') != 'copper':
+        continue
+    points = tuple(tuple(point) for point in path['points'])
+    if points in seen:
+        continue
+    seen.add(points)
+    copper_draw.line(points, fill=235, width=10, joint='curve')
+    for x, y in points:
+        copper_draw.ellipse((x-5, y-5, x+5, y+5), fill=235)
+copper_soft = copper_core.filter(ImageFilter.GaussianBlur(7)).point(lambda v: min(145, int(v * 1.8)))
+copper_alpha = ImageChops.lighter(copper_core.filter(ImageFilter.GaussianBlur(0.8)), copper_soft)
+protected = Image.new('L', (w, h), 255)
+guard = ImageDraw.Draw(protected)
+for box in [(30, 1060, 1195, 2300), (35, 925, 330, 1060), (900, 875, 1120, 1080), (900, 40, 1080, 200)]:
+    guard.rectangle(box, fill=0)
+copper_alpha = ImageChops.multiply(copper_alpha, protected)
+copper = Image.new('RGBA', (w, h), (255, 191, 103, 0))
+copper.putalpha(copper_alpha)
+overlay = Image.alpha_composite(overlay, copper)
 overlay.save(sys.argv[2], optimize=True)
-print('Overlay:', overlay.size, 'max alpha:', alpha.getextrema()[1], 'bbox:', alpha.getbbox())
+print('Overlay:', overlay.size, 'max alpha:', overlay.getchannel('A').getextrema()[1], 'bbox:', overlay.getchannel('A').getbbox())

@@ -38,6 +38,8 @@ for path in config['paths']:
                 y = round(p[1] + (q[1] - p[1]) * distance / length)
                 break
             distance -= length
-        nearby = a.crop((max(0, x - 50), max(0, y - 50), min(image.width, x + 51), min(image.height, y + 51)))
+        radius = 5 if path.get('kind') == 'copper' else 50
+        nearby = a.crop((max(0, x - radius), max(0, y - radius), min(image.width, x + radius + 1), min(image.height, y + radius + 1)))
         assert nearby.getextrema()[1] >= 10, f'Path is detached from glow mask at {x}, {y}'
-print('Amber moving paths, alignment and protected regions: OK')
+assert sum(1 for path in config['paths'] if path.get('kind') == 'copper') >= 2
+print('Copper and amber moving paths, alignment and protected regions: OK')

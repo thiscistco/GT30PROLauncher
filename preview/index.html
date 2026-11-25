@@ -181,6 +181,7 @@
   .phone-row { display: flex; align-items: stretch; }
   .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }
   .charging-toggle input { accent-color: #f7a23b; }
+  .animation-status { color: #a7aeba; font: 600 11px 'Doto', monospace; text-align: center; }
   .super-page { position: absolute; inset: 0; z-index: 9; padding: 8mm 5mm;
     background: #000;
     font-family: 'Doto', monospace; font-weight: 700; }
@@ -458,7 +459,8 @@
 
     </div>
 
-    <label class="charging-toggle"><input type="checkbox" id="amberToggle" checked> Animasi cahaya jingga</label>
+    <label class="charging-toggle"><input type="checkbox" id="amberToggle" checked> Animasi jalur tembaga</label>
+    <div class="animation-status" id="amberStatus" role="status">Memuat animasi…</div>
     <label class="charging-toggle"><input type="checkbox" id="chargeToggle" checked> Simulasi pengisian daya</label>
 
   </div>
@@ -629,14 +631,27 @@
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
   (function () {
-    if (typeof fetch !== 'function' || !window.requestAnimationFrame) return;
+    var status = document.getElementById('amberStatus');
+    if (typeof fetch !== 'function' || !window.requestAnimationFrame) {
+      status.textContent = 'Animasi tidak didukung browser ini.';
+      return;
+    }
     var canvas = document.getElementById('amberGlow');
     var toggle = document.getElementById('amberToggle');
     var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+    var ready = false;
+    function updateStatus() {
+      if (!toggle.checked) status.textContent = 'Animasi dimatikan.';
+      else if (reduced.matches) status.textContent = 'Nonaktif: pengaturan kurangi gerakan di perangkat.';
+      else status.textContent = ready ? 'Aktif · cahaya bergerak di jalur tembaga.' : 'Memuat animasi…';
+    }
+    toggle.addEventListener('change', updateStatus);
+    if (reduced.addEventListener) reduced.addEventListener('change', updateStatus);
+    updateStatus();
     var image = new Image();
     var imageReady = new Promise(function (resolve, reject) { image.onload = resolve; image.onerror = reject; });
-    image.src = 'assets/wallpaper-amber-glow.png?v=1';
-    Promise.all([fetch('assets/circuit-paths.json?v=1').then(function (response) {
+    image.src = 'assets/wallpaper-amber-glow.png?v=2';
+    Promise.all([fetch('assets/circuit-paths.json?v=2').then(function (response) {
       if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
     }), imageReady]).then(function (result) {
       var cfg = result[0];
@@ -648,7 +663,9 @@
         }
         return { offset: path.offset, points: path.points, lengths: lengths, total: total };
       });
-      var ctx = canvas.getContext('2d'); if (!ctx) return;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) { status.textContent = 'Canvas tidak didukung browser ini.'; return; }
+      ready = true; updateStatus();
       function point(path, fraction) {
         var remaining = fraction * path.total;
         for (var i = 0; i < path.lengths.length; i++) {
@@ -690,7 +707,9 @@
         ctx.restore();
       }
       window.requestAnimationFrame(frame);
-    }).catch(function () { /* Jika aset gagal dimuat, wallpaper asli tetap terlihat. */ });
+    }).catch(function () {
+      status.textContent = 'Animasi gagal dimuat. Segarkan preview atau periksa koneksi.';
+    });
   })();
 </script>
 </body>
