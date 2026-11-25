@@ -111,6 +111,7 @@ public class MainActivity extends Activity {
         clockHourText.setShadowLayer(8f, 0f, 0f, 0x8CFFAA5F);
         clockHourText.setLetterSpacing(0.06f);
         clockHourText.setFontVariationSettings("'wght' 700");
+        clockHourText.setIncludeFontPadding(false);
         clockHourText.setText("00");
         clockBox.addView(clockHourText);
 
@@ -131,6 +132,7 @@ public class MainActivity extends Activity {
         clockMinText.setShadowLayer(8f, 0f, 0f, 0x8CFFAA5F);
         clockMinText.setLetterSpacing(0.06f);
         clockMinText.setFontVariationSettings("'wght' 700");
+        clockMinText.setIncludeFontPadding(false);
         clockMinText.setText("00");
         clockBox.addView(clockMinText);
 
