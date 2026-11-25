@@ -97,7 +97,7 @@ public class MainActivity extends Activity {
         // Jam digital HH:mm (font Doto, putih, agak transparan) di atas label baterai
         clockLed = new TextView(this);
         clockLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
-        clockLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        clockLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
         clockLed.setTextColor(0xFFFFFFFF);
         clockLed.setAlpha(0.6f);
         clockLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
