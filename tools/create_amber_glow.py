@@ -45,12 +45,12 @@ for x0, y0, x1, y1 in regions:
             # Red-orange emitters, not yellow/gold copper or neutral highlights.
             if r > 110 and r - g > 35 and r - b > 52 and g > b * 1.05:
                 strength = min(1.0, (r - g - 35) / 50) * min(1.0, (r - 110) / 80)
-                mask_px[x, y] = max(mask_px[x, y], int(160 * strength))
-soft = mask.filter(ImageFilter.GaussianBlur(7))
-# A small sharp core plus soft halo, clipped again after blur to protected areas.
-alpha = ImageChops.lighter(mask.point(lambda v: int(v * 0.48)), soft.point(lambda v: min(180, int(v * 1.6))))
+                mask_px[x, y] = max(mask_px[x, y], int(200 * strength))
+soft = mask.filter(ImageFilter.GaussianBlur(8))
+# Brighter neon orange, with a sharp core and restrained halo.
+alpha = ImageChops.lighter(mask.point(lambda v: int(v * 0.70)), soft.point(lambda v: min(220, int(v * 2.0))))
 alpha = ImageChops.multiply(alpha, allowed)
-overlay = Image.new('RGBA', (w, h), (255, 125, 67, 0))
+overlay = Image.new('RGBA', (w, h), (255, 115, 36, 0))
 overlay.putalpha(alpha)
 
 # The two broad metallic PCB traces are different from the orange LEDs.
@@ -66,18 +66,23 @@ for path in config['paths']:
     if points in seen:
         continue
     seen.add(points)
-    copper_draw.line(points, fill=235, width=10, joint='curve')
+    copper_draw.line(points, fill=255, width=10, joint='curve')
     for x, y in points:
-        copper_draw.ellipse((x-5, y-5, x+5, y+5), fill=235)
-copper_soft = copper_core.filter(ImageFilter.GaussianBlur(7)).point(lambda v: min(145, int(v * 1.8)))
-copper_alpha = ImageChops.lighter(copper_core.filter(ImageFilter.GaussianBlur(0.8)), copper_soft)
+        copper_draw.ellipse((x-5, y-5, x+5, y+5), fill=255)
 protected = Image.new('L', (w, h), 255)
 guard = ImageDraw.Draw(protected)
 for box in [(30, 1060, 1195, 2300), (35, 925, 330, 1060), (900, 875, 1120, 1080), (900, 40, 1080, 200)]:
     guard.rectangle(box, fill=0)
-copper_alpha = ImageChops.multiply(copper_alpha, protected)
-copper = Image.new('RGBA', (w, h), (255, 191, 103, 0))
-copper.putalpha(copper_alpha)
+# Orange neon halo and a luminous golden-amber centre, both kept inside safe areas.
+halo_alpha = copper_core.filter(ImageFilter.GaussianBlur(9)).point(lambda v: min(210, int(v * 2.2)))
+halo_alpha = ImageChops.multiply(halo_alpha, protected)
+halo = Image.new('RGBA', (w, h), (255, 105, 25, 0))
+halo.putalpha(halo_alpha)
+overlay = Image.alpha_composite(overlay, halo)
+core_alpha = copper_core.filter(ImageFilter.GaussianBlur(0.8)).point(lambda v: int(v * 0.92))
+core_alpha = ImageChops.multiply(core_alpha, protected)
+copper = Image.new('RGBA', (w, h), (255, 205, 106, 0))
+copper.putalpha(core_alpha)
 overlay = Image.alpha_composite(overlay, copper)
 overlay.save(sys.argv[2], optimize=True)
 print('Overlay:', overlay.size, 'max alpha:', overlay.getchannel('A').getextrema()[1], 'bbox:', overlay.getchannel('A').getbbox())

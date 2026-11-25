@@ -65,7 +65,7 @@ public class CircuitGlowView extends View {
                 JSONObject obj = items.getJSONObject(i); JSONArray points = obj.getJSONArray("points");
                 PathSpec path = new PathSpec(); path.offset = (float)obj.getDouble("offset");
                 path.gradient = new RadialGradient(0, 0, radius,
-                        new int[]{0xDDFFFFFF, 0x66FFFFFF, Color.TRANSPARENT},
+                        new int[]{0xFFFFFFFF, 0xA6FFFFFF, Color.TRANSPARENT},
                         new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP);
                 path.xs = new float[points.length()]; path.ys = new float[points.length()];
                 path.segments = new float[Math.max(0, points.length() - 1)];
