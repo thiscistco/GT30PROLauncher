@@ -41,6 +41,7 @@ public class MainActivity extends Activity {
     private GestureDetector detector;
     private TextView batteryLed;
     private View clockLed;
+    private View clockSep;
     private TextView clockHourText;
     private TextView clockMinText;
     private ValueAnimator chargeAnim;
@@ -114,7 +115,7 @@ public class MainActivity extends Activity {
         clockBox.addView(clockHourText);
 
         float density = getResources().getDisplayMetrics().density;
-        View clockSep = new View(this);
+        clockSep = new View(this);
         LinearLayout.LayoutParams sepParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, (int) (1.2f * density)));
         sepParams.topMargin = (int) (1.5f * density);
@@ -194,25 +195,22 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Denyut glow label saat perangkat sedang di-charge. */
+    /** Denyut glow HANYA pada garis pemisah jam saat perangkat sedang di-charge. */
     private void updateChargeAnim() {
         if (charging && chargeAnim == null) {
-            chargeAnim = ValueAnimator.ofFloat(0.25f, 0.8f);
+            chargeAnim = ValueAnimator.ofFloat(0.15f, 1f);
             chargeAnim.setDuration(900);
             chargeAnim.setRepeatMode(ValueAnimator.REVERSE);
             chargeAnim.setRepeatCount(ValueAnimator.INFINITE);
             chargeAnim.setInterpolator(new AccelerateDecelerateInterpolator());
             chargeAnim.addUpdateListener(a -> {
-                float v = (float) a.getAnimatedValue();
-                batteryLed.setAlpha(v);
-                if (clockLed != null) clockLed.setAlpha(v);
+                if (clockSep != null) clockSep.setAlpha((float) a.getAnimatedValue());
             });
             chargeAnim.start();
         } else if (!charging && chargeAnim != null) {
             chargeAnim.cancel();
             chargeAnim = null;
-            batteryLed.setAlpha(0.6f);
-            if (clockLed != null) clockLed.setAlpha(0.6f);
+            if (clockSep != null) clockSep.setAlpha(1f);
         }
     }
 

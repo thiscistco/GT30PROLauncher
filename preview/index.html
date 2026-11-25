@@ -223,19 +223,12 @@
     box-shadow: 0 0 0.8mm rgba(255, 170, 95, 0.55);
     margin: 0.45mm 0;
   }
-  .clock-led.charging {
-    animation: chargePulseOrange 0.9s ease-in-out infinite alternate;
+  .clock-sep.charging {
+    animation: sepPulse 0.9s ease-in-out infinite alternate;
   }
-  .battery-led.charging {
-    animation: chargePulse 0.9s ease-in-out infinite alternate;
-  }
-  @keyframes chargePulseOrange {
-    from { opacity: 0.3;  text-shadow: 0 0 0.8mm rgba(255, 170, 95, 0.35); }
-    to   { opacity: 0.85; text-shadow: 0 0 1.8mm rgba(255, 170, 95, 0.8); }
-  }
-  @keyframes chargePulse {
-    from { opacity: 0.3;  text-shadow: 0 0 0.8mm rgba(255, 255, 255, 0.35); }
-    to   { opacity: 0.85; text-shadow: 0 0 1.8mm rgba(255, 255, 255, 0.8); }
+  @keyframes sepPulse {
+    from { opacity: 0.35; box-shadow: 0 0 0.5mm rgba(255, 170, 95, 0.35); }
+    to   { opacity: 1;    box-shadow: 0 0 1.4mm rgba(255, 170, 95, 0.9); }
   }
   .sheen {
     position: absolute;
@@ -682,12 +675,10 @@
 <script>
   // ===== Jam HH:mm live + animasi label saat charge (pratinjau) =====
   (function () {
-    var led = document.getElementById('batteryLed');
-    var clock = document.getElementById('clockLed');
+    var sep = document.querySelector('.clock-sep');
     var toggle = document.getElementById('chargeToggle');
     function sync() {
-      led.classList.toggle('charging', toggle.checked);
-      clock.classList.toggle('charging', toggle.checked);
+      sep.classList.toggle('charging', toggle.checked);
     }
     toggle.addEventListener('change', sync);
     sync();
