@@ -47,6 +47,25 @@ public class MainActivity extends Activity {
     private ValueAnimator chargeAnim;
     private boolean charging = false;
 
+    // Gradien simetris memberi pusat keemasan dan tepi jingga kemerahan.
+    private static final int[] AMBER_LED = {
+            0xFFCB633E, 0xFFFFB568, 0xFFFFE5B1, 0xFFFFB568, 0xFFCB633E
+    };
+    private static final float[] AMBER_STOPS = {0f, 0.24f, 0.5f, 0.76f, 1f};
+
+    private static class AmberClockText extends TextView {
+        AmberClockText(Context context) { super(context); }
+
+        @Override
+        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+            super.onSizeChanged(w, h, oldw, oldh);
+            if (h > 0) {
+                getPaint().setShader(new android.graphics.LinearGradient(0, 0, 0, h,
+                        AMBER_LED, AMBER_STOPS, android.graphics.Shader.TileMode.CLAMP));
+            }
+        }
+    }
+
     private final Handler clockHandler = new Handler(Looper.getMainLooper());
     private final Runnable clockTick = new Runnable() {
         @Override
@@ -100,15 +119,15 @@ public class MainActivity extends Activity {
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
         ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
 
-        // Jam digital 3 baris: jam / garis / menit (font Doto, putih, agak transparan)
+        // Jam digital 3 baris: jam / titik / menit (font Doto, LED amber)
         LinearLayout clockBox = new LinearLayout(this);
         clockBox.setOrientation(LinearLayout.VERTICAL);
         clockBox.setGravity(Gravity.CENTER_HORIZONTAL);
-        clockHourText = new TextView(this);
+        clockHourText = new AmberClockText(this);
         clockHourText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
         clockHourText.setTextColor(0xFFE7A579);
-        clockHourText.setShadowLayer(14f, 0f, 0f, 0xE6E79162);
+        clockHourText.setShadowLayer(10f, 0f, 0f, 0xA6DD6234);
         clockHourText.setLetterSpacing(0.06f);
         clockHourText.setFontVariationSettings("'wght' 700");
         clockHourText.setIncludeFontPadding(false);
@@ -130,7 +149,11 @@ public class MainActivity extends Activity {
                 int n = 5;
                 float gap = (getWidth() - 2f * r) / (n - 1);
                 for (int i = 0; i < n; i++) {
-                    canvas.drawCircle(r + i * gap, cy, r, dotPaint);
+                    float x = r + i * gap;
+                    dotPaint.setShader(new android.graphics.RadialGradient(x, cy, r,
+                            new int[]{0xFFFFE5B1, 0xFFFFB568, 0xFFCB633E},
+                            new float[]{0f, 0.55f, 1f}, android.graphics.Shader.TileMode.CLAMP));
+                    canvas.drawCircle(x, cy, r, dotPaint);
                 }
             }
         };
@@ -143,11 +166,11 @@ public class MainActivity extends Activity {
         clockSep.setLayoutParams(sepParams);
         clockBox.addView(clockSep);
 
-        clockMinText = new TextView(this);
+        clockMinText = new AmberClockText(this);
         clockMinText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
         clockMinText.setTextColor(0xFFE7A579);
-        clockMinText.setShadowLayer(14f, 0f, 0f, 0xE6E79162);
+        clockMinText.setShadowLayer(10f, 0f, 0f, 0xA6DD6234);
         clockMinText.setLetterSpacing(0.06f);
         clockMinText.setFontVariationSettings("'wght' 700");
         clockMinText.setIncludeFontPadding(false);
