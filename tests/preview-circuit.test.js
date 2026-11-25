@@ -29,13 +29,30 @@ setImmediate(() => {
   frames.shift()(1200);
   assert.equal(gradients.length, config.paths.length * 2);
   assert.notDeepEqual(first, gradients.slice(config.paths.length), 'light should move along paths');
+  function positionsAt(time) {
+    const n = gradients.length;
+    frames.shift()(time);
+    return gradients.slice(n);
+  }
+  function near(actual, expected, message) {
+    assert.ok(Math.hypot(actual[0] - expected[0], actual[1] - expected[1]) < 0.0001, message);
+  }
+  config.paths.forEach((path, index) => {
+    const end = (1 - path.offset) * config.durationMs;
+    const start = (2 - path.offset) * config.durationMs;
+    near(positionsAt(end)[index], path.points.at(-1), 'light reaches end of path');
+    near(positionsAt(end - 10)[index], positionsAt(end + 10)[index], 'light reverses at end');
+    near(positionsAt(start)[index], path.points[0], 'light returns to start of path');
+    near(positionsAt(start - 10)[index], positionsAt(start + 10)[index], 'light reverses at start');
+  });
+  const count = gradients.length;
   toggle.checked = false; toggle.listeners.change();
   assert.match(status.textContent, /dimatikan/);
-  frames.shift()(1300);
-  assert.equal(gradients.length, config.paths.length * 2, 'disabled animation must not draw');
+  frames.shift()(13000);
+  assert.equal(gradients.length, count, 'disabled animation must not draw');
   toggle.checked = true; reduced.matches = true; reduced.listeners.change();
   assert.match(status.textContent, /kurangi gerakan/);
-  frames.shift()(1400);
-  assert.equal(gradients.length, config.paths.length * 2, 'reduced motion must not draw');
-  console.log('Preview circuit animation, toggle and reduced-motion status: OK');
+  frames.shift()(14000);
+  assert.equal(gradients.length, count, 'reduced motion must not draw');
+  console.log('Preview circuit reverses at both endpoints; toggle and reduced-motion status: OK');
 });

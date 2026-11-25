@@ -315,8 +315,9 @@ public class MainActivity extends Activity {
         }
         if (amberAnim != null) return;
         amberGlow.setVisibility(View.VISIBLE);
-        amberAnim = ValueAnimator.ofFloat(0f, 1f);
-        amberAnim.setDuration(amberGlow.getDurationMs());
+        // One configured duration per direction; the second half returns to the start.
+        amberAnim = ValueAnimator.ofFloat(0f, 2f);
+        amberAnim.setDuration(amberGlow.getDurationMs() * 2);
         amberAnim.setRepeatMode(ValueAnimator.RESTART);
         amberAnim.setRepeatCount(ValueAnimator.INFINITE);
         amberAnim.setInterpolator(new android.view.animation.LinearInterpolator());

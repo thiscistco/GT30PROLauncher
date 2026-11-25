@@ -95,7 +95,7 @@ public class CircuitGlowView extends View {
         int before = canvas.save(); canvas.translate(dx, dy); canvas.scale(scale, scale);
         int layer = canvas.saveLayer(sourceRect, null);
         for (PathSpec path : paths) {
-            float fraction = phase + path.offset; fraction -= (float)Math.floor(fraction);
+            float fraction = CircuitMotion.pingPong(phase + path.offset);
             path.position(fraction, position);
             path.matrix.setTranslate(position[0], position[1]);
             path.gradient.setLocalMatrix(path.matrix);

@@ -693,9 +693,12 @@
         ctx.clearRect(0, 0, w, h);
         var scale = Math.max(w/cfg.width, h/cfg.height);
         ctx.save(); ctx.translate((w-cfg.width*scale)/2, (h-cfg.height*scale)/2); ctx.scale(scale, scale);
-        var phase = ((now-start) % cfg.durationMs) / cfg.durationMs;
+        // One duration per direction; each offset light turns around at its own endpoint.
+        var phase = ((now-start) % (cfg.durationMs * 2)) / cfg.durationMs;
         paths.forEach(function (path) {
-          var pos = point(path, (phase+path.offset)%1);
+          var cycle = (phase + path.offset) % 2;
+          var fraction = cycle <= 1 ? cycle : 2 - cycle;
+          var pos = point(path, fraction);
           var gradient = ctx.createRadialGradient(pos[0],pos[1],0,pos[0],pos[1],cfg.radius);
           gradient.addColorStop(0, 'rgba(255,255,255,1)');
           gradient.addColorStop(0.45, 'rgba(255,255,255,0.651)');
