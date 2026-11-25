@@ -21,7 +21,7 @@
   .bg {
     position: fixed;
     inset: -6%;
-    background: url("assets/gt30pro-internals.jpg?v=27") center/cover no-repeat;
+    background: url("assets/gt30pro-internals.jpg?v=28") center/cover no-repeat;
     filter: blur(52px) saturate(1.15) brightness(0.34);
     transform: scale(1.08);
     z-index: 0;
@@ -172,9 +172,17 @@
   .wallpaper {
     position: absolute;
     inset: 0;
-    background: url("assets/gt30pro-internals.jpg?v=27") center/cover no-repeat;
+    background: url("assets/gt30pro-internals.jpg?v=28") center/cover no-repeat;
     transition: transform .12s ease-out, filter .12s ease-out;
     will-change: transform, filter;
+  }
+  .battery-led {
+    position: absolute;
+    right: 7.5%;
+    bottom: 17%;
+    width: 10%;
+    height: auto;
+    z-index: 6;
   }
   .sheen {
     position: absolute;
@@ -441,6 +449,7 @@
             <div class="side-btn power"></div>
             <div class="screen">
               <div class="wallpaper" id="wallpaper"></div>
+              <canvas class="battery-led" id="batteryLed" width="200" height="92"></canvas>
               <div class="punch-hole"></div>
               <div class="sheen"></div>
             </div>
@@ -606,6 +615,54 @@
     });
 
     apply();
+  })();
+</script>
+
+<script>
+  // ===== Label indikator baterai LED dot-matrix putih kecil (sudut kanan bawah baterai) =====
+  (function () {
+    var GLYPHS = {
+      '0': ["01110", "10001", "10011", "10101", "11001", "10001", "01110"],
+      '1': ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
+      '2': ["01110", "10001", "00001", "00010", "00100", "01000", "11111"],
+      '3': ["11111", "00010", "00100", "00010", "00001", "10001", "01110"],
+      '4': ["00010", "00110", "01010", "10010", "11111", "00010", "00010"],
+      '5': ["11111", "10000", "11110", "00001", "00001", "10001", "01110"],
+      '6': ["00110", "01000", "10000", "11110", "10001", "10001", "01110"],
+      '7': ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+      '8': ["01110", "10001", "10001", "01110", "10001", "10001", "01110"],
+      '9': ["01110", "10001", "10001", "01111", "00001", "00010", "01100"],
+      '%': ["11000", "11001", "00010", "00100", "01000", "10011", "00011"]
+    };
+    var canvas = document.getElementById('batteryLed');
+    var ctx = canvas.getContext('2d');
+    var text = '85%';
+    var W = canvas.width, H = canvas.height;
+    var step = W / (text.length * 5 - 1);
+    var r = step * 0.36;
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < text.length; i++) {
+      var g = GLYPHS[text[i]] || GLYPHS['%'];
+      for (var row = 0; row < 7; row++) {
+        for (var col = 0; col < 5; col++) {
+          if (g[row][col] === '1') {
+            var cx = r + (i * 5 + col) * step;
+            var cy = r + row * step;
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(255,255,255,0.28)';
+            ctx.arc(cx, cy, r * 2.6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(255,255,255,0.8)';
+            ctx.shadowBlur = step * 0.7;
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+        }
+      }
+    }
   })();
 </script>
 </body>
