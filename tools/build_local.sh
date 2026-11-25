@@ -15,8 +15,8 @@ ANDROID_JAR="${ANDROID_JAR:-$TC/android-platforms/android-35/android.jar}"
 APKSIGN_LIB="${APKSIGN_LIB:-$TC/npm/apk_sign_ts-1.0.1}"
 
 PKG="com.gt30pro.launcher"
-VERSION_NAME="0.1.16"
-VERSION_CODE=17
+VERSION_NAME="0.1.17"
+VERSION_CODE=18
 MIN_SDK=26
 TARGET_SDK=35
 
