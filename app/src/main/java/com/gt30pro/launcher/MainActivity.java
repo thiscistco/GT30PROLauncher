@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
     private TextView clockHourText;
     private TextView clockMinText;
     private ValueAnimator chargeAnim;
-    private ImageView amberGlow;
+    private CircuitGlowView amberGlow;
     private ValueAnimator amberAnim;
     private boolean charging = false;
     private final BroadcastReceiver powerSaveReceiver = new BroadcastReceiver() {
@@ -59,15 +59,19 @@ public class MainActivity extends Activity {
     private static final float[] AMBER_STOPS = {0f, 0.24f, 0.5f, 0.76f, 1f};
 
     private static class AmberClockText extends TextView {
+        private android.graphics.Shader gradient;
         AmberClockText(Context context) { super(context); }
 
         @Override
         protected void onSizeChanged(int w, int h, int oldw, int oldh) {
             super.onSizeChanged(w, h, oldw, oldh);
-            if (h > 0) {
-                getPaint().setShader(new android.graphics.LinearGradient(0, 0, 0, h,
-                        AMBER_LED, AMBER_STOPS, android.graphics.Shader.TileMode.CLAMP));
-            }
+            if (h > 0) gradient = new android.graphics.LinearGradient(0, 0, 0, h,
+                    AMBER_LED, AMBER_STOPS, android.graphics.Shader.TileMode.CLAMP);
+        }
+
+        @Override protected void onDraw(android.graphics.Canvas canvas) {
+            if (gradient != null) getPaint().setShader(gradient);
+            super.onDraw(canvas);
         }
     }
 
@@ -107,8 +111,8 @@ public class MainActivity extends Activity {
         ImageView wallpaper = findViewById(R.id.wallpaper);
         wallpaper.setImageBitmap(Wallpapers.load(this));
         amberGlow = findViewById(R.id.amber_glow);
-        amberGlow.setImageBitmap(Wallpapers.loadAmberGlow(this));
-        amberGlow.setAlpha(0f);
+        amberGlow.load();
+        amberGlow.setVisibility(View.INVISIBLE);
 
         // Label indikator baterai (font Doto, putih, kecil, agak transparan) di portal USB Type-C
         batteryLed = new TextView(this);
@@ -197,16 +201,14 @@ public class MainActivity extends Activity {
         homeRoot.addView(clockBox, clockParams);
         clockBox.setContentDescription("Buka Jam di Super App");
         clockBox.setOnClickListener(v -> startActivity(new Intent(this, ClockActivity.class)));
-        // Tambah area sentuh tanpa mengubah ukuran atau posisi visual jam.
-        homeRoot.post(() -> {
-            android.graphics.Rect bounds = new android.graphics.Rect();
-            clockBox.getHitRect(bounds);
-            int minSize = Math.round(48 * getResources().getDisplayMetrics().density);
-            int dx = Math.max(0, (minSize - bounds.width() + 1) / 2);
-            int dy = Math.max(0, (minSize - bounds.height() + 1) / 2);
-            bounds.inset(-dx, -dy);
-            homeRoot.setTouchDelegate(new android.view.TouchDelegate(bounds, clockBox));
+        // Ukuran dan posisi mengacu pada area wallpaper yang benar-benar terukur,
+        // bukan ukuran layar yang dapat mencakup status/navigation bar.
+        homeRoot.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
+            if (r - l != oldR - oldL || b - t != oldB - oldT) {
+                updateClockLayout(homeRoot, clockBox);
+            }
         });
+        homeRoot.post(() -> updateClockLayout(homeRoot, clockBox));
 
         View root = findViewById(R.id.root);
         detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
@@ -240,6 +242,38 @@ public class MainActivity extends Activity {
         root.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }
 
+    private void updateClockLayout(FrameLayout root, LinearLayout clockBox) {
+        int width = root.getWidth(), height = root.getHeight();
+        if (width <= 0 || height <= 0) return;
+        // Preview screen: 70.9mm wide. Match its 1.8mm font and CSS-pixel offsets.
+        float cssPixel = width / (70.9f * 96f / 25.4f);
+        float clockSizePx = width * (1.8f / 70.9f);
+        clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
+        clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
+        clockHourText.setLetterSpacing(0.2f / 1.8f);
+        clockMinText.setLetterSpacing(0.2f / 1.8f);
+        LinearLayout.LayoutParams sep = (LinearLayout.LayoutParams) clockSep.getLayoutParams();
+        sep.height = Math.max(1, Math.round(width * (0.22f / 70.9f)));
+        sep.topMargin = Math.max(0, Math.round((0.461f * 96f / 25.4f - 1f) * cssPixel));
+        sep.bottomMargin = Math.max(0, Math.round((0.45f * 96f / 25.4f + 1f) * cssPixel));
+        sep.leftMargin = Math.round(-0.25f * cssPixel);
+        sep.rightMargin = Math.round(1.01f * cssPixel);
+        clockSep.setLayoutParams(sep);
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) clockBox.getLayoutParams();
+        params.rightMargin = Math.round(width * 0.286f);
+        params.bottomMargin = Math.round(height * 0.06f + 3f * cssPixel);
+        clockBox.setLayoutParams(params);
+        clockBox.post(() -> {
+            android.graphics.Rect bounds = new android.graphics.Rect();
+            clockBox.getHitRect(bounds);
+            int minSize = Math.round(48 * getResources().getDisplayMetrics().density);
+            int dx = Math.max(0, (minSize - bounds.width() + 1) / 2);
+            int dy = Math.max(0, (minSize - bounds.height() + 1) / 2);
+            bounds.inset(-dx, -dy);
+            root.setTouchDelegate(new android.view.TouchDelegate(bounds, clockBox));
+        });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -269,23 +303,24 @@ public class MainActivity extends Activity {
 
     private void stopAmberGlow() {
         if (amberAnim != null) { amberAnim.cancel(); amberAnim = null; }
-        if (amberGlow != null) amberGlow.setAlpha(0f);
+        if (amberGlow != null) amberGlow.setVisibility(View.INVISIBLE);
     }
 
     private void updateAmberGlow() {
         android.os.PowerManager power = (android.os.PowerManager) getSystemService(POWER_SERVICE);
-        if (amberGlow == null || amberGlow.getDrawable() == null || !isAmberGlowEnabled()
+        if (amberGlow == null || !amberGlow.isReady() || !isAmberGlowEnabled()
                 || (power != null && power.isPowerSaveMode()) || !ValueAnimator.areAnimatorsEnabled()) {
             stopAmberGlow();
             return;
         }
         if (amberAnim != null) return;
+        amberGlow.setVisibility(View.VISIBLE);
         amberAnim = ValueAnimator.ofFloat(0f, 1f);
-        amberAnim.setDuration(3000);
-        amberAnim.setRepeatMode(ValueAnimator.REVERSE);
+        amberAnim.setDuration(amberGlow.getDurationMs());
+        amberAnim.setRepeatMode(ValueAnimator.RESTART);
         amberAnim.setRepeatCount(ValueAnimator.INFINITE);
-        amberAnim.setInterpolator(new AccelerateDecelerateInterpolator());
-        amberAnim.addUpdateListener(a -> amberGlow.setAlpha((float) a.getAnimatedValue()));
+        amberAnim.setInterpolator(new android.view.animation.LinearInterpolator());
+        amberAnim.addUpdateListener(a -> amberGlow.setPhase((float) a.getAnimatedValue()));
         amberAnim.start();
     }
 

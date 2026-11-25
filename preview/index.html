@@ -137,15 +137,9 @@
     transition: transform .12s ease-out, filter .12s ease-out;
     will-change: transform, filter;
   }
-  .amber-glow {
-    position: absolute; inset: 0; pointer-events: none;
-    background: url('assets/wallpaper-amber-glow.png?v=1') center/cover no-repeat;
-    opacity: 0;
-    animation: amberGlow 3s ease-in-out infinite alternate;
-  }
-  .amber-glow.off { animation: none; opacity: 0; }
-  @keyframes amberGlow { from { opacity: 0; } to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .amber-glow { animation: none; opacity: 0; } }
+  .amber-glow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .amber-glow.off { display: none; }
+  @media (prefers-reduced-motion: reduce) { .amber-glow { display: none; } }
   @font-face {
     font-family: 'Doto';
     src: url('assets/fonts/Doto.ttf?v=1') format('truetype');
@@ -386,7 +380,7 @@
             <div class="side-btn power"></div>
             <div class="screen">
               <div class="wallpaper" id="wallpaper"></div>
-              <div class="amber-glow" id="amberGlow" aria-hidden="true"></div>
+              <canvas class="amber-glow" id="amberGlow" aria-hidden="true"></canvas>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>
                 <span class="clock-sep"></span>
@@ -630,6 +624,73 @@
       if (timerEnd && !remaining && !timerDone) { timerDone = true; timerEnd = 0; byId('previewTimerMessage').textContent = 'Timer selesai (simulasi).'; }
       byId('previewStopwatchDisplay').textContent = format(current(), true);
     }, 50);
+  })();
+</script>
+<script>
+  // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
+  (function () {
+    if (typeof fetch !== 'function' || !window.requestAnimationFrame) return;
+    var canvas = document.getElementById('amberGlow');
+    var toggle = document.getElementById('amberToggle');
+    var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+    var image = new Image();
+    var imageReady = new Promise(function (resolve, reject) { image.onload = resolve; image.onerror = reject; });
+    image.src = 'assets/wallpaper-amber-glow.png?v=1';
+    Promise.all([fetch('assets/circuit-paths.json?v=1').then(function (response) {
+      if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
+    }), imageReady]).then(function (result) {
+      var cfg = result[0];
+      var paths = cfg.paths.map(function (path) {
+        var lengths = [], total = 0;
+        for (var i = 1; i < path.points.length; i++) {
+          var a = path.points[i-1], b = path.points[i];
+          var length = Math.hypot(b[0]-a[0], b[1]-a[1]); lengths.push(length); total += length;
+        }
+        return { offset: path.offset, points: path.points, lengths: lengths, total: total };
+      });
+      var ctx = canvas.getContext('2d'); if (!ctx) return;
+      function point(path, fraction) {
+        var remaining = fraction * path.total;
+        for (var i = 0; i < path.lengths.length; i++) {
+          var length = path.lengths[i];
+          if (remaining <= length || i === path.lengths.length - 1) {
+            var k = length ? Math.min(1, remaining / length) : 0;
+            return [path.points[i][0] + (path.points[i+1][0]-path.points[i][0])*k,
+                    path.points[i][1] + (path.points[i+1][1]-path.points[i][1])*k];
+          }
+          remaining -= length;
+        }
+        return path.points[0];
+      }
+      var start = null;
+      function frame(now) {
+        window.requestAnimationFrame(frame);
+        if (!toggle.checked || reduced.matches || document.hidden ||
+            !document.getElementById('superPage').hidden || !document.getElementById('clockPage').hidden) return;
+        if (start === null) start = now;
+        var box = canvas.getBoundingClientRect();
+        if (!box.width || !box.height) return;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var w = Math.round(box.width*dpr), h = Math.round(box.height*dpr);
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+        ctx.clearRect(0, 0, w, h);
+        var scale = Math.max(w/cfg.width, h/cfg.height);
+        ctx.save(); ctx.translate((w-cfg.width*scale)/2, (h-cfg.height*scale)/2); ctx.scale(scale, scale);
+        var phase = ((now-start) % cfg.durationMs) / cfg.durationMs;
+        paths.forEach(function (path) {
+          var pos = point(path, (phase+path.offset)%1);
+          var gradient = ctx.createRadialGradient(pos[0],pos[1],0,pos[0],pos[1],cfg.radius);
+          gradient.addColorStop(0, 'rgba(255,255,255,0.867)');
+          gradient.addColorStop(0.45, 'rgba(255,255,255,0.4)');
+          gradient.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(pos[0],pos[1],cfg.radius,0,Math.PI*2); ctx.fill();
+        });
+        ctx.globalCompositeOperation = 'source-in';
+        ctx.drawImage(image,0,0,cfg.width,cfg.height);
+        ctx.restore();
+      }
+      window.requestAnimationFrame(frame);
+    }).catch(function () { /* Jika aset gagal dimuat, wallpaper asli tetap terlihat. */ });
   })();
 </script>
 </body>

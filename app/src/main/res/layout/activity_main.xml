@@ -13,12 +13,11 @@
         android:contentDescription="@string/app_name"
         android:scaleType="centerCrop" />
 
-    <ImageView
+    <com.gt30pro.launcher.CircuitGlowView
         android:id="@+id/amber_glow"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:importantForAccessibility="no"
-        android:clickable="false"
-        android:scaleType="centerCrop" />
+        android:clickable="false" />
 
 </FrameLayout>
