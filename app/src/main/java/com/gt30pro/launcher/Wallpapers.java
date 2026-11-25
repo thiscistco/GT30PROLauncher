@@ -8,7 +8,7 @@ import android.util.DisplayMetrics;
 /** Pemuat wallpaper default (render Infinix GT 30 Pro) dari folder assets. */
 public final class Wallpapers {
 
-    private static final String ASSET_NAME = "wallpaper_gt30pro.jpg";
+    private static final String ASSET_NAME = "wallpaper_gt30pro.png";
 
     private Wallpapers() {
     }
