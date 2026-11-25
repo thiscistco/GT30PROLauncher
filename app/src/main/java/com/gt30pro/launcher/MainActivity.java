@@ -185,7 +185,20 @@ public class MainActivity extends Activity {
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.286f);
         clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.0646f);
-        ((FrameLayout) findViewById(R.id.root)).addView(clockBox, clockParams);
+        FrameLayout homeRoot = findViewById(R.id.root);
+        homeRoot.addView(clockBox, clockParams);
+        clockBox.setContentDescription("Buka Jam di Super App");
+        clockBox.setOnClickListener(v -> startActivity(new Intent(this, ClockActivity.class)));
+        // Tambah area sentuh tanpa mengubah ukuran atau posisi visual jam.
+        homeRoot.post(() -> {
+            android.graphics.Rect bounds = new android.graphics.Rect();
+            clockBox.getHitRect(bounds);
+            int minSize = Math.round(48 * getResources().getDisplayMetrics().density);
+            int dx = Math.max(0, (minSize - bounds.width() + 1) / 2);
+            int dy = Math.max(0, (minSize - bounds.height() + 1) / 2);
+            bounds.inset(-dx, -dy);
+            homeRoot.setTouchDelegate(new android.view.TouchDelegate(bounds, clockBox));
+        });
 
         View root = findViewById(R.id.root);
         detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {

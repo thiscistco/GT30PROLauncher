@@ -214,6 +214,17 @@
     align-items: center;
     line-height: 1.15;
   }
+  .clock-led { cursor: pointer; }
+  .clock-led::before {
+    content: "";
+    position: absolute;
+    width: 12mm;
+    height: 12mm;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .clock-led:focus-visible { outline: 1px solid #ffc477; outline-offset: 3px; }
   .clock-led > span:not(.clock-sep) {
     background: linear-gradient(to bottom, #cb633e 0%, #ffb568 24%, #ffe5b1 50%, #ffb568 76%, #cb633e 100%);
     -webkit-background-clip: text;
@@ -234,6 +245,20 @@
   .clock-sep.charging {
     animation: sepPulse 0.9s ease-in-out infinite alternate;
   }
+  .clock-page {
+    position: absolute; inset: 0; z-index: 10;
+    background: linear-gradient(rgba(10,12,15,.82), rgba(10,12,15,.82)), url('assets/gt30pro-internals.jpg?v=29') center/cover;
+    padding: 8mm 6mm; font-family: 'Doto', monospace; font-weight: 700;
+    color: #ffe5b1;
+  }
+  .clock-page[hidden] { display: none; }
+  .clock-back { border: 0; background: none; color: #ffc28b; font: inherit; font-size: 3mm; min-height: 12mm; cursor: pointer; }
+  .clock-kicker { margin-top: 7mm; color: #e7a579; font-size: 2.6mm; }
+  .clock-title { margin-top: 2mm; font-size: 7mm; }
+  .clock-card { margin-top: 7mm; padding: 8mm 3mm; text-align: center; background: rgba(27,24,25,.9); border: 1px solid rgba(231,165,121,.47); border-radius: 5mm; }
+  .clock-card-label { color: #e7a579; font-size: 2.6mm; }
+  .clock-card-time { margin-top: 4mm; font-size: 8mm; color: #ffd49d; text-shadow: 0 0 2mm rgba(221,98,52,.65); }
+  .clock-card-date { margin-top: 3mm; font-size: 2.8mm; color: #eed3bd; }
   @keyframes sepPulse {
     from { opacity: 0.35; filter: drop-shadow(0 0 0.25mm rgba(221, 98, 52, 0.35)); }
     to   { opacity: 1;    filter: drop-shadow(0 0 0.9mm rgba(221, 98, 52, 0.85)); }
@@ -503,12 +528,22 @@
             <div class="side-btn power"></div>
             <div class="screen">
               <div class="wallpaper" id="wallpaper"></div>
-              <div class="clock-led" id="clockLed">
+              <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>
                 <span class="clock-sep"></span>
                 <span id="clockMin">00</span>
               </div>
               <div class="battery-led" id="batteryLed">85%</div>
+              <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
+                <button class="clock-back" id="clockBack" type="button">← Kembali</button>
+                <div class="clock-kicker">SUPER APP</div>
+                <div class="clock-title">JAM</div>
+                <div class="clock-card">
+                  <div class="clock-card-label">WAKTU SAAT INI</div>
+                  <div class="clock-card-time" id="clockPageTime">--:--:--</div>
+                  <div class="clock-card-date" id="clockPageDate"></div>
+                </div>
+              </section>
               <div class="punch-hole"></div>
               <div class="sheen"></div>
             </div>
@@ -693,10 +728,24 @@
     function pad(n) { return (n < 10 ? '0' : '') + n; }
     var hourEl = document.getElementById('clockHour');
     var minEl = document.getElementById('clockMin');
+    var clockLed = document.getElementById('clockLed');
+    var page = document.getElementById('clockPage');
+    var back = document.getElementById('clockBack');
+    function openClock() { page.hidden = false; back.focus(); }
+    clockLed.addEventListener('click', openClock);
+    clockLed.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(); }
+    });
+    back.addEventListener('click', function () { page.hidden = true; clockLed.focus(); });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !page.hidden) { page.hidden = true; clockLed.focus(); }
+    });
     function tick() {
       var d = new Date();
       hourEl.textContent = pad(d.getHours());
       minEl.textContent = pad(d.getMinutes());
+      document.getElementById('clockPageTime').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      document.getElementById('clockPageDate').textContent = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
       setTimeout(tick, 1000 - (Date.now() % 1000) + 10);
     }
     tick();

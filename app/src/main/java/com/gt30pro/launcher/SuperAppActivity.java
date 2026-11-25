@@ -1,6 +1,7 @@
 package com.gt30pro.launcher;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 public class SuperAppActivity extends Activity {
 
     private static final String[][] MODULES = {
+            {"⏱️", "Jam", "Waktu & tanggal"},
             {"💳", "Pembayaran", "Tagihan, top-up & transfer"},
             {"🛍️", "Belanja", "Marketplace & retail"},
             {"🎮", "Games", "Game center & rewards"},
@@ -99,7 +101,8 @@ public class SuperAppActivity extends Activity {
         TextView titleView = new TextView(this);
         titleView.setText(title);
         titleView.setTextSize(15);
-        titleView.setTypeface(Typeface.DEFAULT_BOLD);
+        titleView.setTypeface("Jam".equals(title)
+                ? Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf") : Typeface.DEFAULT_BOLD);
         titleView.setTextColor(getResources().getColor(R.color.text_primary));
         texts.addView(titleView);
 
@@ -113,8 +116,13 @@ public class SuperAppActivity extends Activity {
         texts.addView(subtitleView, subtitleParams);
 
         card.addView(texts, textsParams);
-        card.setOnClickListener(v ->
-                Toast.makeText(this, getString(R.string.coming_soon, title), Toast.LENGTH_SHORT).show());
+        card.setOnClickListener(v -> {
+            if ("Jam".equals(title)) {
+                startActivity(new Intent(this, ClockActivity.class));
+            } else {
+                Toast.makeText(this, getString(R.string.coming_soon, title), Toast.LENGTH_SHORT).show();
+            }
+        });
         return card;
     }
 
