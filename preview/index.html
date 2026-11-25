@@ -139,6 +139,16 @@
   }
   .amber-glow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   .amber-glow.off { display: none; }
+  .path-draw { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 12; touch-action: none; cursor: crosshair; }
+  .path-draw[hidden] { display: none; }
+  .path-editor { max-width: 430px; width: 100%; display: grid; gap: 10px; padding: 14px; border: 1px solid rgba(247,162,59,.3); border-radius: 14px; background: rgba(20,22,26,.92); font: 600 12px/1.5 'Doto', monospace; }
+  .path-editor h2 { color: #ffc477; font-size: 15px; }
+  .path-editor p { color: #c3cad4; }
+  .path-editor-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+  .path-editor button { font: 700 12px 'Doto', monospace; color: #f5e1c4; background: #34302b; border: 1px solid #856a48; border-radius: 8px; padding: 9px 11px; cursor: pointer; }
+  .path-editor button.primary { background: #f7a23b; color: #17120a; border-color: #f7a23b; }
+  .path-editor button:disabled { opacity: .45; cursor: not-allowed; }
+  .path-editor-status { min-height: 1.5em; color: #ffc477; }
   @media (prefers-reduced-motion: reduce) { .amber-glow { display: none; } }
   @font-face {
     font-family: 'Doto';
@@ -382,6 +392,7 @@
             <div class="screen">
               <div class="wallpaper" id="wallpaper"></div>
               <canvas class="amber-glow" id="amberGlow" aria-hidden="true"></canvas>
+              <canvas class="path-draw" id="pathDraw" aria-label="Area menggambar jalur animasi" hidden></canvas>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>
                 <span class="clock-sep"></span>
@@ -463,6 +474,18 @@
     <div class="animation-status" id="amberStatus" role="status">Memuat animasi…</div>
     <label class="charging-toggle"><input type="checkbox" id="chargeToggle" checked> Simulasi pengisian daya</label>
 
+    <section class="path-editor" aria-label="Gambar jalur animasi">
+      <h2>Gambar jalur animasi</h2>
+      <p>Tekan Gambar, lalu tarik jari atau mouse di atas wallpaper. Lepaskan untuk membuat satu jalur; ulangi untuk jalur lain. Tekan Selesai untuk melihat hasilnya.</p>
+      <div class="path-editor-actions">
+        <button class="primary" id="pathEdit" type="button" disabled>Gambar jalur</button>
+        <button id="pathUndo" type="button" disabled>Urungkan</button>
+        <button id="pathReset" type="button" disabled>Pulihkan bawaan</button>
+        <button id="pathExport" type="button" disabled>Unduh jalur</button>
+      </div>
+      <p id="pathStatus" class="path-editor-status" role="status">Memuat editor…</p>
+      <p>Jalur buatan menggantikan jalur bawaan di preview dan tersimpan di browser ini. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, unduh berkas lalu kirim ke chat.</p>
+    </section>
   </div>
 
 <script>
@@ -628,6 +651,7 @@
     }, 50);
   })();
 </script>
+<script src="circuit-editor.js?v=1"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
   (function () {
@@ -655,13 +679,18 @@
       if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
     }), imageReady]).then(function (result) {
       var cfg = result[0];
-      var paths = cfg.paths.map(function (path) {
+      function preparePaths(items) { return items.map(function (path) {
         var lengths = [], total = 0;
         for (var i = 1; i < path.points.length; i++) {
           var a = path.points[i-1], b = path.points[i];
           var length = Math.hypot(b[0]-a[0], b[1]-a[1]); lengths.push(length); total += length;
         }
         return { offset: path.offset, points: path.points, lengths: lengths, total: total };
+      }); }
+      var paths = preparePaths(cfg.paths), mask = image;
+      if (window.setupCircuitEditor) window.setupCircuitEditor(cfg, function (custom, customMask) {
+        paths = preparePaths(custom || cfg.paths);
+        mask = customMask || image;
       });
       var ctx = canvas.getContext('2d');
       if (!ctx) { status.textContent = 'Canvas tidak didukung browser ini.'; return; }
@@ -706,7 +735,7 @@
           ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(pos[0],pos[1],cfg.radius,0,Math.PI*2); ctx.fill();
         });
         ctx.globalCompositeOperation = 'source-in';
-        ctx.drawImage(image,0,0,cfg.width,cfg.height);
+        ctx.drawImage(mask,0,0,cfg.width,cfg.height);
         ctx.restore();
       }
       window.requestAnimationFrame(frame);
