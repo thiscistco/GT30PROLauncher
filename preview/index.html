@@ -137,6 +137,15 @@
     transition: transform .12s ease-out, filter .12s ease-out;
     will-change: transform, filter;
   }
+  .amber-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background: url('assets/wallpaper-amber-glow.png?v=1') center/cover no-repeat;
+    opacity: 0;
+    animation: amberGlow 3s ease-in-out infinite alternate;
+  }
+  .amber-glow.off { animation: none; opacity: 0; }
+  @keyframes amberGlow { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .amber-glow { animation: none; opacity: 0; } }
   @font-face {
     font-family: 'Doto';
     src: url('assets/fonts/Doto.ttf?v=1') format('truetype');
@@ -377,6 +386,7 @@
             <div class="side-btn power"></div>
             <div class="screen">
               <div class="wallpaper" id="wallpaper"></div>
+              <div class="amber-glow" id="amberGlow" aria-hidden="true"></div>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>
                 <span class="clock-sep"></span>
@@ -454,6 +464,7 @@
 
     </div>
 
+    <label class="charging-toggle"><input type="checkbox" id="amberToggle" checked> Animasi cahaya jingga</label>
     <label class="charging-toggle"><input type="checkbox" id="chargeToggle" checked> Simulasi pengisian daya</label>
 
   </div>
@@ -462,6 +473,9 @@
   // ===== Jam HH:mm live + animasi label saat charge (pratinjau) =====
   (function () {
     var sep = document.querySelector('.clock-sep');
+    var amberGlow = document.getElementById('amberGlow');
+    var amberToggle = document.getElementById('amberToggle');
+    amberToggle.addEventListener('change', function () { amberGlow.classList.toggle('off', !amberToggle.checked); });
     var toggle = document.getElementById('chargeToggle');
     function sync() {
       sep.classList.toggle('charging', toggle.checked);

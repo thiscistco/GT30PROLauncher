@@ -15,7 +15,7 @@ class Element {
   focus() {}
   getBoundingClientRect() { return { right: 445, width: 445 }; }
 }
-const ids = ['chargeToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
+const ids = ['chargeToggle','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
   'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements.clockPage.hidden = true; elements.superPage.hidden = true;

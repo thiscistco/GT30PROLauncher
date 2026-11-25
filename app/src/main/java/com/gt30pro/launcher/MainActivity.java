@@ -45,7 +45,12 @@ public class MainActivity extends Activity {
     private TextView clockHourText;
     private TextView clockMinText;
     private ValueAnimator chargeAnim;
+    private ImageView amberGlow;
+    private ValueAnimator amberAnim;
     private boolean charging = false;
+    private final BroadcastReceiver powerSaveReceiver = new BroadcastReceiver() {
+        @Override public void onReceive(Context context, Intent intent) { updateAmberGlow(); }
+    };
 
     // Gradien simetris memberi pusat keemasan dan tepi jingga kemerahan.
     private static final int[] AMBER_LED = {
@@ -101,6 +106,9 @@ public class MainActivity extends Activity {
 
         ImageView wallpaper = findViewById(R.id.wallpaper);
         wallpaper.setImageBitmap(Wallpapers.load(this));
+        amberGlow = findViewById(R.id.amber_glow);
+        amberGlow.setImageBitmap(Wallpapers.loadAmberGlow(this));
+        amberGlow.setAlpha(0f);
 
         // Label indikator baterai (font Doto, putih, kecil, agak transparan) di portal USB Type-C
         batteryLed = new TextView(this);
@@ -236,6 +244,8 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        registerReceiver(powerSaveReceiver, new IntentFilter(android.os.PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
+        updateAmberGlow();
         clockHandler.removeCallbacks(clockTick);
         clockHandler.post(clockTick);
     }
@@ -244,11 +254,39 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         unregisterReceiver(batteryReceiver);
+        unregisterReceiver(powerSaveReceiver);
+        stopAmberGlow();
         clockHandler.removeCallbacks(clockTick);
         if (chargeAnim != null) {
             chargeAnim.cancel();
             chargeAnim = null;
         }
+    }
+
+    private boolean isAmberGlowEnabled() {
+        return getSharedPreferences("launcher_effects", MODE_PRIVATE).getBoolean("amber_glow", true);
+    }
+
+    private void stopAmberGlow() {
+        if (amberAnim != null) { amberAnim.cancel(); amberAnim = null; }
+        if (amberGlow != null) amberGlow.setAlpha(0f);
+    }
+
+    private void updateAmberGlow() {
+        android.os.PowerManager power = (android.os.PowerManager) getSystemService(POWER_SERVICE);
+        if (amberGlow == null || amberGlow.getDrawable() == null || !isAmberGlowEnabled()
+                || (power != null && power.isPowerSaveMode()) || !ValueAnimator.areAnimatorsEnabled()) {
+            stopAmberGlow();
+            return;
+        }
+        if (amberAnim != null) return;
+        amberAnim = ValueAnimator.ofFloat(0f, 1f);
+        amberAnim.setDuration(3000);
+        amberAnim.setRepeatMode(ValueAnimator.REVERSE);
+        amberAnim.setRepeatCount(ValueAnimator.INFINITE);
+        amberAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+        amberAnim.addUpdateListener(a -> amberGlow.setAlpha((float) a.getAnimatedValue()));
+        amberAnim.start();
     }
 
     /** Denyut glow HANYA pada garis pemisah jam saat perangkat sedang di-charge. */
@@ -285,6 +323,7 @@ public class MainActivity extends Activity {
                 getString(R.string.menu_super_app),
                 getString(R.string.menu_all_apps),
                 getString(R.string.menu_settings),
+                getString(isAmberGlowEnabled() ? R.string.menu_amber_off : R.string.menu_amber_on),
         };
         new AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
@@ -293,12 +332,16 @@ public class MainActivity extends Activity {
                         openSuperApp();
                     } else if (which == 1) {
                         openDrawer();
-                    } else {
+                    } else if (which == 2) {
                         try {
                             startActivity(new Intent(Settings.ACTION_SETTINGS));
                         } catch (Exception e) {
                             Toast.makeText(this, R.string.app_not_found, Toast.LENGTH_SHORT).show();
                         }
+                    } else if (which == 3) {
+                        getSharedPreferences("launcher_effects", MODE_PRIVATE).edit()
+                                .putBoolean("amber_glow", !isAmberGlowEnabled()).apply();
+                        updateAmberGlow();
                     }
                 })
                 .show();

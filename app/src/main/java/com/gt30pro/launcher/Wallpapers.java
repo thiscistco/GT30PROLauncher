@@ -14,10 +14,20 @@ public final class Wallpapers {
     }
 
     public static Bitmap load(Context context) {
+        return loadAsset(context, ASSET_NAME);
+    }
+
+    public static Bitmap loadAmberGlow(Context context) {
+        return loadAsset(context, "wallpaper_amber_glow.png");
+    }
+
+    private static Bitmap loadAsset(Context context, String assetName) {
         try {
             BitmapFactory.Options bounds = new BitmapFactory.Options();
             bounds.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(context.getAssets().open(ASSET_NAME), null, bounds);
+            try (java.io.InputStream stream = context.getAssets().open(assetName)) {
+                BitmapFactory.decodeStream(stream, null, bounds);
+            }
 
             DisplayMetrics dm = context.getResources().getDisplayMetrics();
             int sample = 1;
@@ -28,7 +38,9 @@ public final class Wallpapers {
 
             BitmapFactory.Options opts = new BitmapFactory.Options();
             opts.inSampleSize = sample;
-            return BitmapFactory.decodeStream(context.getAssets().open(ASSET_NAME), null, opts);
+            try (java.io.InputStream stream = context.getAssets().open(assetName)) {
+                return BitmapFactory.decodeStream(stream, null, opts);
+            }
         } catch (Exception e) {
             return null;
         }
