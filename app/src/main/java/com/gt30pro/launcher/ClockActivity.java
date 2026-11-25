@@ -1,6 +1,5 @@
 package com.gt30pro.launcher;
 
-import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -16,7 +15,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /** Modul jam lokal Super App. Waktu mengikuti zona waktu perangkat. */
-public class ClockActivity extends Activity {
+public class ClockActivity extends SwipeBackActivity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private TextView timeView;
     private TextView dateView;

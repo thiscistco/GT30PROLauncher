@@ -182,6 +182,7 @@
     background: #000;
     font-family: 'Doto', monospace; font-weight: 700; }
   .super-page[hidden] { display: none; }
+  .super-page, .clock-page { touch-action: pan-y; }
   .super-back { border: 0; background: none; color: #9aa3b0; font: inherit; font-size: 3mm; min-height: 12mm; cursor: pointer; }
   .super-page h2 { margin-top: 2mm; font-size: 6.5mm; color: #eceff4; }
   .super-page p { margin-top: 1mm; font-size: 2.8mm; color: #9aa3b0; }
@@ -443,10 +444,42 @@
     clockLed.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(clockLed); }
     });
-    back.addEventListener('click', function () { page.hidden = true; clockOrigin.focus(); });
+    function goBack() {
+      if (!page.hidden) { page.hidden = true; clockOrigin.focus(); return; }
+      if (!superPage.hidden) { setTab(false); homeTab.focus(); }
+    }
+    back.addEventListener('click', goBack);
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && !page.hidden) { page.hidden = true; clockOrigin.focus(); }
+      if (event.key === 'Escape') goBack();
     });
+
+    // Simulasi swipe tepi kanan pada layar preview (juga bisa dengan mouse).
+    var screen = document.querySelector('.screen');
+    var swipe = null;
+    var suppressClick = false;
+    screen.addEventListener('pointerdown', function (event) {
+      if (event.isPrimary === false) { swipe = null; return; }
+      if (event.button !== 0 || (page.hidden && superPage.hidden)) return;
+      var rect = screen.getBoundingClientRect();
+      if (event.clientX >= rect.right - rect.width * (32 / 445)) {
+        swipe = { id: event.pointerId, x: event.clientX, y: event.clientY, width: rect.width };
+      }
+    });
+    document.addEventListener('pointerup', function (event) {
+      if (!swipe || event.pointerId !== swipe.id) return;
+      var dx = swipe.x - event.clientX;
+      var dy = Math.abs(event.clientY - swipe.y);
+      if (dx >= swipe.width * (64 / 445) && dx > dy * 1.5) {
+        suppressClick = true;
+        goBack();
+        setTimeout(function () { suppressClick = false; }, 0);
+      }
+      swipe = null;
+    });
+    document.addEventListener('pointercancel', function () { swipe = null; });
+    screen.addEventListener('click', function (event) {
+      if (suppressClick) { event.preventDefault(); event.stopPropagation(); suppressClick = false; }
+    }, true);
     function tick() {
       var d = new Date();
       hourEl.textContent = pad(d.getHours());

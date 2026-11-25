@@ -1,6 +1,5 @@
 package com.gt30pro.launcher;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -12,7 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /** Pusat aplikasi yang dibuat di dalam launcher. */
-public class SuperAppActivity extends Activity {
+public class SuperAppActivity extends SwipeBackActivity {
 
     private static final String[][] MODULES = {
             {"⏱️", "Jam", "Waktu & tanggal"},
