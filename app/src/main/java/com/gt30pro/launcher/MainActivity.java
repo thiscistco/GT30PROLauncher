@@ -16,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.Typeface;
@@ -39,7 +40,9 @@ public class MainActivity extends Activity {
 
     private GestureDetector detector;
     private TextView batteryLed;
-    private TextView clockLed;
+    private View clockLed;
+    private TextView clockHourText;
+    private TextView clockMinText;
     private ValueAnimator chargeAnim;
     private boolean charging = false;
 
@@ -47,8 +50,10 @@ public class MainActivity extends Activity {
     private final Runnable clockTick = new Runnable() {
         @Override
         public void run() {
-            if (clockLed != null) {
-                clockLed.setText(new SimpleDateFormat("HH:mm", Locale.US).format(new Date()));
+            if (clockHourText != null && clockMinText != null) {
+                String t = new SimpleDateFormat("HH:mm", Locale.US).format(new Date());
+                clockHourText.setText(t.substring(0, 2));
+                clockMinText.setText(t.substring(3, 5));
             }
             clockHandler.postDelayed(this, 1000);
         }
@@ -94,23 +99,49 @@ public class MainActivity extends Activity {
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
         ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
 
-        // Jam digital HH:mm (font Doto, putih, agak transparan) di atas label baterai
-        clockLed = new TextView(this);
-        clockLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
-        clockLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
-        clockLed.setTextColor(0xFFFFFFFF);
+        // Jam digital 3 baris: jam / garis / menit (font Doto, putih, agak transparan)
+        LinearLayout clockBox = new LinearLayout(this);
+        clockBox.setOrientation(LinearLayout.VERTICAL);
+        clockBox.setGravity(Gravity.CENTER_HORIZONTAL);
+        clockHourText = new TextView(this);
+        clockHourText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
+        clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
+        clockHourText.setTextColor(0xFFFFFFFF);
+        clockHourText.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+        clockHourText.setLetterSpacing(0.06f);
+        clockHourText.setFontVariationSettings("'wght' 700");
+        clockHourText.setText("00");
+        clockBox.addView(clockHourText);
+
+        float density = getResources().getDisplayMetrics().density;
+        View clockSep = new View(this);
+        LinearLayout.LayoutParams sepParams = new LinearLayout.LayoutParams(
+                (int) (9 * density), Math.max(1, (int) (1.2f * density)));
+        sepParams.topMargin = (int) (1.5f * density);
+        sepParams.bottomMargin = (int) (1.5f * density);
+        clockSep.setLayoutParams(sepParams);
+        clockSep.setBackgroundColor(0xFFFFFFFF);
+        clockBox.addView(clockSep);
+
+        clockMinText = new TextView(this);
+        clockMinText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
+        clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
+        clockMinText.setTextColor(0xFFFFFFFF);
+        clockMinText.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+        clockMinText.setLetterSpacing(0.06f);
+        clockMinText.setFontVariationSettings("'wght' 700");
+        clockMinText.setText("00");
+        clockBox.addView(clockMinText);
+
+        clockLed = clockBox;
         clockLed.setAlpha(0.6f);
-        clockLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
-        clockLed.setLetterSpacing(0.06f);
-        clockLed.setFontVariationSettings("'wght' 700");
-        clockLed.setText("00:00");
         FrameLayout.LayoutParams clockParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.28f);
-        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.055f);
-        ((FrameLayout) findViewById(R.id.root)).addView(clockLed, clockParams);
+        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.08f);
+        ((FrameLayout) findViewById(R.id.root)).addView(clockBox, clockParams);
 
         View root = findViewById(R.id.root);
         detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {

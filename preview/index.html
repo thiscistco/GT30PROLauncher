@@ -200,7 +200,7 @@
     position: absolute;
     left: 36%;
     transform: translateX(-50%);
-    bottom: 5.5%;
+    bottom: 8%;
     font-family: 'Doto', monospace;
     font-size: 1.8mm;
     font-weight: 700;
@@ -210,6 +210,18 @@
     opacity: 0.6;
     text-shadow: 0 0 1.2mm rgba(255, 255, 255, 0.55);
     z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.15;
+  }
+  .clock-sep {
+    display: block;
+    width: 1.6mm;
+    height: 0.22mm;
+    background: #ffffff;
+    box-shadow: 0 0 0.8mm rgba(255, 255, 255, 0.55);
+    margin: 0.45mm 0;
   }
   .clock-led.charging,
   .battery-led.charging {
@@ -484,7 +496,11 @@
             <div class="side-btn power"></div>
             <div class="screen">
               <div class="wallpaper" id="wallpaper"></div>
-              <div class="clock-led" id="clockLed">00:00</div>
+              <div class="clock-led" id="clockLed">
+                <span id="clockHour">00</span>
+                <span class="clock-sep"></span>
+                <span id="clockMin">00</span>
+              </div>
               <div class="battery-led" id="batteryLed">85%</div>
               <div class="punch-hole"></div>
               <div class="sheen"></div>
@@ -670,9 +686,12 @@
     toggle.addEventListener('change', sync);
     sync();
     function pad(n) { return (n < 10 ? '0' : '') + n; }
+    var hourEl = document.getElementById('clockHour');
+    var minEl = document.getElementById('clockMin');
     function tick() {
       var d = new Date();
-      clock.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+      hourEl.textContent = pad(d.getHours());
+      minEl.textContent = pad(d.getMinutes());
       setTimeout(tick, 1000 - (Date.now() % 1000) + 10);
     }
     tick();
