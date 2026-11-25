@@ -12,24 +12,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/**
- * Pusat Super App: grid modul layanan. Versi 0.1 — modul masih placeholder
- * (segera hadir) sampai konsep layanan final disepakati.
- */
+/** Pusat aplikasi yang dibuat di dalam launcher. */
 public class SuperAppActivity extends Activity {
 
     private static final String[][] MODULES = {
             {"⏱️", "Jam", "Waktu & tanggal"},
-            {"💳", "Pembayaran", "Tagihan, top-up & transfer"},
-            {"🛍️", "Belanja", "Marketplace & retail"},
-            {"🎮", "Games", "Game center & rewards"},
-            {"🎵", "Musik", "Streaming & pemutar musik"},
-            {"🎬", "Video", "Film, series & streaming"},
-            {"🚗", "Travel", "Tiket, hotel & transport"},
-            {"🍔", "Kuliner", "Pesan antar makanan"},
-            {"🧰", "Utilitas", "Tools harian & bersih-bersih"},
-            {"💬", "Chat", "Pesan & komunikasi"},
-            {"📰", "Berita", "Informasi terkini"},
     };
 
     @Override
@@ -50,6 +37,10 @@ public class SuperAppActivity extends Activity {
             return insets;
         });
 
+        Typeface doto = Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf");
+        ((TextView) findViewById(R.id.back)).setTypeface(doto);
+        ((TextView) findViewById(R.id.super_title)).setTypeface(doto);
+        ((TextView) findViewById(R.id.super_subtitle)).setTypeface(doto);
         findViewById(R.id.back).setOnClickListener(v -> finish());
 
         LinearLayout container = findViewById(R.id.modules_container);
@@ -108,6 +99,7 @@ public class SuperAppActivity extends Activity {
 
         TextView subtitleView = new TextView(this);
         subtitleView.setText(subtitle);
+        subtitleView.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         subtitleView.setTextSize(11);
         subtitleView.setTextColor(getResources().getColor(R.color.text_secondary));
         LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(

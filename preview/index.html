@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>GT30 PRO Launcher — Device Preview (1:1 Real Size)</title>
+<title>GT30 PRO Launcher — Preview</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { min-height: 100%; }
@@ -44,7 +44,8 @@
     gap: 18px;
   }
 
-  header { text-align: center; }
+  header { text-align: center; font-family: 'Doto', monospace; }
+  .mode-toggle button { font-family: 'Doto', monospace; }
   .kicker {
     font-size: 11px;
     letter-spacing: 2.6px;
@@ -100,46 +101,6 @@
     align-items: center;
     gap: 10px;
     transition: transform .25s ease;
-  }
-
-  /* Wrapper dimensi vertikal */
-  .phone-row { display: flex; align-items: stretch; gap: 8px; }
-
-  .dim-v {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-size: 10.5px;
-    letter-spacing: 0.6px;
-    color: #f7a23b;
-    font-weight: 600;
-  }
-  .dim-v::before, .dim-v::after {
-    content: "";
-    flex: 1;
-    width: 0.25mm;
-    background: linear-gradient(rgba(247,162,59,0), rgba(247,162,59,0.8), rgba(247,162,59,0));
-    min-height: 14mm;
-  }
-
-  .dim-h {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 10.5px;
-    letter-spacing: 0.6px;
-    color: #f7a23b;
-    font-weight: 600;
-  }
-  .dim-h::before, .dim-h::after {
-    content: "";
-    flex: 1;
-    height: 0.25mm;
-    min-width: 10mm;
-    background: linear-gradient(90deg, rgba(247,162,59,0), rgba(247,162,59,0.8), rgba(247,162,59,0));
   }
 
   /* ===== Bodi ponsel — ukuran asli 75,8 × 163,7 mm ===== */
@@ -214,6 +175,22 @@
     align-items: center;
     line-height: 1.15;
   }
+  .phone-row { display: flex; align-items: stretch; }
+  .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }
+  .charging-toggle input { accent-color: #f7a23b; }
+  .super-page { position: absolute; inset: 0; z-index: 9; padding: 8mm 5mm;
+    background: linear-gradient(rgba(10,12,15,.70), rgba(10,12,15,.70)), url('assets/gt30pro-internals.jpg?v=29') center/cover;
+    font-family: 'Doto', monospace; font-weight: 700; }
+  .super-page[hidden] { display: none; }
+  .super-back { border: 0; background: none; color: #9aa3b0; font: inherit; font-size: 3mm; min-height: 12mm; cursor: pointer; }
+  .super-page h2 { margin-top: 2mm; font-size: 6.5mm; color: #eceff4; }
+  .super-page p { margin-top: 1mm; font-size: 2.8mm; color: #9aa3b0; }
+  .super-card { width: 100%; display: flex; align-items: center; gap: 3mm; margin-top: 5mm; padding: 3.5mm;
+    border: 1px solid rgba(255,255,255,.1); border-radius: 5mm; background: #1c2128; color: #eceff4; text-align: left; font: inherit; cursor: pointer; }
+  .super-icon { display: grid; place-items: center; width: 12mm; height: 12mm; border-radius: 4mm; background: rgba(247,162,59,.15); font-size: 5.5mm; }
+  .super-card-text { display: grid; gap: 1mm; }
+  .super-card-text strong { font-size: 3.5mm; }
+  .super-card-text small { color: #9aa3b0; font-size: 2.6mm; }
   .clock-led { cursor: pointer; }
   .clock-led::before {
     content: "";
@@ -319,9 +296,6 @@
   .vol-down { top: 39.5mm; height: 11mm; }
   .power    { top: 58.5mm; height: 13.5mm; width: 2.05mm; }
 
-  .caption { font-size: 11.5px; color: #9aa3b0; letter-spacing: 0.4px; text-align: center; }
-  .caption b { color: #d7dde6; font-weight: 600; }
-
   /* ===== Penggaris 10 cm (nyata) ===== */
   .ruler-box {
     display: flex;
@@ -359,145 +333,6 @@
   .ruler-labels span { width: 10mm; text-align: left; transform: translateX(-2px); }
   .ruler-labels span:last-child { transform: translateX(-100%); text-align: right; }
 
-  /* ===== Panel atur sketsa ===== */
-  .adjust-fab {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    z-index: 30;
-    border: 1px solid rgba(247, 162, 59, 0.4);
-    background: rgba(247, 162, 59, 0.16);
-    color: #f7a23b;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    padding: 11px 16px;
-    border-radius: 999px;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .adjust-panel {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    z-index: 31;
-    width: min(300px, 92vw);
-    background: rgba(18, 21, 26, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 18px;
-    padding: 16px 18px 14px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
-    display: none;
-  }
-  .adjust-panel.open { display: block; }
-  .adjust-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    color: #f0f3f7;
-    margin-bottom: 10px;
-  }
-  .adjust-head button {
-    border: 0;
-    background: rgba(255, 255, 255, 0.08);
-    color: #aab2be;
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 11px;
-  }
-  .adjust-body label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10.5px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: #8b93a1;
-    margin: 10px 0 4px;
-    font-weight: 600;
-  }
-  .adjust-body label span { color: #f7a23b; }
-  .adjust-body input[type="range"] {
-    width: 100%;
-    accent-color: #f7a23b;
-    height: 22px;
-  }
-  .presets {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 12px;
-  }
-  .presets button {
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.06);
-    color: #c3cad4;
-    font-size: 10.5px;
-    font-weight: 600;
-    padding: 7px 11px;
-    border-radius: 999px;
-    cursor: pointer;
-  }
-  .presets button:hover { border-color: rgba(247, 162, 59, 0.6); color: #f7a23b; }
-  .adjust-hint {
-    margin-top: 10px;
-    font-size: 10px;
-    color: #7c8492;
-    line-height: 1.5;
-  }
-
-  /* ===== Legenda ===== */
-  .legend {
-    width: min(330px, 92vw);
-    background: rgba(255, 255, 255, 0.055);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 18px;
-    padding: 22px 22px 18px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-  .legend h2 { font-size: 14px; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 12px; }
-  .legend ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .legend li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    font-size: 12.5px;
-    line-height: 1.5;
-    color: #c3cad4;
-  }
-  .legend .ico {
-    flex: 0 0 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    background: rgba(247, 162, 59, 0.14);
-    border: 1px solid rgba(247, 162, 59, 0.32);
-    border-radius: 7px;
-  }
-  .legend b { color: #f0f3f7; font-weight: 600; }
-
-  .footer-note {
-    font-size: 11px;
-    color: #7c8492;
-    text-align: center;
-    line-height: 1.65;
-    max-width: 560px;
-  }
-  .dot-sep { color: #f7a23b; }
-
-  @media (max-width: 760px) {
-    .legend { order: 2; }
-  }
 </style>
 </head>
 <body>
@@ -506,22 +341,17 @@
 
   <div class="wrap">
     <header>
-      <div class="kicker">GT30 PRO Launcher · Device Preview</div>
-      <h1>Infinix GT 30 Pro — Dimensi Nyata 1:1</h1>
-      <div class="sub">Digambar dalam satuan milimeter sesungguhnya: bodi tepat <b>75,8 × 163,7 mm</b>,
-        bezel ± 2,5 mm, punch-hole 3,9 mm di tengah atas. Ukur dengan penggaris asli untuk memverifikasi.</div>
-      <div style="margin-top: 12px;">
-        <div class="mode-toggle" role="group" aria-label="Mode ukuran">
-          <button id="btn-real" class="active" type="button">Ukuran nyata 1:1</button>
-          <button id="btn-fit" type="button">Sesuaikan layar</button>
-        </div>
+      <div class="kicker">GT30 PRO LAUNCHER</div>
+      <h1>Preview Launcher</h1>
+      <div class="mode-toggle" role="group" aria-label="Pilih tampilan preview" style="margin-top: 14px">
+        <button id="tabHome" class="active" type="button" aria-pressed="true">Homescreen</button>
+        <button id="tabSuper" type="button" aria-pressed="false">Super App</button>
       </div>
     </header>
 
     <div class="stage">
       <div class="phone-col" id="phone-col">
         <div class="phone-row">
-          <div class="dim-v">163,7 mm</div>
           <div class="phone">
             <div class="side-btn vol-up"></div>
             <div class="side-btn vol-down"></div>
@@ -534,6 +364,15 @@
                 <span id="clockMin">00</span>
               </div>
               <div class="battery-led" id="batteryLed">85%</div>
+              <section class="super-page" id="superPage" aria-label="Super App" hidden>
+                <button class="super-back" id="superBack" type="button">← Kembali</button>
+                <h2>SUPER APP</h2>
+                <p>Aplikasi di dalam launcher</p>
+                <button class="super-card" id="openClockModule" type="button">
+                  <span class="super-icon" aria-hidden="true">⏱️</span>
+                  <span class="super-card-text"><strong>Jam</strong><small>Waktu &amp; tanggal</small></span>
+                </button>
+              </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
                 <button class="clock-back" id="clockBack" type="button">← Kembali</button>
                 <div class="clock-kicker">SUPER APP</div>
@@ -549,8 +388,6 @@
             </div>
           </div>
         </div>
-        <div class="dim-h">75,8 mm</div>
-        <div class="caption"><b>Infinix GT 30 Pro</b> &nbsp;·&nbsp; 163,7 × 75,8 × 8,0 mm &nbsp;·&nbsp; Layar 6,78" &nbsp;·&nbsp; Dark Flare</div>
 
         <div class="ruler-box">
           <div class="ruler-title">Penggaris 10 cm · skala nyata</div>
@@ -562,158 +399,12 @@
         </div>
       </div>
 
-      <aside class="legend">
-        <h2>Detail perangkat (ukuran asli)</h2>
-        <ul>
-          <li><span class="ico">📐</span><span><b>Bodi 75,8 × 163,7 × 8,0 mm, 189 g</b> — mockup ini digambar 1:1 dalam CSS mm.</span></li>
-          <li><span class="ico">🖼️</span><span><b>Bezel 2,45 mm samping · 3,0 mm atas-bawah</b> — screen-to-body ~89,4% (dihitung dari dimensi nyata).</span></li>
-          <li><span class="ico">📷</span><span><b>Punch-hole ⌀ 3,9 mm</b> — kamera depan 13 MP, jarak 2,7 mm dari tepi atas layar, posisi tengah.</span></li>
-          <li><span class="ico">🔘</span><span><b>Tombol kanan:</b> Volume&nbsp;+ (11 mm), Volume&nbsp;− (11 mm), Power (13,5 mm) — menonjol 1,35 mm.</span></li>
-          <li><span class="ico">📱</span><span><b>Layar 6,78" AMOLED</b> 1224 × 2720 px (≈ 445 × 989 dp), 144 Hz, rasio 20:9.</span></li>
-          <li><span class="ico">✅</span><span><b>Verifikasi:</b> letakkan penggaris di layar — lebar bodi harus tepat 7,58 cm (zoom browser 100%).</span></li>
-        </ul>
-      </aside>
+
     </div>
 
-    <button class="adjust-fab" id="openAdjust">🎛️ Atur Sketsa</button>
+    <label class="charging-toggle"><input type="checkbox" id="chargeToggle" checked> Simulasi pengisian daya</label>
 
-    <div class="adjust-panel" id="adjustPanel">
-      <div class="adjust-head">
-        <span>🎛️ Atur Tampilan Sketsa</span>
-        <button id="closeAdjust" type="button">✕</button>
-      </div>
-      <div class="adjust-body">
-        <label>Zoom <span id="valZoom">1,00×</span></label>
-        <input type="range" id="sldZoom" min="100" max="220" value="100">
-        <label>Posisi horizontal <span id="valX">0%</span></label>
-        <input type="range" id="sldX" min="-25" max="25" value="0">
-        <label>Posisi vertikal <span id="valY">0%</span></label>
-        <input type="range" id="sldY" min="-25" max="25" value="0">
-        <label>Kecerahan <span id="valB">1,00×</span></label>
-        <input type="range" id="sldB" min="45" max="160" value="100">
-        <div class="presets">
-          <button data-preset="default">Pas</button>
-          <button data-preset="battery">Fokus Baterai</button>
-          <button data-preset="full">Zoom Penuh</button>
-          <button data-preset="bright">Terang</button>
-          <button data-preset="dark">Gelap</button>
-        </div>
-        <label style="margin-top:10px;cursor:pointer">
-          <input type="checkbox" id="chargeToggle" checked> ⚡ Animasi label saat di-charge
-        </label>
-        <div class="adjust-hint">Atur sesuai selera Anda, lalu beri tahu saya —
-          nilainya akan saya kunci ke versi final preview &amp; APK.</div>
-      </div>
-    </div>
-
-    <div class="footer-note">
-      Preview statis untuk diskusi desain <span class="dot-sep">·</span> belum ada kode aplikasi
-      <br>Akurasi fisik tergantung kalibrasi DPI layar &amp; zoom browser — disarankan zoom 100%.
-      Gaming triggers (pressure zones) belum digambar.
-    </div>
   </div>
-
-<script>
-  var phoneCol = document.getElementById('phone-col');
-  var btnReal = document.getElementById('btn-real');
-  var btnFit = document.getElementById('btn-fit');
-  var fitMode = false;
-
-  function applyScale() {
-    if (!fitMode) {
-      phoneCol.style.transform = 'none';
-      phoneCol.style.marginBottom = '0px';
-      return;
-    }
-    var natural = phoneCol.offsetHeight; // tinggi layout tanpa transform
-    var available = window.innerHeight - 190;
-    var k = Math.min(1, available / natural);
-    phoneCol.style.transformOrigin = 'top center';
-    phoneCol.style.transform = 'scale(' + k + ')';
-    phoneCol.style.marginBottom = (natural * (k - 1)) + 'px';
-  }
-
-  btnReal.addEventListener('click', function () {
-    fitMode = false;
-    btnReal.classList.add('active');
-    btnFit.classList.remove('active');
-    applyScale();
-  });
-  btnFit.addEventListener('click', function () {
-    fitMode = true;
-    btnFit.classList.add('active');
-    btnReal.classList.remove('active');
-    applyScale();
-  });
-  window.addEventListener('resize', applyScale);
-</script>
-
-<script>
-  // ===== Panel atur tampilan sketsa =====
-  (function () {
-    var wp = document.getElementById('wallpaper');
-    var panel = document.getElementById('adjustPanel');
-    var fab = document.getElementById('openAdjust');
-    var sld = {
-      zoom: document.getElementById('sldZoom'),
-      x: document.getElementById('sldX'),
-      y: document.getElementById('sldY'),
-      b: document.getElementById('sldB')
-    };
-    var val = {
-      zoom: document.getElementById('valZoom'),
-      x: document.getElementById('valX'),
-      y: document.getElementById('valY'),
-      b: document.getElementById('valB')
-    };
-
-    function fmt(n) { return (Math.round(n * 100) / 100).toFixed(2).replace('.', ','); }
-
-    function apply() {
-      var z = sld.zoom.value / 100;
-      var x = +sld.x.value;
-      var y = +sld.y.value;
-      var b = sld.b.value / 100;
-      wp.style.transform = 'translate(' + x + '%,' + y + '%) scale(' + z + ')';
-      wp.style.filter = 'brightness(' + b + ')';
-      val.zoom.textContent = fmt(z) + '×';
-      val.x.textContent = x + '%';
-      val.y.textContent = y + '%';
-      val.b.textContent = fmt(b) + '×';
-    }
-
-    Object.keys(sld).forEach(function (k) {
-      sld[k].addEventListener('input', apply);
-    });
-
-    var presets = {
-      default: { zoom: 100, x: 0, y: 0, b: 100 },
-      battery: { zoom: 150, x: 0, y: -14, b: 100 },
-      full: { zoom: 200, x: 0, y: 0, b: 100 },
-      bright: { zoom: 100, x: 0, y: 0, b: 130 },
-      dark: { zoom: 100, x: 0, y: 0, b: 70 }
-    };
-    document.querySelectorAll('.presets button').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var p = presets[btn.getAttribute('data-preset')];
-        if (!p) return;
-        sld.zoom.value = p.zoom; sld.x.value = p.x; sld.y.value = p.y; sld.b.value = p.b;
-        apply();
-      });
-    });
-
-    fab.addEventListener('click', function () {
-      panel.classList.add('open');
-      fab.style.display = 'none';
-    });
-    document.getElementById('closeAdjust').addEventListener('click', function () {
-      panel.classList.remove('open');
-      fab.style.display = '';
-    });
-
-    apply();
-  })();
-</script>
 
 <script>
   // ===== Jam HH:mm live + animasi label saat charge (pratinjau) =====
@@ -731,14 +422,30 @@
     var clockLed = document.getElementById('clockLed');
     var page = document.getElementById('clockPage');
     var back = document.getElementById('clockBack');
-    function openClock() { page.hidden = false; back.focus(); }
-    clockLed.addEventListener('click', openClock);
+    var superPage = document.getElementById('superPage');
+    var homeTab = document.getElementById('tabHome');
+    var superTab = document.getElementById('tabSuper');
+    var clockOrigin = clockLed;
+    function setTab(superActive) {
+      page.hidden = true;
+      superPage.hidden = !superActive;
+      homeTab.classList.toggle('active', !superActive);
+      superTab.classList.toggle('active', superActive);
+      homeTab.setAttribute('aria-pressed', String(!superActive));
+      superTab.setAttribute('aria-pressed', String(superActive));
+    }
+    homeTab.addEventListener('click', function () { setTab(false); });
+    superTab.addEventListener('click', function () { setTab(true); });
+    document.getElementById('superBack').addEventListener('click', function () { setTab(false); homeTab.focus(); });
+    function openClock(origin) { clockOrigin = origin; page.hidden = false; back.focus(); }
+    document.getElementById('openClockModule').addEventListener('click', function () { openClock(this); });
+    clockLed.addEventListener('click', function () { openClock(clockLed); });
     clockLed.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(); }
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(clockLed); }
     });
-    back.addEventListener('click', function () { page.hidden = true; clockLed.focus(); });
+    back.addEventListener('click', function () { page.hidden = true; clockOrigin.focus(); });
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && !page.hidden) { page.hidden = true; clockLed.focus(); }
+      if (event.key === 'Escape' && !page.hidden) { page.hidden = true; clockOrigin.focus(); }
     });
     function tick() {
       var d = new Date();
