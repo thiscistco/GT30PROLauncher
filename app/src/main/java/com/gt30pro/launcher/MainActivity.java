@@ -116,7 +116,23 @@ public class MainActivity extends Activity {
         clockBox.addView(clockHourText);
 
         float density = getResources().getDisplayMetrics().density;
-        clockSep = new View(this);
+        clockSep = new View(this) {
+            private final android.graphics.Paint dotPaint =
+                    new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            {
+                dotPaint.setColor(0xFFF0A060);
+            }
+
+            @Override
+            protected void onDraw(android.graphics.Canvas canvas) {
+                float r = getHeight() / 2f;
+                float cy = getHeight() / 2f;
+                float gap = getHeight() * 2.4f;
+                for (float x = r; x <= getWidth() - r + 0.5f; x += gap) {
+                    canvas.drawCircle(x, cy, r, dotPaint);
+                }
+            }
+        };
         LinearLayout.LayoutParams sepParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, (int) (1.2f * density)));
         sepParams.topMargin = 0;
@@ -124,7 +140,6 @@ public class MainActivity extends Activity {
         sepParams.leftMargin = -1;
         sepParams.rightMargin = (int) (0.8f * density) * 2;
         clockSep.setLayoutParams(sepParams);
-        clockSep.setBackgroundColor(0xFFF0A060);
         clockBox.addView(clockSep);
 
         clockMinText = new TextView(this);

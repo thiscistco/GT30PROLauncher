@@ -221,16 +221,16 @@
     left: -0.63px;
     width: calc(100% - 0.76px);
     height: 0.22mm;
-    background: #f0a060;
-    box-shadow: 0 0 0.8mm rgba(255, 170, 95, 0.55);
+    background: radial-gradient(circle, #f0a060 0.1mm, rgba(240, 160, 96, 0) 0.11mm) 0 0 / 0.45mm 100% repeat-x;
+    filter: drop-shadow(0 0 0.4mm rgba(255, 170, 95, 0.55));
     margin: calc(0.461mm - 1px) 0 calc(0.45mm + 1px) 0;
   }
   .clock-sep.charging {
     animation: sepPulse 0.9s ease-in-out infinite alternate;
   }
   @keyframes sepPulse {
-    from { opacity: 0.35; box-shadow: 0 0 0.5mm rgba(255, 170, 95, 0.35); }
-    to   { opacity: 1;    box-shadow: 0 0 1.4mm rgba(255, 170, 95, 0.9); }
+    from { opacity: 0.35; filter: drop-shadow(0 0 0.25mm rgba(255, 170, 95, 0.35)); }
+    to   { opacity: 1;    filter: drop-shadow(0 0 0.9mm rgba(255, 170, 95, 0.9)); }
   }
   .sheen {
     position: absolute;
