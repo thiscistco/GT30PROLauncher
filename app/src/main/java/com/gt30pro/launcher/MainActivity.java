@@ -19,8 +19,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.Typeface;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.TypedValue;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Homescreen minimalis — hanya wallpaper (sesuai preview), tanpa ikon/dock/widget.
@@ -34,8 +39,20 @@ public class MainActivity extends Activity {
 
     private GestureDetector detector;
     private TextView batteryLed;
+    private TextView clockLed;
     private ValueAnimator chargeAnim;
     private boolean charging = false;
+
+    private final Handler clockHandler = new Handler(Looper.getMainLooper());
+    private final Runnable clockTick = new Runnable() {
+        @Override
+        public void run() {
+            if (clockLed != null) {
+                clockLed.setText(new SimpleDateFormat("HH:mm", Locale.US).format(new Date()));
+            }
+            clockHandler.postDelayed(this, 1000);
+        }
+    };
 
     private final BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
         @Override
@@ -77,6 +94,23 @@ public class MainActivity extends Activity {
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
         ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
 
+        // Jam digital HH:mm (font Doto, putih, agak transparan) di atas label baterai
+        clockLed = new TextView(this);
+        clockLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
+        clockLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        clockLed.setTextColor(0xFFFFFFFF);
+        clockLed.setAlpha(0.6f);
+        clockLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+        clockLed.setLetterSpacing(0.06f);
+        clockLed.setFontVariationSettings("'wght' 700");
+        clockLed.setText("00:00");
+        FrameLayout.LayoutParams clockParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.048f);
+        ((FrameLayout) findViewById(R.id.root)).addView(clockLed, clockParams);
+
         View root = findViewById(R.id.root);
         detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -113,12 +147,15 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        clockHandler.removeCallbacks(clockTick);
+        clockHandler.post(clockTick);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(batteryReceiver);
+        clockHandler.removeCallbacks(clockTick);
         if (chargeAnim != null) {
             chargeAnim.cancel();
             chargeAnim = null;
@@ -133,12 +170,17 @@ public class MainActivity extends Activity {
             chargeAnim.setRepeatMode(ValueAnimator.REVERSE);
             chargeAnim.setRepeatCount(ValueAnimator.INFINITE);
             chargeAnim.setInterpolator(new AccelerateDecelerateInterpolator());
-            chargeAnim.addUpdateListener(a -> batteryLed.setAlpha((float) a.getAnimatedValue()));
+            chargeAnim.addUpdateListener(a -> {
+                float v = (float) a.getAnimatedValue();
+                batteryLed.setAlpha(v);
+                if (clockLed != null) clockLed.setAlpha(v);
+            });
             chargeAnim.start();
         } else if (!charging && chargeAnim != null) {
             chargeAnim.cancel();
             chargeAnim = null;
             batteryLed.setAlpha(0.6f);
+            if (clockLed != null) clockLed.setAlpha(0.6f);
         }
     }
 
