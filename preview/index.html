@@ -185,7 +185,7 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    bottom: 2.6%;
+    bottom: 1.2%;
     font-family: 'Doto', monospace;
     font-size: 3.4mm;
     font-weight: 700;
@@ -194,6 +194,13 @@
     color: #ffffff;
     text-shadow: 0 0 1.2mm rgba(255, 255, 255, 0.55);
     z-index: 6;
+  }
+  .battery-led.charging {
+    animation: chargePulse 0.9s ease-in-out infinite alternate;
+  }
+  @keyframes chargePulse {
+    from { opacity: 0.35; text-shadow: 0 0 0.8mm rgba(255, 255, 255, 0.35); }
+    to   { opacity: 1;    text-shadow: 0 0 1.8mm rgba(255, 255, 255, 0.8); }
   }
   .sheen {
     position: absolute;
@@ -515,6 +522,9 @@
           <button data-preset="bright">Terang</button>
           <button data-preset="dark">Gelap</button>
         </div>
+        <label style="margin-top:10px;cursor:pointer">
+          <input type="checkbox" id="chargeToggle" checked> ⚡ Animasi label saat di-charge
+        </label>
         <div class="adjust-hint">Atur sesuai selera Anda, lalu beri tahu saya —
           nilainya akan saya kunci ke versi final preview &amp; APK.</div>
       </div>
@@ -626,6 +636,17 @@
     });
 
     apply();
+  })();
+</script>
+
+<script>
+  // ===== Animasi label baterai saat charge (pratinjau) =====
+  (function () {
+    var led = document.getElementById('batteryLed');
+    var toggle = document.getElementById('chargeToggle');
+    function sync() { led.classList.toggle('charging', toggle.checked); }
+    toggle.addEventListener('change', sync);
+    sync();
   })();
 </script>
 </body>
