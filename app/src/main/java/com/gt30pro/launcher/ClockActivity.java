@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.text.SimpleDateFormat;
@@ -34,12 +33,9 @@ public class ClockActivity extends Activity {
         super.onCreate(state);
         Typeface doto = Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf");
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.rgb(10, 12, 15));
-        ImageView wallpaper = new ImageView(this);
-        wallpaper.setImageBitmap(Wallpapers.load(this));
-        wallpaper.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        wallpaper.setAlpha(0.18f);
-        root.addView(wallpaper, new FrameLayout.LayoutParams(-1, -1));
+        root.setBackgroundColor(Color.BLACK);
+        getWindow().setStatusBarColor(Color.BLACK);
+        getWindow().setNavigationBarColor(Color.BLACK);
 
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);

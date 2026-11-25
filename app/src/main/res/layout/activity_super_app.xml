@@ -3,15 +3,7 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg">
-
-    <ImageView
-        android:id="@+id/wallpaper"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0.30"
-        android:contentDescription="@string/app_name"
-        android:scaleType="centerCrop" />
+    android:background="@android:color/black">
 
     <ScrollView
         android:layout_width="match_parent"

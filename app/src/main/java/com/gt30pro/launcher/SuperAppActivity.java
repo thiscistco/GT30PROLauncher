@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,8 +23,8 @@ public class SuperAppActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_super_app);
 
-        ImageView wallpaper = findViewById(R.id.wallpaper);
-        wallpaper.setImageBitmap(Wallpapers.load(this));
+        getWindow().setStatusBarColor(android.graphics.Color.BLACK);
+        getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
 
         View root = findViewById(R.id.root);
         View content = findViewById(R.id.content);
