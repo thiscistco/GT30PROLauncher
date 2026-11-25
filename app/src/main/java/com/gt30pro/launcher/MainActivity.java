@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
         ImageView wallpaper = findViewById(R.id.wallpaper);
         wallpaper.setImageBitmap(Wallpapers.load(this));
 
-        // Label indikator baterai (font Doto, putih, kecil) di sudut kanan bawah baterai
+        // Label indikator baterai (font Doto, putih, kecil) di portal USB Type-C
         batteryLed = new TextView(this);
         batteryLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
@@ -64,9 +64,8 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams ledParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM | Gravity.RIGHT);
-        ledParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.075f);
-        ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.17f);
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.026f);
         ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
 
         View root = findViewById(R.id.root);
