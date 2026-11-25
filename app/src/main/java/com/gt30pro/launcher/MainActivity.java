@@ -15,7 +15,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Typeface;
+import android.util.TypedValue;
 
 /**
  * Homescreen minimalis — hanya wallpaper (sesuai preview), tanpa ikon/dock/widget.
@@ -28,7 +31,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
     private GestureDetector detector;
-    private DotMatrixView batteryLed;
+    private TextView batteryLed;
 
     private final BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
         @Override
@@ -49,8 +52,15 @@ public class MainActivity extends Activity {
         ImageView wallpaper = findViewById(R.id.wallpaper);
         wallpaper.setImageBitmap(Wallpapers.load(this));
 
-        // Label indikator baterai (dot-matrix putih, kecil) di sudut kanan bawah baterai
-        batteryLed = new DotMatrixView(this);
+        // Label indikator baterai (font Doto, putih, kecil) di sudut kanan bawah baterai
+        batteryLed = new TextView(this);
+        batteryLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
+        batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        batteryLed.setTextColor(0xFFFFFFFF);
+        batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+        batteryLed.setLetterSpacing(0.06f);
+        batteryLed.setFontVariationSettings("'wght' 700");
+        batteryLed.setText("85%");
         FrameLayout.LayoutParams ledParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
