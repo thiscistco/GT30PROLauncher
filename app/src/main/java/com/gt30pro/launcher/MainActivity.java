@@ -116,7 +116,7 @@ public class MainActivity extends Activity {
         float density = getResources().getDisplayMetrics().density;
         View clockSep = new View(this);
         LinearLayout.LayoutParams sepParams = new LinearLayout.LayoutParams(
-                (int) (9 * density), Math.max(1, (int) (1.2f * density)));
+                LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, (int) (1.2f * density)));
         sepParams.topMargin = (int) (1.5f * density);
         sepParams.bottomMargin = (int) (1.5f * density);
         clockSep.setLayoutParams(sepParams);
@@ -139,8 +139,8 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.28f);
-        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.06f);
+        clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.30f);
+        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.07f);
         ((FrameLayout) findViewById(R.id.root)).addView(clockBox, clockParams);
 
         View root = findViewById(R.id.root);
