@@ -74,7 +74,6 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        ledParams.leftMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.06f);
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
         ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
 
