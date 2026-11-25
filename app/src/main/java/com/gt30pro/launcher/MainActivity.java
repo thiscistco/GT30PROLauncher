@@ -107,8 +107,8 @@ public class MainActivity extends Activity {
         clockHourText = new TextView(this);
         clockHourText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
-        clockHourText.setTextColor(0xFFF0A060);
-        clockHourText.setShadowLayer(8f, 0f, 0f, 0x8CFFAA5F);
+        clockHourText.setTextColor(0xFFFFB066);
+        clockHourText.setShadowLayer(14f, 0f, 0f, 0xE6FFB973);
         clockHourText.setLetterSpacing(0.06f);
         clockHourText.setFontVariationSettings("'wght' 700");
         clockHourText.setIncludeFontPadding(false);
@@ -120,7 +120,7 @@ public class MainActivity extends Activity {
             private final android.graphics.Paint dotPaint =
                     new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
             {
-                dotPaint.setColor(0xFFF0A060);
+                dotPaint.setColor(0xFFFFB066);
             }
 
             @Override
@@ -146,8 +146,8 @@ public class MainActivity extends Activity {
         clockMinText = new TextView(this);
         clockMinText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
-        clockMinText.setTextColor(0xFFF0A060);
-        clockMinText.setShadowLayer(8f, 0f, 0f, 0x8CFFAA5F);
+        clockMinText.setTextColor(0xFFFFB066);
+        clockMinText.setShadowLayer(14f, 0f, 0f, 0xE6FFB973);
         clockMinText.setLetterSpacing(0.06f);
         clockMinText.setFontVariationSettings("'wght' 700");
         clockMinText.setIncludeFontPadding(false);
@@ -155,7 +155,7 @@ public class MainActivity extends Activity {
         clockBox.addView(clockMinText);
 
         clockLed = clockBox;
-        clockLed.setAlpha(0.6f);
+        clockLed.setAlpha(0.85f);
         FrameLayout.LayoutParams clockParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,

@@ -206,9 +206,9 @@
     font-weight: 700;
     font-variation-settings: 'wght' 700;
     letter-spacing: 0.2mm;
-    color: #f0a060;
-    opacity: 0.6;
-    text-shadow: 0 0 1.2mm rgba(255, 170, 95, 0.55);
+    color: #ffb066;
+    opacity: 0.85;
+    text-shadow: 0 0 1.6mm rgba(255, 185, 115, 0.85);
     z-index: 6;
     display: flex;
     flex-direction: column;
@@ -221,16 +221,16 @@
     left: -0.63px;
     width: calc(100% - 0.76px);
     height: 0.22mm;
-    background: radial-gradient(circle, #f0a060 0.1mm, rgba(240, 160, 96, 0) 0.11mm) 50% 50% / 20% 100% repeat-x;
-    filter: drop-shadow(0 0 0.4mm rgba(255, 170, 95, 0.55));
+    background: radial-gradient(circle, #ffb066 0.1mm, rgba(255, 176, 102, 0) 0.11mm) 50% 50% / 20% 100% repeat-x;
+    filter: drop-shadow(0 0 0.6mm rgba(255, 185, 115, 0.85));
     margin: calc(0.461mm - 1px) 0 calc(0.45mm + 1px) 0;
   }
   .clock-sep.charging {
     animation: sepPulse 0.9s ease-in-out infinite alternate;
   }
   @keyframes sepPulse {
-    from { opacity: 0.35; filter: drop-shadow(0 0 0.25mm rgba(255, 170, 95, 0.35)); }
-    to   { opacity: 1;    filter: drop-shadow(0 0 0.9mm rgba(255, 170, 95, 0.9)); }
+    from { opacity: 0.35; filter: drop-shadow(0 0 0.25mm rgba(255, 185, 115, 0.35)); }
+    to   { opacity: 1;    filter: drop-shadow(0 0 0.9mm rgba(255, 185, 115, 0.9)); }
   }
   .sheen {
     position: absolute;
