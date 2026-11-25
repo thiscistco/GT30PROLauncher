@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
         sepParams.topMargin = 0;
         sepParams.bottomMargin = (int) (3.2f * density);
         sepParams.leftMargin = -1;
-        sepParams.rightMargin = (int) (0.8f * density) * 2 + 1;
+        sepParams.rightMargin = (int) (0.8f * density) * 2;
         clockSep.setLayoutParams(sepParams);
         clockSep.setBackgroundColor(0xFFF0A060);
         clockBox.addView(clockSep);
