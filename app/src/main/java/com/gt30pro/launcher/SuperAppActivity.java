@@ -14,7 +14,7 @@ import android.widget.Toast;
 public class SuperAppActivity extends SwipeBackActivity {
 
     private static final String[][] MODULES = {
-            {"⏱️", "Jam", "Waktu & tanggal"},
+            {"⏱️", "Jam", "Alarm, dunia & lainnya"},
     };
 
     @Override

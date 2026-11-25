@@ -233,10 +233,28 @@
   .clock-back { border: 0; background: none; color: #ffc28b; font: inherit; font-size: 3mm; min-height: 12mm; cursor: pointer; }
   .clock-kicker { margin-top: 7mm; color: #e7a579; font-size: 2.6mm; }
   .clock-title { margin-top: 2mm; font-size: 7mm; }
-  .clock-card { margin-top: 7mm; padding: 8mm 3mm; text-align: center; background: rgba(27,24,25,.9); border: 1px solid rgba(231,165,121,.47); border-radius: 5mm; }
-  .clock-card-label { color: #e7a579; font-size: 2.6mm; }
-  .clock-card-time { margin-top: 4mm; font-size: 8mm; color: #ffd49d; text-shadow: 0 0 2mm rgba(221,98,52,.65); }
-  .clock-card-date { margin-top: 3mm; font-size: 2.8mm; color: #eed3bd; }
+  .clock-page { overflow-y: auto; }
+  .clock-tabs { display: flex; gap: 1.5mm; overflow-x: auto; margin-top: 5mm; scrollbar-width: none; }
+  .clock-tabs button, .clock-action { color: #ffd49d; background: #211a17; border: 1px solid #8d604c; border-radius: 3.5mm; padding: 3mm; font: 700 2.8mm 'Doto', monospace; cursor: pointer; white-space: nowrap; }
+  .clock-tabs button.active { background: #61402c; }
+  .clock-section { padding-top: 5mm; }
+  .clock-section[hidden], .alarm-form[hidden] { display: none; }
+  .clock-section h3 { font-size: 4.5mm; color: #ffd49d; margin-bottom: 4mm; }
+  .clock-action { min-height: 11mm; }
+  .clock-wide { width: 100%; }
+  .clock-muted { color: #e7a579; font-size: 2.8mm; line-height: 1.5; margin-top: 4mm; }
+  .alarm-form, .clock-entry { margin-top: 3mm; padding: 3mm; border: 1px solid #8d604c; border-radius: 3mm; background: #191717; }
+  .alarm-form label { display: block; margin: 2mm 0; font-size: 2.8mm; }
+  .alarm-form input, .alarm-form select, .timer-inputs input { color: #ffd49d; background: #191717; border: 1px solid #8d604c; border-radius: 2mm; padding: 2mm; font: 700 3mm 'Doto', monospace; }
+  .alarm-days { display: flex; flex-wrap: wrap; gap: 1mm; }
+  .alarm-days label { font-size: 2.5mm; }
+  .clock-display { font-size: 6.5mm; text-align: center; margin: 4mm 0; color: #ffd49d; }
+  .timer-inputs { display: flex; gap: 1mm; margin-bottom: 3mm; }
+  .timer-inputs input { width: 33%; min-width: 0; }
+  .clock-row { display: flex; gap: 2mm; margin-top: 2mm; }
+  .clock-row > * { flex: 1; }
+  .clock-entry { color: #ffd49d; font-size: 3mm; line-height: 1.6; }
+  .clock-city { display: flex; align-items: center; gap: 2mm; margin: 2mm 0; font-size: 2.8mm; }
   @keyframes sepPulse {
     from { opacity: 0.35; filter: drop-shadow(0 0 0.25mm rgba(221, 98, 52, 0.35)); }
     to   { opacity: 1;    filter: drop-shadow(0 0 0.9mm rgba(221, 98, 52, 0.85)); }
@@ -371,17 +389,50 @@
                 <p>Aplikasi di dalam launcher</p>
                 <button class="super-card" id="openClockModule" type="button">
                   <span class="super-icon" aria-hidden="true">⏱️</span>
-                  <span class="super-card-text"><strong>Jam</strong><small>Waktu &amp; tanggal</small></span>
+                  <span class="super-card-text"><strong>Jam</strong><small>Alarm, dunia &amp; lainnya</small></span>
                 </button>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
                 <button class="clock-back" id="clockBack" type="button">← Kembali</button>
                 <div class="clock-kicker">SUPER APP</div>
                 <div class="clock-title">JAM</div>
-                <div class="clock-card">
-                  <div class="clock-card-label">WAKTU SAAT INI</div>
-                  <div class="clock-card-time" id="clockPageTime">--:--:--</div>
-                  <div class="clock-card-date" id="clockPageDate"></div>
+                <nav class="clock-tabs" aria-label="Fitur jam">
+                  <button class="active" data-clock-tab="alarm" type="button">Alarm</button>
+                  <button data-clock-tab="world" type="button">Dunia</button>
+                  <button data-clock-tab="timer" type="button">Timer</button>
+                  <button data-clock-tab="stopwatch" type="button">Stopwatch</button>
+                </nav>
+                <div class="clock-section" data-clock-panel="alarm">
+                  <h3>ALARM</h3><button class="clock-action clock-wide" id="previewAddAlarm" type="button">+ Tambah alarm</button>
+                  <p class="clock-muted">Simulasi preview; alarm aktif di aplikasi Android.</p>
+                  <div class="alarm-form" id="previewAlarmForm" hidden>
+                    <label>Waktu <input id="previewAlarmTime" type="time" value="07:00"></label>
+                    <div class="clock-muted">Ulangi (kosong = sekali)</div>
+                    <div class="alarm-days" id="previewAlarmDays">
+                      <label><input type="checkbox" value="0"> Min</label><label><input type="checkbox" value="1"> Sen</label><label><input type="checkbox" value="2"> Sel</label><label><input type="checkbox" value="3"> Rab</label><label><input type="checkbox" value="4"> Kam</label><label><input type="checkbox" value="5"> Jum</label><label><input type="checkbox" value="6"> Sab</label>
+                    </div>
+                    <label>Nada <select id="previewSound"><option>Nada alarm</option><option>Hening</option></select></label>
+                    <label><input id="previewVibrate" type="checkbox" checked> Getar</label>
+                    <button class="clock-action clock-wide" id="previewSaveAlarm" type="button">Simpan</button>
+                  </div>
+                  <div id="previewAlarms" class="clock-muted">Belum ada alarm. Tambahkan pengingat pertama.</div>
+                </div>
+                <div class="clock-section" data-clock-panel="world" hidden>
+                  <h3>JAM DUNIA</h3><button class="clock-action clock-wide" id="previewCitiesButton" type="button">Pilih kota</button>
+                  <div class="alarm-form" id="previewCities" hidden></div><div id="previewWorld"></div>
+                </div>
+                <div class="clock-section" data-clock-panel="timer" hidden>
+                  <h3>TIMER</h3><div class="clock-display" id="previewTimerDisplay">00:00:00</div>
+                  <div class="timer-inputs"><input type="number" id="timerHours" placeholder="Jam" min="0" max="999"><input type="number" id="timerMinutes" placeholder="Menit" min="0" max="59"><input type="number" id="timerSeconds" placeholder="Detik" min="0" max="59"></div>
+                  <button class="clock-action clock-wide" id="previewTimerStart" type="button">Mulai timer</button>
+                  <div class="clock-row"><button class="clock-action" id="previewTimerCancel" type="button">Batalkan timer</button></div>
+                  <p class="clock-muted" id="previewTimerMessage">Pratinjau hanya simulasi; alarm berjalan di Android.</p>
+                </div>
+                <div class="clock-section" data-clock-panel="stopwatch" hidden>
+                  <h3>STOPWATCH</h3><div class="clock-display" id="previewStopwatchDisplay">00:00:00.000</div>
+                  <button class="clock-action clock-wide" id="previewStopwatchStart" type="button">Mulai</button>
+                  <div class="clock-row"><button class="clock-action" id="previewLap" type="button">Lap</button><button class="clock-action" id="previewReset" type="button">Reset</button></div>
+                  <div id="previewLaps"></div>
                 </div>
               </section>
               <div class="punch-hole"></div>
@@ -484,11 +535,87 @@
       var d = new Date();
       hourEl.textContent = pad(d.getHours());
       minEl.textContent = pad(d.getMinutes());
-      document.getElementById('clockPageTime').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-      document.getElementById('clockPageDate').textContent = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
       setTimeout(tick, 1000 - (Date.now() % 1000) + 10);
     }
     tick();
+  })();
+</script>
+<script>
+  // Interaksi pratinjau: tidak menjadwalkan alarm perangkat.
+  (function () {
+    function byId(id) { return document.getElementById(id); }
+    document.querySelectorAll('[data-clock-tab]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var name = button.getAttribute('data-clock-tab');
+        document.querySelectorAll('[data-clock-tab]').forEach(function (b) { b.classList.toggle('active', b === button); });
+        document.querySelectorAll('[data-clock-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-clock-panel') !== name; });
+      });
+    });
+    byId('previewAddAlarm').addEventListener('click', function () { byId('previewAlarmForm').hidden = !byId('previewAlarmForm').hidden; });
+    var alarms = [];
+    byId('previewSaveAlarm').addEventListener('click', function () {
+      var time = byId('previewAlarmTime').value;
+      if (!time) return;
+      var days = Array.from(byId('previewAlarmDays').querySelectorAll('input:checked')).map(function (x) { return ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][Number(x.value)]; });
+      alarms.push({ time: time, days: days.length ? days.join(' · ') : 'Sekali', vibrate: byId('previewVibrate').checked });
+      byId('previewAlarmForm').hidden = true;
+      renderAlarms();
+    });
+    function renderAlarms() {
+      var list = byId('previewAlarms'); list.textContent = '';
+      if (!alarms.length) { list.textContent = 'Belum ada alarm. Tambahkan pengingat pertama.'; return; }
+      alarms.forEach(function (alarm, i) {
+        var card = document.createElement('div'); card.className = 'clock-entry';
+        var text = document.createElement('div'); text.textContent = alarm.time + '  ·  ' + alarm.days + (alarm.vibrate ? '  ·  Getar' : ''); card.appendChild(text);
+        var remove = document.createElement('button'); remove.className = 'clock-action'; remove.textContent = 'Hapus';
+        remove.addEventListener('click', function () { alarms.splice(i, 1); renderAlarms(); }); card.appendChild(remove); list.appendChild(card);
+      });
+    }
+    var cities = [['Jakarta','Asia/Jakarta'],['Makassar','Asia/Makassar'],['Jayapura','Asia/Jayapura'],['Singapore','Asia/Singapore'],['Tokyo','Asia/Tokyo'],['Seoul','Asia/Seoul'],['Dubai','Asia/Dubai'],['London','Europe/London'],['Paris','Europe/Paris'],['New York','America/New_York'],['Los Angeles','America/Los_Angeles'],['Sydney','Australia/Sydney']];
+    var cityBox = byId('previewCities');
+    cities.forEach(function (city, index) {
+      var label = document.createElement('label'); label.className = 'clock-city';
+      var input = document.createElement('input'); input.type = 'checkbox'; input.checked = [0,3,4,7,9].indexOf(index) !== -1;
+      input.addEventListener('change', renderWorld); label.appendChild(input); label.appendChild(document.createTextNode(city[0])); cityBox.appendChild(label);
+    });
+    byId('previewCitiesButton').addEventListener('click', function () { cityBox.hidden = !cityBox.hidden; });
+    function renderWorld() {
+      var box = byId('previewWorld'); box.textContent = '';
+      cityBox.querySelectorAll('input').forEach(function (input, i) {
+        if (!input.checked) return;
+        var row = document.createElement('div'); row.className = 'clock-entry';
+        row.textContent = cities[i][0] + '  ·  ' + new Intl.DateTimeFormat('id-ID', { timeZone: cities[i][1], hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date());
+        box.appendChild(row);
+      });
+    }
+    renderWorld(); setInterval(renderWorld, 1000);
+    var timerEnd = 0, timerDone = false;
+    function pad(n, width) { return String(n).padStart(width || 2, '0'); }
+    function format(ms, withMillis) { var s = Math.floor(ms / 1000); return pad(Math.floor(s/3600)) + ':' + pad(Math.floor(s/60)%60) + ':' + pad(s%60) + (withMillis ? '.' + pad(Math.floor(ms%1000),3) : ''); }
+    byId('previewTimerStart').addEventListener('click', function () {
+      var h = Number(byId('timerHours').value || 0), m = Number(byId('timerMinutes').value || 0), s = Number(byId('timerSeconds').value || 0);
+      if (h < 0 || h > 999 || m < 0 || m > 59 || s < 0 || s > 59 || h+m+s === 0) { byId('previewTimerMessage').textContent = 'Masukkan durasi yang valid.'; return; }
+      timerEnd = Date.now() + (h*3600+m*60+s)*1000; timerDone = false;
+      byId('previewTimerMessage').textContent = 'Timer simulasi berjalan di preview.';
+    });
+    byId('previewTimerCancel').addEventListener('click', function () { timerEnd = 0; byId('previewTimerMessage').textContent = 'Timer dibatalkan.'; });
+    var elapsed = 0, started = 0, running = false, laps = [];
+    function current() { return elapsed + (running ? performance.now() - started : 0); }
+    byId('previewStopwatchStart').addEventListener('click', function () {
+      if (running) { elapsed = current(); running = false; } else { started = performance.now(); running = true; }
+      this.textContent = running ? 'Jeda' : 'Mulai';
+    });
+    byId('previewLap').addEventListener('click', function () {
+      if (!running) return; var value = current(), previous = laps.length ? laps[laps.length-1] : 0; laps.push(value);
+      var row = document.createElement('div'); row.className = 'clock-entry'; row.textContent = 'Lap ' + laps.length + '   ' + format(value-previous, true) + '  ·  Total ' + format(value, true); byId('previewLaps').prepend(row);
+    });
+    byId('previewReset').addEventListener('click', function () { elapsed = 0; running = false; laps = []; byId('previewLaps').textContent = ''; byId('previewStopwatchStart').textContent = 'Mulai'; });
+    setInterval(function () {
+      var remaining = timerEnd ? Math.max(0, timerEnd-Date.now()) : 0;
+      byId('previewTimerDisplay').textContent = format(Math.ceil(remaining/1000)*1000, false);
+      if (timerEnd && !remaining && !timerDone) { timerDone = true; timerEnd = 0; byId('previewTimerMessage').textContent = 'Timer selesai (simulasi).'; }
+      byId('previewStopwatchDisplay').textContent = format(current(), true);
+    }, 50);
   })();
 </script>
 </body>
