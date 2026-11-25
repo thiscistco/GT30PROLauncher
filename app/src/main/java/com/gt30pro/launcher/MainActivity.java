@@ -139,8 +139,8 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.30f);
-        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.07f);
+        clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.286f);
+        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.06f);
         ((FrameLayout) findViewById(R.id.root)).addView(clockBox, clockParams);
 
         View root = findViewById(R.id.root);
