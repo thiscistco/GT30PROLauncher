@@ -60,11 +60,12 @@ public class MainActivity extends Activity {
         ImageView wallpaper = findViewById(R.id.wallpaper);
         wallpaper.setImageBitmap(Wallpapers.load(this));
 
-        // Label indikator baterai (font Doto, putih, kecil) di portal USB Type-C
+        // Label indikator baterai (font Doto, putih, kecil, agak transparan) di portal USB Type-C
         batteryLed = new TextView(this);
         batteryLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
-        batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         batteryLed.setTextColor(0xFFFFFFFF);
+        batteryLed.setAlpha(0.6f);
         batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
         batteryLed.setLetterSpacing(0.06f);
         batteryLed.setFontVariationSettings("'wght' 700");
@@ -73,6 +74,7 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        ledParams.leftMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.06f);
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
         ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
 
@@ -127,7 +129,7 @@ public class MainActivity extends Activity {
     /** Denyut glow label saat perangkat sedang di-charge. */
     private void updateChargeAnim() {
         if (charging && chargeAnim == null) {
-            chargeAnim = ValueAnimator.ofFloat(0.35f, 1f);
+            chargeAnim = ValueAnimator.ofFloat(0.25f, 0.8f);
             chargeAnim.setDuration(900);
             chargeAnim.setRepeatMode(ValueAnimator.REVERSE);
             chargeAnim.setRepeatCount(ValueAnimator.INFINITE);
@@ -137,7 +139,7 @@ public class MainActivity extends Activity {
         } else if (!charging && chargeAnim != null) {
             chargeAnim.cancel();
             chargeAnim = null;
-            batteryLed.setAlpha(1f);
+            batteryLed.setAlpha(0.6f);
         }
     }
 
