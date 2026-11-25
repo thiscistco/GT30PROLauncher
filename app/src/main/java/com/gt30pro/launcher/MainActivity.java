@@ -127,9 +127,10 @@ public class MainActivity extends Activity {
             protected void onDraw(android.graphics.Canvas canvas) {
                 float r = getHeight() / 2f;
                 float cy = getHeight() / 2f;
-                float gap = getHeight() * 2.4f;
-                for (float x = r; x <= getWidth() - r + 0.5f; x += gap) {
-                    canvas.drawCircle(x, cy, r, dotPaint);
+                int n = 5;
+                float gap = (getWidth() - 2f * r) / (n - 1);
+                for (int i = 0; i < n; i++) {
+                    canvas.drawCircle(r + i * gap, cy, r, dotPaint);
                 }
             }
         };
