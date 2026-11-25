@@ -106,8 +106,8 @@ public class MainActivity extends Activity {
         clockHourText = new TextView(this);
         clockHourText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
-        clockHourText.setTextColor(0xFFFFFFFF);
-        clockHourText.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+        clockHourText.setTextColor(0xFFF0A060);
+        clockHourText.setShadowLayer(8f, 0f, 0f, 0x8CFFAA5F);
         clockHourText.setLetterSpacing(0.06f);
         clockHourText.setFontVariationSettings("'wght' 700");
         clockHourText.setText("00");
@@ -120,14 +120,14 @@ public class MainActivity extends Activity {
         sepParams.topMargin = (int) (1.5f * density);
         sepParams.bottomMargin = (int) (1.5f * density);
         clockSep.setLayoutParams(sepParams);
-        clockSep.setBackgroundColor(0xFFFFFFFF);
+        clockSep.setBackgroundColor(0xFFF0A060);
         clockBox.addView(clockSep);
 
         clockMinText = new TextView(this);
         clockMinText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
-        clockMinText.setTextColor(0xFFFFFFFF);
-        clockMinText.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+        clockMinText.setTextColor(0xFFF0A060);
+        clockMinText.setShadowLayer(8f, 0f, 0f, 0x8CFFAA5F);
         clockMinText.setLetterSpacing(0.06f);
         clockMinText.setFontVariationSettings("'wght' 700");
         clockMinText.setText("00");
@@ -140,7 +140,7 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.28f);
-        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.08f);
+        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.06f);
         ((FrameLayout) findViewById(R.id.root)).addView(clockBox, clockParams);
 
         View root = findViewById(R.id.root);
