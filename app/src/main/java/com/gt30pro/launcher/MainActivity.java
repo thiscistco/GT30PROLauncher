@@ -215,7 +215,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxWidth = Math.max(1, Math.round(HomeDateView.WIDTH_MM * pixelsPerMm));
         int boxHeight = Math.max(1, Math.round(HomeDateView.HEIGHT_MM * pixelsPerMm));
         // Match the preview offsets (1 CSS px = 25.4/96 mm).
-        float left = width * .49f + 85f * cssPixel - boxWidth / 2f;
+        float left = width * .49f + 110f * cssPixel - boxWidth / 2f;
         float bottom = height * .06f + 381.55f * cssPixel;
         float top = height - bottom - boxHeight + HomeDateView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) dateBox.getLayoutParams();

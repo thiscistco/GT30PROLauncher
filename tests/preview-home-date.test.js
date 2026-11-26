@@ -20,11 +20,11 @@ assert.equal(elements.homeDateWeekday.textContent,'JUM');assert.equal(elements.h
 assert.equal(elements.homeDate.attrs['aria-label'],'Jumat, 1 Januari 2027');
 const html=fs.readFileSync('preview/index.html','utf8'), java=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java','utf8'), view=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeDateView.java','utf8');
 const css=html.match(/\.date-led\s*\{([^}]*)\}/)[1];
-assert.match(css,/left:\s*calc\(49%\s*\+\s*85px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*381\.55px\)/);assert.match(css,/font-size:\s*2\.4mm/);assert.match(css,/letter-spacing:\s*0\.24mm/);assert.match(css,/line-height:\s*1\.15/);assert.match(css,/pointer-events:\s*none/);
+assert.match(css,/left:\s*calc\(49%\s*\+\s*110px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*381\.55px\)/);assert.match(css,/font-size:\s*2\.4mm/);assert.match(css,/letter-spacing:\s*0\.24mm/);assert.match(css,/line-height:\s*1\.15/);assert.match(css,/pointer-events:\s*none/);
 assert.match(html,/id="homeDateWeekday"[\s\S]*id="homeDateNumber"[\s\S]*id="homeDateMonth"/);
 assert.match(html,/src="home-date\.js\?v=1"/);
 const dateLayout = java.match(/private void updateDateLayout\([\s\S]*?\n    }/)[0];
-assert.match(dateLayout,/float left = width \* \.49f \+ 85f \* cssPixel - boxWidth \/ 2f/);
+assert.match(dateLayout,/float left = width \* \.49f \+ 110f \* cssPixel - boxWidth \/ 2f/);
 assert.match(dateLayout,/float bottom = height \* \.06f \+ 381\.55f \* cssPixel/);
 assert.match(java,/dateLed\.setDate\(now\.toInstant\(\)\.atZone\(ZoneId\.systemDefault\(\)\)\.toLocalDate\(\)\)/);
 assert.match(view,/setLayerType\(View\.LAYER_TYPE_SOFTWARE/); assert.match(view,/setContentDescription\(HomeDateText\.description/);
@@ -37,8 +37,8 @@ assert.match(view,/top \+ 2\.3f \* SIZE_SCALE \* pxPerMm/);
 assert.match(view,/top \+ 4\.6f \* SIZE_SCALE \* pxPerMm/);
 assert(!/separatorAlpha/.test(view),'charging must not affect date');
 for(const w of [269,720,1224]) {
- const mm=w/70.9, cssPixel=mm*25.4/96, clockCenter=w*.357-.5*cssPixel, oldCenter=w*.49+35*cssPixel, dateCenter=w*.49+85*cssPixel;
- assert(Math.abs((dateCenter-oldCenter)-50*cssPixel)<1e-9, 'exactly 50 CSS px right of previous position');
+ const mm=w/70.9, cssPixel=mm*25.4/96, clockCenter=w*.357-.5*cssPixel, oldCenter=w*.49+85*cssPixel, dateCenter=w*.49+110*cssPixel;
+ assert(Math.abs((dateCenter-oldCenter)-25*cssPixel)<1e-9, 'exactly 25 CSS px right of previous position');
  assert(dateCenter - clockCenter > (3.6+5.2*1.2)/2*mm,'date must not overlap clock');
  assert(dateCenter+5.2*1.2/2*mm<w, 'date remains inside the screen horizontally');
  const h=w*2720/1224, initialBottom=h-h*.06-1.55*cssPixel, previousBottom=h-h*.06-361.55*cssPixel, newBottom=h-h*.06-381.55*cssPixel;
