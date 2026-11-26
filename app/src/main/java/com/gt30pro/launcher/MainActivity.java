@@ -273,7 +273,7 @@ public class MainActivity extends Activity {
         params.bottomMargin = Math.round(height * 0.06f + 3f * cssPixel);
         // Apply subpixel shifts in preview CSS pixels (1 CSS px = cssPixel).
         clockBox.setTranslationX(-0.5f * cssPixel);
-        clockBox.setTranslationY(1.25f * cssPixel);
+        clockBox.setTranslationY(1.45f * cssPixel);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
             android.graphics.Rect bounds = new android.graphics.Rect();

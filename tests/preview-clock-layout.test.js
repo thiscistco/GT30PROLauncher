@@ -5,7 +5,7 @@ const java = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivit
 const clock = html.match(/\.clock-led\s*\{([^}]*)\}/)[1];
 const sep = html.match(/\.clock-sep\s*\{([^}]*)\}/)[1];
 assert.match(clock, /left:\s*calc\(35\.7%\s*-\s*0\.5px\)/);
-assert.match(clock, /bottom:\s*calc\(6%\s*\+\s*1\.75px\)/);
+assert.match(clock, /bottom:\s*calc\(6%\s*\+\s*1\.55px\)/);
 assert.match(clock, /font-size:\s*2mm/);
 assert.match(clock, /font-weight:\s*800/);
 assert.match(clock, /font-variation-settings:\s*'wght'\s*800/);
@@ -21,7 +21,7 @@ assert.match(sep, /height:\s*0\.22mm/);
 assert.match(java, /clockSizePx\s*=\s*width\s*\*\s*\(2f\s*\/\s*70\.9f\)/);
 assert.match(java, /setLetterSpacing\(0\.2f\s*\/\s*2f\)/);
 assert.match(java, /clockBox\.setTranslationX\(-0\.5f\s*\*\s*cssPixel\)/);
-assert.match(java, /clockBox\.setTranslationY\(1\.25f\s*\*\s*cssPixel\)/);
+assert.match(java, /clockBox\.setTranslationY\(1\.45f\s*\*\s*cssPixel\)/);
 assert.match(java, /params\.rightMargin\s*=\s*Math\.round\(width\s*\*\s*0\.143f\)/);
 assert.match(java, /params\.bottomMargin\s*=\s*Math\.round\(height\s*\*\s*0\.06f\s*\+\s*3f\s*\*\s*cssPixel\)/);
 // FrameLayout subtracts the full right margin from its centered child.
@@ -32,8 +32,8 @@ for (const [w,h] of [[269,596],[1224,2720],[720,1600]]) {
   const expectedX = w*.357 - .5*cssPixel;
   const androidX = w/2 - Math.round(w*.143) - .5*cssPixel;
   assert(Math.abs(expectedX-androidX) <= .501, 'center position differs by more than margin rounding');
-  const expectedBottom = h*.06 + 1.75*cssPixel;
-  const androidBottom = Math.round(h*.06 + 3*cssPixel) - 1.25*cssPixel;
+  const expectedBottom = h*.06 + 1.55*cssPixel;
+  const androidBottom = Math.round(h*.06 + 3*cssPixel) - 1.45*cssPixel;
   assert(Math.abs(expectedBottom-androidBottom) <= .501, 'bottom position differs by more than margin rounding');
   assert(Math.abs(w*(2/70.9) - (2*96/25.4)*cssPixel) < 1e-10);
 }
