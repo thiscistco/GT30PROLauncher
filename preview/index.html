@@ -716,8 +716,8 @@
     updateStatus();
     var image = new Image();
     var imageReady = new Promise(function (resolve, reject) { image.onload = resolve; image.onerror = reject; });
-    image.src = 'assets/wallpaper-amber-glow.png?v=6';
-    Promise.all([fetch('assets/circuit-paths.json?v=5').then(function (response) {
+    image.src = 'assets/wallpaper-amber-glow.png?v=7';
+    Promise.all([fetch('assets/circuit-paths.json?v=6').then(function (response) {
       if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
     }), imageReady]).then(function (result) {
       var cfg = result[0];

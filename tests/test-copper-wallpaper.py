@@ -15,7 +15,9 @@ with tempfile.TemporaryDirectory() as temp:
     final = Path(temp) / 'traces.png'
     subprocess.run([sys.executable, 'tools/edit_chip_label.py', 'assets/wallpaper-source/sketch1795646565939.jpeg', str(original)], check=True)
     subprocess.run([sys.executable, 'tools/recolor_copper.py', str(original), str(generated)], check=True)
-    subprocess.run([sys.executable, 'tools/color_trace_copper.py', str(generated), 'preview/assets/circuit-paths.json', str(final)], check=True)
+    # The static wallpaper remains based on the original user drawing;
+    # only the animated paths and glow are smoothed.
+    subprocess.run([sys.executable, 'tools/color_trace_copper.py', str(generated), 'assets/circuit-paths/Jalur-2.json', str(final)], check=True)
     before = Image.open(original).convert('RGB')
     intermediate = Image.open(generated).convert('RGB')
     after = Image.open(preview).convert('RGB')
