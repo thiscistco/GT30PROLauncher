@@ -17,6 +17,9 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.UUID;
@@ -31,10 +34,17 @@ public class CalendarActivity extends SwipeBackActivity {
     private LinearLayout page;
     private LocalDate selected = LocalDate.now();
     private boolean storageWritable = true;
+    private JSONObject holidays;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         doto = Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                getAssets().open("calendar_indonesia.json"), StandardCharsets.UTF_8))) {
+            StringBuilder json = new StringBuilder(); String line;
+            while ((line = reader.readLine()) != null) json.append(line);
+            holidays = new JSONObject(json.toString());
+        } catch (Exception ignored) { holidays = null; }
         if (state != null) {
             try { selected = LocalDate.parse(state.getString("selected")); } catch (Exception ignored) { selected = LocalDate.now(); }
         }
@@ -105,6 +115,39 @@ public class CalendarActivity extends SwipeBackActivity {
         Toast.makeText(this, "Penyimpanan kalender bermasalah. Acara tidak berhasil disimpan.", Toast.LENGTH_LONG).show();
         render();
     }
+    private boolean holidaysAvailable(int year) {
+        if (holidays == null) return false;
+        JSONArray years = holidays.optJSONArray("years");
+        if (years != null) for (int i = 0; i < years.length(); i++) if (years.optInt(i) == year) return true;
+        return false;
+    }
+    private JSONArray holidaysFor(LocalDate date) {
+        JSONObject entries = holidays == null ? null : holidays.optJSONObject("entries");
+        JSONArray found = entries == null ? null : entries.optJSONArray(date.toString());
+        return found == null ? new JSONArray() : found;
+    }
+    private String holidayText(JSONObject event) {
+        String type = event.optString("type");
+        String label = "libur".equals(type) ? "Libur nasional" : "cuti".equals(type) ? "Cuti bersama" : "Peringatan (bukan libur nasional)";
+        return label + " · " + event.optString("name");
+    }
+    private boolean isNationalHoliday(JSONArray events) {
+        for (int i = 0; i < events.length(); i++) {
+            JSONObject event = events.optJSONObject(i);
+            if (event != null && "libur".equals(event.optString("type"))) return true;
+        }
+        return false;
+    }
+    private void addHolidayEntries(LocalDate date, boolean showDate) {
+        JSONArray events = holidaysFor(date);
+        for (int i = 0; i < events.length(); i++) {
+            JSONObject event = events.optJSONObject(i);
+            if (event == null) continue;
+            String prefix = showDate ? date.getDayOfMonth() + " · " : "";
+            page.addView(text(prefix + holidayText(event), 13, "libur".equals(event.optString("type")) ? WEEKEND : AMBER));
+            space(5);
+        }
+    }
     private boolean hasEvents(JSONArray events, LocalDate date) {
         for (int i = 0; i < events.length(); i++) {
             JSONObject e = events.optJSONObject(i);
@@ -148,8 +191,15 @@ public class CalendarActivity extends SwipeBackActivity {
                 if (dayNumber < 1 || dayNumber > length) { week.addView(new View(this), cell); continue; }
                 LocalDate day = monthValue.atDay(dayNumber);
                 boolean has = hasEvents(events, day);
-                TextView item = text(String.valueOf(dayNumber) + (has ? "·" : ""), 14, col >= 5 ? WEEKEND : (day.equals(LocalDate.now()) ? 0xFFFFE5B1 : AMBER));
-                item.setGravity(Gravity.CENTER); item.setContentDescription(dateLabel(day) + (has ? ", ada acara" : ""));
+                JSONArray dayHolidays = holidaysFor(day);
+                TextView item = text(String.valueOf(dayNumber) + (has ? "·" : ""), 14, col >= 5 || isNationalHoliday(dayHolidays) ? WEEKEND : (day.equals(LocalDate.now()) ? 0xFFFFE5B1 : AMBER));
+                StringBuilder description = new StringBuilder(dateLabel(day));
+                for (int i = 0; i < dayHolidays.length(); i++) {
+                    JSONObject event = dayHolidays.optJSONObject(i);
+                    if (event != null) description.append(", ").append(holidayText(event));
+                }
+                if (has) description.append(", ada acara");
+                item.setGravity(Gravity.CENTER); item.setContentDescription(description.toString());
                 if (day.equals(selected)) item.setBackground(bg(0xFF61402C));
                 else if (day.equals(LocalDate.now())) item.setBackground(bg(0xFF211A17));
                 item.setSelected(day.equals(selected));
@@ -159,6 +209,7 @@ public class CalendarActivity extends SwipeBackActivity {
         }
         space(12); page.addView(button("Hari ini", () -> { selected = LocalDate.now(); render(); })); space(16);
         page.addView(text(dateLabel(selected), 19, AMBER)); space(10);
+        addHolidayEntries(selected, false);
         page.addView(button("+ Tambah acara", this::addEvent)); space(12);
         boolean found = false;
         for (int i = 0; i < events.length(); i++) {
@@ -174,6 +225,18 @@ public class CalendarActivity extends SwipeBackActivity {
             row.addView(remove, new LinearLayout.LayoutParams(-2, -2)); page.addView(row); space(8);
         }
         if (!found) page.addView(text("Belum ada acara pada tanggal ini.", 13, MUTED));
+        space(16); page.addView(text("LIBUR & PERINGATAN", 19, AMBER)); space(10);
+        if (holidaysAvailable(selected.getYear())) {
+            boolean foundHoliday = false;
+            for (int day = 1; day <= monthValue.lengthOfMonth(); day++) {
+                LocalDate date = monthValue.atDay(day);
+                if (holidaysFor(date).length() > 0) { addHolidayEntries(date, true); foundHoliday = true; }
+            }
+            if (!foundHoliday) page.addView(text("Tidak ada data libur atau peringatan bulan ini.", 13, MUTED));
+            space(8); page.addView(text("Data 2026–2027 berdasarkan SKB, tidak diperbarui otomatis. Idulfitri dan Iduladha 2027 menunggu penetapan Kemenag. Peringatan bukan libur nasional; cuti mengikuti aturan instansi.", 12, MUTED));
+        } else {
+            page.addView(text(holidays == null ? "Data libur tidak dapat dibaca." : "Data libur dan peringatan belum tersedia untuk tahun ini (tersedia 2026–2027).", 12, MUTED));
+        }
         space(12); page.addView(text(storageWritable
                 ? "Acara disimpan di perangkat ini; tidak ada sinkronisasi atau pengingat."
                 : "Penyimpanan kalender bermasalah; data lama tidak ditimpa dan perubahan tidak dapat disimpan.", 12, MUTED));

@@ -214,7 +214,9 @@
   .calendar-day { color: #ffd49d; background: transparent; border: 1px solid transparent; border-radius: 2mm; height: 9mm; font: 700 2.8mm 'Doto', monospace; cursor: pointer; }
   .calendar-day.today { background: #211a17; border-color: #8d604c; }
   .calendar-day.selected { background: #61402c; border-color: #8d604c; }
-  .calendar-weekday.weekend, .calendar-day.weekend { color: #ff6b6b; }
+  .calendar-weekday.weekend, .calendar-day.weekend, .calendar-day.holiday { color: #ff6b6b; }
+  .calendar-holiday-detail { color: #ffd49d; font-size: 2.8mm; line-height: 1.5; margin: 2mm 0; }
+  .calendar-holiday-detail.holiday { color: #ff6b6b; }
   .calendar-day:focus-visible { outline: 2px solid #ffd49d; outline-offset: -2px; }
   .calendar-event { display: flex; align-items: center; gap: 2mm; }
   .calendar-event span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
@@ -493,6 +495,7 @@
                 <button class="clock-action clock-wide" id="calendarToday" type="button">Hari ini</button>
                 <div class="clock-section">
                   <h3 id="calendarSelected"></h3>
+                  <div id="calendarHolidayDetails" aria-live="polite"></div>
                   <button class="clock-action clock-wide" id="calendarAdd" type="button">+ Tambah acara</button>
                   <form class="alarm-form" id="calendarForm" hidden>
                     <label>Nama acara <input id="calendarTitle" type="text" maxlength="80" required></label>
@@ -501,6 +504,9 @@
                     <div class="clock-row"><button class="clock-action" id="calendarCancel" type="button">Batal</button><button class="clock-action" type="submit">Simpan</button></div>
                   </form>
                   <div id="calendarEvents"></div>
+                  <h3>LIBUR &amp; PERINGATAN</h3>
+                  <div id="calendarMonthHolidays"></div>
+                  <p class="clock-muted" id="calendarHolidayStatus"></p>
                   <p class="clock-muted" id="calendarStorageNote">Acara disimpan di browser ini; tidak ada sinkronisasi atau pengingat.</p>
                 </div>
               </section>
@@ -733,7 +739,8 @@
     }, 50);
   })();
 </script>
-<script src="calendar.js?v=2"></script>
+<script src="holiday-data.js?v=1"></script>
+<script src="calendar.js?v=3"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

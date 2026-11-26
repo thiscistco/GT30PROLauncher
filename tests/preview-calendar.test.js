@@ -25,7 +25,7 @@ class Element {
 const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
 function createUI(){
  const ids = {};
- for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime']) ids[id]=new Element();
+ for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays']) ids[id]=new Element();
  ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
  const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer};
@@ -54,6 +54,24 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=2"/);
-assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend \{ color: #ff6b6b; \}/);
-console.log('Calendar preview: date rules, local persistence, deletion, safe text and navigation: OK');
+assert.match(html,/src="calendar\.js\?v=3"/);
+assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #ff6b6b; \}/);
+assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
+assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
+assert.equal(calendar.holidaysFor('2026-03-20')[0].type,'cuti');
+assert.deepEqual(calendar.holidaysFor('2028-08-17'),[]);
+function navigateTo(ui, year, month) {
+  const now=new Date(); const delta=(year-now.getFullYear())*12+month-(now.getMonth()+1);
+  for(let i=0;i<Math.abs(delta);i++) ui[delta>0?'calendarNext':'calendarPrev'].fire('click');
+}
+let aug=createUI(); navigateTo(aug,2026,8);
+let holiday=aug.calendarGrid.children.find(e=>e.textContent==='17');
+assert(holiday.classes.has('holiday')); assert.match(holiday.attrs['aria-label'],/Libur nasional.*Kemerdekaan/);
+holiday.fire('click'); assert.match(aug.calendarHolidayDetails.children[0].textContent,/Libur nasional.*Kemerdekaan/);
+assert(aug.calendarMonthHolidays.children.some(e=>/14 · Peringatan/.test(e.textContent)));
+let april=createUI(); navigateTo(april,2026,4); let kartini=april.calendarGrid.children.find(e=>e.textContent==='21');
+assert(!kartini.classes.has('holiday')); kartini.fire('click'); assert.match(april.calendarHolidayDetails.children[0].textContent,/bukan libur nasional.*Kartini/);
+let march=createUI(); navigateTo(march,2026,3); let cuti=march.calendarGrid.children.find(e=>e.textContent==='20');
+assert(!cuti.classes.has('holiday')); cuti.fire('click'); assert.match(march.calendarHolidayDetails.children[0].textContent,/Cuti bersama/);
+let missing=createUI(); navigateTo(missing,2028,1); assert.match(missing.calendarHolidayStatus.textContent,/belum tersedia/);
+console.log('Calendar preview: date rules, holidays, local persistence, deletion, safe text and navigation: OK');

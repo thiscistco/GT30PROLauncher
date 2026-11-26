@@ -1,9 +1,10 @@
 /* Kalender preview: tanggal lokal dan acara lokal browser, tanpa pengingat. */
 (function (root, factory) {
-  var logic = factory();
+  var data = typeof module !== 'undefined' && module.exports ? require('./holiday-data.js') : (root && root.indonesiaHolidays);
+  var logic = factory(data);
   if (typeof module !== 'undefined' && module.exports) module.exports = logic;
   if (root && root.document) logic.mount(root);
-})(typeof window !== 'undefined' ? window : null, function () {
+})(typeof window !== 'undefined' ? window : null, function (holidayData) {
   'use strict';
   var months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   var weekdays = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
@@ -28,6 +29,11 @@
   function validEvent(e) {
     return e && typeof e.id === 'string' && e.id.length > 0 && validDate(e.date) &&
       validTitle(e.title) && typeof e.time === 'string' && validTime(e.time);
+  }
+  function holidaysFor(key) { return holidayData && holidayData.entries && holidayData.entries[key] || []; }
+  function holidayText(entry) {
+    var kind = entry.type === 'libur' ? 'Libur nasional' : entry.type === 'cuti' ? 'Cuti bersama' : 'Peringatan (bukan libur nasional)';
+    return kind + ' · ' + entry.name;
   }
   function mount(win) {
     var doc = win.document, byId = function (id) { return doc.getElementById(id); };
@@ -56,6 +62,25 @@
       var selectedKey = dateKey(selected), todayKey = dateKey(today());
       byId('calendarMonth').textContent = months[selected.month-1] + ' ' + selected.year;
       byId('calendarSelected').textContent = label(selected);
+      var holidayDetails = byId('calendarHolidayDetails'); holidayDetails.replaceChildren();
+      holidaysFor(selectedKey).forEach(function (entry) {
+        var line = doc.createElement('p'); line.className = 'calendar-holiday-detail' + (entry.type === 'libur' ? ' holiday' : '');
+        line.textContent = holidayText(entry); holidayDetails.appendChild(line);
+      });
+      var supported = holidayData && holidayData.years.indexOf(selected.year) !== -1;
+      byId('calendarHolidayStatus').textContent = supported
+        ? 'Data 2026–2027 berdasarkan SKB, tidak diperbarui otomatis. Idulfitri dan Iduladha 2027 menunggu penetapan Kemenag. Peringatan bukan libur nasional; cuti mengikuti aturan instansi.'
+        : 'Data libur dan peringatan belum tersedia untuk tahun ini (tersedia 2026–2027).';
+      var monthList = byId('calendarMonthHolidays'); monthList.replaceChildren();
+      if (supported) {
+        Object.keys(holidayData.entries).filter(function (key) { return key.slice(0, 7) === selectedKey.slice(0, 7); }).sort().forEach(function (key) {
+          holidaysFor(key).forEach(function (entry) {
+            var line = doc.createElement('p'); line.className = 'calendar-holiday-detail' + (entry.type === 'libur' ? ' holiday' : '');
+            line.textContent = Number(key.slice(8)) + ' · ' + holidayText(entry); monthList.appendChild(line);
+          });
+        });
+        if (!monthList.children.length) { var none = doc.createElement('p'); none.className = 'clock-muted'; none.textContent = 'Tidak ada data libur atau peringatan bulan ini.'; monthList.appendChild(none); }
+      }
       byId('calendarPrev').disabled = selected.year === 1900 && selected.month === 1;
       byId('calendarNext').disabled = selected.year === 2100 && selected.month === 12;
       grid.replaceChildren();
@@ -69,12 +94,14 @@
       for (var number = 1; number <= total; number++) (function (day) {
         var date = {year:selected.year, month:selected.month, day:day}, keyForDay = dateKey(date);
         var has = records.some(function (e) { return e.date === keyForDay; });
+        var dayHolidays = holidaysFor(keyForDay), isHoliday = dayHolidays.some(function (entry) { return entry.type === 'libur'; });
         var button = doc.createElement('button'); button.type = 'button'; button.className = 'calendar-day';
         button.textContent = day + (has ? '·' : '');
         button.classList.toggle('weekend', (leadingDays(selected.year, selected.month) + day - 1) % 7 >= 5);
+        button.classList.toggle('holiday', isHoliday);
         button.classList.toggle('today', keyForDay === todayKey);
         button.classList.toggle('selected', keyForDay === selectedKey);
-        button.setAttribute('aria-label', label(date) + (has ? ', ada acara' : ''));
+        button.setAttribute('aria-label', label(date) + (dayHolidays.length ? ', ' + dayHolidays.map(holidayText).join(', ') : '') + (has ? ', ada acara' : ''));
         button.setAttribute('aria-pressed', String(keyForDay === selectedKey));
         button.addEventListener('click', function () { selected = date; render(); });
         grid.appendChild(button);
@@ -114,5 +141,5 @@
     render();
   }
   return {daysInMonth:daysInMonth, leadingDays:leadingDays, shiftMonth:shiftMonth, dateKey:dateKey,
-    validTime:validTime, validTitle:validTitle, validDate:validDate, mount:mount};
+    validTime:validTime, validTitle:validTitle, validDate:validDate, holidaysFor:holidaysFor, mount:mount};
 });
