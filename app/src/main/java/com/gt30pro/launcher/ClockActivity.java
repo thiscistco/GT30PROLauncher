@@ -112,13 +112,13 @@ public class ClockActivity extends SwipeBackActivity {
             ImageButton item = new ImageButton(this);
             item.setImageResource(TAB_ICONS[i]);
             item.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            item.setPadding(dp(16), dp(16), dp(16), dp(16));
+            item.setPadding(dp(13), dp(13), dp(13), dp(13));
             item.setBackground(bg(i == selected ? 0xFF61402C : 0xFF181717));
             item.setContentDescription(TAB_NAMES[i]);
             item.setTooltipText(TAB_NAMES[i]);
             item.setSelected(i == selected);
             item.setOnClickListener(v -> showTab(index));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(64), dp(64));
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(52), dp(52));
             if (i > 0) p.leftMargin = dp(6);
             tabs.addView(item, p);
         }

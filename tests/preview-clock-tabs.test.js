@@ -22,7 +22,10 @@ assert.match(java, /item\.setContentDescription\(TAB_NAMES\[i\]\)/);
 assert.match(java, /item\.setTooltipText\(TAB_NAMES\[i\]\)/);
 assert.match(java, /item\.setSelected\(i == selected\)/);
 assert.match(java, /item\.setOnClickListener\(v -> showTab\(index\)\)/);
-assert.match(java, /new LinearLayout\.LayoutParams\(dp\(64\), dp\(64\)\)/);
+assert.match(java, /new LinearLayout\.LayoutParams\(dp\(52\), dp\(52\)\)/);
+assert.match(java, /item\.setPadding\(dp\(13\), dp\(13\), dp\(13\), dp\(13\)\)/);
+assert.match(html, /\.clock-tabs button \{[^}]*width:\s*9mm;\s*height:\s*9mm/);
+assert.match(html, /\.clock-tabs button img \{[^}]*width:\s*5\.2mm;\s*height:\s*5\.2mm/);
 const buttons = names.map((name, i) => ({
   name, attrs:{'aria-pressed':i===0?'true':'false'}, active:i===0,
   getAttribute(key){return key==='data-clock-tab' ? this.name : this.attrs[key]},
