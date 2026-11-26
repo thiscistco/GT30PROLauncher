@@ -1,6 +1,7 @@
 /* Generated from assets/calendar/indonesia.json; do not edit directly. */
 (function(root, data) { if (typeof module !== "undefined" && module.exports) module.exports = data; if (root) root.indonesiaHolidays = data; })(typeof window !== "undefined" ? window : null,
 {
+  "revision": 1,
   "years": [
     2026,
     2027

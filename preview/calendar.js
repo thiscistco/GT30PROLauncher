@@ -1,10 +1,11 @@
 /* Kalender preview: tanggal lokal dan acara lokal browser, tanpa pengingat. */
 (function (root, factory) {
   var data = typeof module !== 'undefined' && module.exports ? require('./holiday-data.js') : (root && root.indonesiaHolidays);
-  var logic = factory(data);
+  var updater = typeof module !== 'undefined' && module.exports ? require('./holiday-update.js') : (root && root.holidayUpdater);
+  var logic = factory(data, updater);
   if (typeof module !== 'undefined' && module.exports) module.exports = logic;
   if (root && root.document) logic.mount(root);
-})(typeof window !== 'undefined' ? window : null, function (holidayData) {
+})(typeof window !== 'undefined' ? window : null, function (holidayData, updaterApi) {
   'use strict';
   var months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   var weekdays = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
@@ -39,8 +40,18 @@
     var doc = win.document, byId = function (id) { return doc.getElementById(id); };
     var grid = byId('calendarGrid'), form = byId('calendarForm'), selected = today(), records = [];
     var key = 'gt30-calendar-events-v1', writable = true;
+    var updater = null, updateInfo = {message:'Data bawaan; belum diperiksa secara online.', checkedAt:0, pending:false};
+    try {
+      var holidayStorage; try { holidayStorage = win.localStorage; } catch (ignored) { holidayStorage = null; }
+      updater = updaterApi.create({initial:holidayData, storage:holidayStorage, now:Date.now,
+        fetch:function (url, options) { return win.fetch(url, options); },
+        atob:function (value) { return win.atob(value); },
+        makeAbort:win.AbortController ? function () { return new win.AbortController(); } : null,
+        onChange:function (state) { updateInfo = state; holidayData = state.data; render(); }});
+      updateInfo = updater.getState(); holidayData = updateInfo.data;
+    } catch (ignored) { updater = null; }
     var note = byId('calendarStorageNote'), error = byId('calendarError');
-    var defaultNote = 'Acara disimpan di browser ini; tidak ada sinkronisasi atau pengingat.';
+    var defaultNote = 'Acara disimpan di browser ini; tidak disinkronkan atau diberi pengingat. Menghapus data browser menghapus acara.';
     function showStorageNote() {
       note.textContent = writable ? defaultNote : 'Penyimpanan kalender tidak tersedia atau data tidak dapat dibaca; perubahan hanya sementara dan data lama tidak ditimpa.';
     }
@@ -68,9 +79,11 @@
         line.textContent = holidayText(entry); holidayDetails.appendChild(line);
       });
       var supported = holidayData && holidayData.years.indexOf(selected.year) !== -1;
-      byId('calendarHolidayStatus').textContent = supported
-        ? 'Data 2026–2027 berdasarkan SKB, tidak diperbarui otomatis. Idulfitri dan Iduladha 2027 menunggu penetapan Kemenag. Peringatan bukan libur nasional; cuti mengikuti aturan instansi.'
-        : 'Data libur dan peringatan belum tersedia untuk tahun ini (tersedia 2026–2027).';
+      var availableYears = holidayData && holidayData.years ? holidayData.years.join(', ') : 'tidak tersedia';
+      var checked = updateInfo.checkedAt ? ' Terakhir diperiksa: ' + new Date(updateInfo.checkedAt).toLocaleString('id-ID') + '.' : '';
+      byId('calendarHolidayStatus').textContent = (supported ? 'Data libur tersedia: ' + availableYears + '. ' : 'Data libur belum tersedia untuk tahun ini; tersedia: ' + availableYears + '. ') +
+        updateInfo.message + checked + ' Sumber GitHub dikelola manual; jadwal bisa berubah. Peringatan bukan libur nasional, dan cuti mengikuti aturan instansi.';
+      byId('calendarRefresh').disabled = updateInfo.pending || !updater;
       var monthList = byId('calendarMonthHolidays'); monthList.replaceChildren();
       if (supported) {
         Object.keys(holidayData.entries).filter(function (key) { return key.slice(0, 7) === selectedKey.slice(0, 7); }).sort().forEach(function (key) {
@@ -126,6 +139,9 @@
         row.appendChild(name); row.appendChild(remove); list.appendChild(row);
       });
     }
+    var openCalendar = byId('openCalendarModule');
+    if (openCalendar) openCalendar.addEventListener('click', function () { if (updater) updater.refresh(false); });
+    byId('calendarRefresh').addEventListener('click', function () { if (updater) updater.refresh(true); });
     byId('calendarPrev').addEventListener('click', function () { selected = shiftMonth(selected, -1); render(); });
     byId('calendarNext').addEventListener('click', function () { selected = shiftMonth(selected, 1); render(); });
     byId('calendarToday').addEventListener('click', function () { selected = today(); render(); });

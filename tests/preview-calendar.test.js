@@ -25,7 +25,7 @@ class Element {
 const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
 function createUI(){
  const ids = {};
- for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays']) ids[id]=new Element();
+ for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh']) ids[id]=new Element();
  ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
  const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer};
@@ -54,7 +54,7 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=4"/);
+assert.match(html,/src="calendar\.js\?v=5"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #ff6b6b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');

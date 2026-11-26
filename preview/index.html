@@ -527,8 +527,9 @@
                   <div id="calendarEvents"></div>
                   <h3>LIBUR &amp; PERINGATAN</h3>
                   <div id="calendarMonthHolidays"></div>
-                  <p class="clock-muted" id="calendarHolidayStatus"></p>
-                  <p class="clock-muted" id="calendarStorageNote">Acara disimpan di browser ini; tidak ada sinkronisasi atau pengingat.</p>
+                  <p class="clock-muted" id="calendarHolidayStatus" role="status"></p>
+                  <button class="clock-action" id="calendarRefresh" type="button">Perbarui data libur</button>
+                  <p class="clock-muted" id="calendarStorageNote">Acara disimpan di browser ini; tidak disinkronkan atau diberi pengingat. Menghapus data browser menghapus acara.</p>
                 </div>
               </section>
               <div class="punch-hole"></div>
@@ -781,8 +782,9 @@
     }, 50);
   })();
 </script>
-<script src="holiday-data.js?v=1"></script>
-<script src="calendar.js?v=4"></script>
+<script src="holiday-data.js?v=2"></script>
+<script src="holiday-update.js?v=1"></script>
+<script src="calendar.js?v=5"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

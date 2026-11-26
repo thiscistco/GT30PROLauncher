@@ -1,6 +1,7 @@
 package com.gt30pro.launcher;
 
 import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -21,6 +22,9 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.UUID;
@@ -36,7 +40,11 @@ public class CalendarActivity extends SwipeBackActivity {
     private LinearLayout page;
     private LocalDate selected = LocalDate.now();
     private boolean storageWritable = true;
+    private static final Object HOLIDAY_CACHE_LOCK = new Object();
     private JSONObject holidays;
+    private long holidaysCheckedAt, holidayLastAttempt;
+    private boolean holidayRefreshing;
+    private String holidayMessage = "Data bawaan; belum diperiksa secara online.";
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -47,6 +55,7 @@ public class CalendarActivity extends SwipeBackActivity {
             while ((line = reader.readLine()) != null) json.append(line);
             holidays = new JSONObject(json.toString());
         } catch (Exception ignored) { holidays = null; }
+        loadCachedHolidays();
         if (state != null) {
             try { selected = LocalDate.parse(state.getString("selected")); } catch (Exception ignored) { selected = LocalDate.now(); }
         }
@@ -64,6 +73,76 @@ public class CalendarActivity extends SwipeBackActivity {
         });
         setContentView(scroll);
         render();
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        refreshHolidays(false);
+    }
+
+    private void loadCachedHolidays() {
+        if (!HolidayFeed.valid(holidays)) { holidays = null; return; }
+        try {
+            SharedPreferences prefs = getSharedPreferences("launcher_holidays", MODE_PRIVATE);
+            JSONObject cached = new JSONObject(prefs.getString("feed_v1", "{}"));
+            if (HolidayFeed.valid(cached) && HolidayFeed.covers(cached, holidays)
+                    && cached.getLong("revision") >= holidays.getLong("revision")) {
+                holidays = cached;
+                holidaysCheckedAt = Math.max(0, prefs.getLong("checked_at", 0));
+                holidayMessage = "Menggunakan data tersimpan di perangkat.";
+            }
+        } catch (Exception ignored) { }
+    }
+    private void refreshHolidays(boolean force) {
+        if (holidays == null || holidayRefreshing) return;
+        long now = System.currentTimeMillis();
+        if (!force && ((holidaysCheckedAt > 0 && now >= holidaysCheckedAt && now - holidaysCheckedAt < HolidayFeed.INTERVAL_MS)
+                || (holidayLastAttempt > 0 && now >= holidayLastAttempt && now - holidayLastAttempt < 300000))) return;
+        holidayLastAttempt = now; holidayRefreshing = true; holidayMessage = "Memeriksa data libur online…";
+        render();
+        final JSONObject original = holidays;
+        new Thread(() -> {
+            JSONObject next = null; long checked = 0; String message;
+            try {
+                JSONObject downloaded = HolidayFeed.fetch();
+                synchronized (HOLIDAY_CACHE_LOCK) {
+                    SharedPreferences prefs = getSharedPreferences("launcher_holidays", MODE_PRIVATE);
+                    JSONObject newest = original;
+                    try {
+                        JSONObject cached = new JSONObject(prefs.getString("feed_v1", "{}"));
+                        if (HolidayFeed.valid(cached) && HolidayFeed.covers(cached, newest)
+                                && cached.getLong("revision") > newest.getLong("revision")) newest = cached;
+                    } catch (Exception ignored) { }
+                    if (!HolidayFeed.covers(downloaded, newest) || downloaded.getLong("revision") < newest.getLong("revision")
+                            || (downloaded.getLong("revision") == newest.getLong("revision") && !downloaded.toString().equals(newest.toString())))
+                        throw new IllegalStateException("Older, incomplete or unversioned feed");
+                    next = downloaded.getLong("revision") > newest.getLong("revision") ? downloaded : newest;
+                    checked = System.currentTimeMillis();
+                    boolean saved = prefs.edit().putString("feed_v1", next.toString()).putLong("checked_at", checked).commit();
+                    message = saved ? "Data libur berhasil diperiksa online." : "Data online hanya sementara; penyimpanan perangkat gagal.";
+                }
+            } catch (Exception ignored) {
+                message = "Pembaruan gagal; menggunakan data terakhir atau bawaan.";
+            }
+            final JSONObject result = next; final long resultTime = checked; final String resultMessage = message;
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                holidayRefreshing = false; holidayMessage = resultMessage;
+                if (result != null) { holidays = result; holidaysCheckedAt = resultTime; }
+                render();
+            });
+        }, "calendar-holiday-update").start();
+    }
+    private String holidayStatus() {
+        StringBuilder result = new StringBuilder();
+        if (holidaysAvailable(selected.getYear())) result.append("Data libur tersedia: ");
+        else result.append("Data libur belum tersedia untuk tahun ini; tersedia: ");
+        JSONArray years = holidays == null ? null : holidays.optJSONArray("years");
+        if (years == null) result.append("tidak tersedia");
+        else for (int i = 0; i < years.length(); i++) { if (i > 0) result.append(", "); result.append(years.optInt(i)); }
+        result.append(". ").append(holidayMessage);
+        if (holidaysCheckedAt > 0) result.append(" Terakhir diperiksa: ").append(new SimpleDateFormat("dd MMM yyyy HH:mm", new Locale("id", "ID")).format(new Date(holidaysCheckedAt))).append(".");
+        return result.append(" Sumber GitHub dikelola manual; jadwal bisa berubah. Peringatan bukan libur nasional, dan cuti mengikuti aturan instansi.").toString();
     }
 
     @Override protected void onSaveInstanceState(Bundle state) {
@@ -266,12 +345,12 @@ public class CalendarActivity extends SwipeBackActivity {
                 if (holidaysFor(date).length() > 0) { addHolidayEntries(date, true); foundHoliday = true; }
             }
             if (!foundHoliday) page.addView(text("Tidak ada data libur atau peringatan bulan ini.", 13, MUTED));
-            space(8); page.addView(text("Data 2026–2027 berdasarkan SKB, tidak diperbarui otomatis. Idulfitri dan Iduladha 2027 menunggu penetapan Kemenag. Peringatan bukan libur nasional; cuti mengikuti aturan instansi.", 12, MUTED));
-        } else {
-            page.addView(text(holidays == null ? "Data libur tidak dapat dibaca." : "Data libur dan peringatan belum tersedia untuk tahun ini (tersedia 2026–2027).", 12, MUTED));
         }
+        space(8); page.addView(text(holidayStatus(), 12, MUTED)); space(8);
+        TextView refresh = button("Perbarui data libur", () -> refreshHolidays(true));
+        refresh.setEnabled(!holidayRefreshing && holidays != null); page.addView(refresh);
         space(12); page.addView(text(storageWritable
-                ? "Acara disimpan di perangkat ini; tidak ada sinkronisasi atau pengingat."
+                ? "Acara disimpan hanya di perangkat ini; tidak disinkronkan atau dicadangkan, dan tidak ada pengingat. Menghapus data aplikasi menghapus acara."
                 : "Penyimpanan kalender bermasalah; data lama tidak ditimpa dan perubahan tidak dapat disimpan.", 12, MUTED));
     }
 
