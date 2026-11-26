@@ -102,7 +102,7 @@
       undo.disabled = !history.length; reset.disabled = !paths.length;
       exportButton.disabled = !paths.length; erase.disabled = !paths.length && mode !== 'erase';
       widthInput.value = String(width); widthValue.textContent = width + ' px';
-      status.textContent = (paths.length ? paths.length + ' jalur buatan aktif.' : 'Jalur bawaan aktif.') +
+      status.textContent = (paths.length ? paths.length + ' jalur buatan aktif.' : 'Belum ada jalur. Silakan gambar dari awal.') +
         (mode === 'draw' ? ' Tarik dari atau ke titik ujung untuk menyambung.' :
           mode === 'erase' ? ' Usap bagian garis yang ingin dihapus.' : '') +
         (storageAvailable ? '' : ' Penyimpanan browser tidak tersedia; unduh sebelum menutup halaman.');
@@ -239,7 +239,7 @@
     document.getElementById('tabSuper').addEventListener('click', function () { if (mode !== 'view') setMode('view'); });
     undo.addEventListener('click', function () { if (drawing || erasing || !history.length) return; paths = history.pop(); persist(); refresh(); });
     reset.addEventListener('click', function () {
-      if (drawing || erasing || !window.confirm('Hapus jalur buatan dan pulihkan jalur bawaan?')) return;
+      if (drawing || erasing || !window.confirm('Hapus semua jalur buatan di browser ini?')) return;
       snapshot(); paths = []; persist(); refresh();
     });
     widthInput.addEventListener('input', function () {

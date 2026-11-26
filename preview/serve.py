@@ -17,5 +17,7 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("0.0.0.0", 8080), NoCacheHandler) as httpd:
+    port = int(os.environ.get("PORT", "8080"))
+    with socketserver.ThreadingTCPServer(("0.0.0.0", port), NoCacheHandler) as httpd:
+        print(f"Preview siap pada port {port}", flush=True)
         httpd.serve_forever()

@@ -18,6 +18,8 @@ source = Image.open(sys.argv[1]).convert('RGB')
 if source.size != (1224, 2720):
     raise SystemExit('Expected the 1224x2720 wallpaper.')
 w, h = source.size
+config_path = Path(sys.argv[3]) if len(sys.argv) == 4 else Path(__file__).resolve().parents[1] / 'preview/assets/circuit-paths.json'
+config = json.loads(config_path.read_text())
 regions = [
     (0, 110, 415, 235),     # upper-left illuminated traces
     (840, 205, 1090, 875),  # upper-right motif and circuit trace
@@ -37,7 +39,8 @@ draw.rectangle((0, 920, 330, 1060), fill=0)
 draw.rectangle((900, 875, 1120, 1080), fill=0)
 mask = Image.new('L', (w, h), 0)
 source_px = source.load(); mask_px = mask.load(); allow_px = allowed.load()
-for x0, y0, x1, y1 in regions:
+# Legacy orange emitters are used only when explicitly requested by a path.
+for x0, y0, x1, y1 in (regions if any(p.get('kind') == 'amber' for p in config['paths']) else []):
     for y in range(y0, y1):
         for x in range(x0, x1):
             if not allow_px[x, y]:
@@ -54,10 +57,7 @@ alpha = ImageChops.multiply(alpha, allowed)
 overlay = Image.new('RGBA', (w, h), (255, 115, 36, 0))
 overlay.putalpha(alpha)
 
-# The two broad metallic PCB traces are different from the orange LEDs.
-# Paint a thin, soft transparent highlight along their measured centre lines.
-config_path = Path(sys.argv[3]) if len(sys.argv) == 4 else Path(__file__).resolve().parents[1] / 'preview/assets/circuit-paths.json'
-config = json.loads(config_path.read_text())
+# Paint copper highlights only for the paths supplied in the configuration.
 copper_core = Image.new('L', (w, h), 0)
 copper_draw = ImageDraw.Draw(copper_core)
 seen = set()

@@ -6,6 +6,13 @@ const html = fs.readFileSync('preview/index.html', 'utf8');
 const scripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g));
 const source = scripts[scripts.length - 1][1];
 const config = JSON.parse(fs.readFileSync('preview/assets/circuit-paths.json', 'utf8'));
+// Exercise motion using synthetic paths; shipped defaults intentionally contain none.
+assert.equal(config.paths.length, 0);
+config.paths = [
+  {offset: 0, points: [[100,200], [200,200], [200,400]]},
+  {offset: 0.5, points: [[100,200], [200,200], [200,400]]},
+  {offset: 0.2, points: [[300,300], [450,500]]}
+];
 const frames = [], gradients = [];
 const ctx = {
   clearRect() {}, save() {}, restore() {}, translate() {}, scale() {},

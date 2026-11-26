@@ -18,8 +18,6 @@ for name, bounds in {
     'upper flex': (900, 40, 1080, 200),
 }.items():
     assert a.crop(bounds).getbbox() is None, f'Overlay touches protected {name}'
-for name, bounds in {'top left': (0, 110, 375, 235), 'upper right': (840, 205, 1090, 875), 'lower trace': (330, 785, 635, 950)}.items():
-    assert a.crop(bounds).getbbox() is not None, f'No glow in {name}'
 config_data = Path('preview/assets/circuit-paths.json').read_bytes()
 assert config_data == Path('app/src/main/assets/circuit_paths.json').read_bytes()
 config = json.loads(config_data)
@@ -41,5 +39,6 @@ for path in config['paths']:
         radius = 5 if path.get('kind') == 'copper' else 50
         nearby = a.crop((max(0, x - radius), max(0, y - radius), min(image.width, x + radius + 1), min(image.height, y + radius + 1)))
         assert nearby.getextrema()[1] >= 10, f'Path is detached from glow mask at {x}, {y}'
-assert sum(1 for path in config['paths'] if path.get('kind') == 'copper') >= 2
-print('Copper and amber moving paths, alignment and protected regions: OK')
+assert config['paths'] == [], 'Default paths must remain empty until the user creates them'
+assert a.getbbox() is None, 'Default glow mask must be empty'
+print('Default paths and mask are empty, preview and Android assets match: OK')

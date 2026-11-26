@@ -484,13 +484,13 @@
         <button class="primary" id="pathEdit" type="button" disabled>Gambar jalur</button>
         <button id="pathErase" type="button" disabled aria-pressed="false">Penghapus garis</button>
         <button id="pathUndo" type="button" disabled>Urungkan</button>
-        <button id="pathReset" type="button" disabled>Pulihkan bawaan</button>
+        <button id="pathReset" type="button" disabled>Hapus semua</button>
         <button id="pathExport" type="button" disabled>Unduh jalur</button>
       </div>
       <label class="path-editor-size" for="pathWidth">Ketebalan jalur <input type="range" id="pathWidth" min="4" max="60" step="2" value="10" disabled><output id="pathWidthValue" for="pathWidth">10 px</output></label>
       <p id="pathStatus" class="path-editor-status" role="status">Memuat editor…</p>
       <p>Penghapus hanya menghilangkan bagian garis buatan yang disentuh. Garis yang terputus menjadi jalur terpisah; gunakan Urungkan untuk mengembalikan. Goresan dihaluskan otomatis; prediksi sentuhan dipakai jika browser mendukungnya. Ketebalan berlaku untuk semua jalur buatan (piksel gambar asli).</p>
-      <p>Jalur buatan menggantikan jalur bawaan dan tersimpan di browser ini. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, unduh berkas lalu kirim ke chat.</p>
+      <p>Jalur bawaan sudah dikosongkan. Jalur buatan tersimpan di browser ini; gunakan Hapus semua jika ingin memulai ulang. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, unduh berkas lalu kirim ke chat.</p>
     </section>
   </div>
 
@@ -657,7 +657,7 @@
     }, 50);
   })();
 </script>
-<script src="circuit-editor.js?v=3"></script>
+<script src="circuit-editor.js?v=4"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
   (function () {
@@ -669,19 +669,20 @@
     var canvas = document.getElementById('amberGlow');
     var toggle = document.getElementById('amberToggle');
     var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
-    var ready = false;
+    var ready = false, activePathCount = 0;
     function updateStatus() {
       if (!toggle.checked) status.textContent = 'Animasi dimatikan.';
       else if (reduced.matches) status.textContent = 'Nonaktif: pengaturan kurangi gerakan di perangkat.';
-      else status.textContent = ready ? 'Aktif · cahaya bergerak di jalur tembaga.' : 'Memuat animasi…';
+      else if (!ready) status.textContent = 'Memuat animasi…';
+      else status.textContent = activePathCount ? 'Aktif · cahaya bergerak di jalur.' : 'Belum ada jalur animasi. Gambar jalur untuk memulai.';
     }
     toggle.addEventListener('change', updateStatus);
     if (reduced.addEventListener) reduced.addEventListener('change', updateStatus);
     updateStatus();
     var image = new Image();
     var imageReady = new Promise(function (resolve, reject) { image.onload = resolve; image.onerror = reject; });
-    image.src = 'assets/wallpaper-amber-glow.png?v=3';
-    Promise.all([fetch('assets/circuit-paths.json?v=2').then(function (response) {
+    image.src = 'assets/wallpaper-amber-glow.png?v=4';
+    Promise.all([fetch('assets/circuit-paths.json?v=3').then(function (response) {
       if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
     }), imageReady]).then(function (result) {
       var cfg = result[0];
@@ -694,9 +695,12 @@
         return { offset: path.offset, points: path.points, lengths: lengths, total: total };
       }); }
       var paths = preparePaths(cfg.paths), mask = image;
+      activePathCount = paths.length;
       if (window.setupCircuitEditor) window.setupCircuitEditor(cfg, function (custom, customMask) {
         paths = preparePaths(custom || cfg.paths);
+        activePathCount = paths.length;
         mask = customMask || image;
+        updateStatus();
       });
       var ctx = canvas.getContext('2d');
       if (!ctx) { status.textContent = 'Canvas tidak didukung browser ini.'; return; }
