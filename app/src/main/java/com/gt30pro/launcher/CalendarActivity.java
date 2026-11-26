@@ -23,10 +23,10 @@ import java.util.UUID;
 
 /** Kalender lokal; data tidak disinkronkan dan tidak menjadwalkan pengingat. */
 public class CalendarActivity extends SwipeBackActivity {
-    private static final int AMBER = 0xFFFFD49D, MUTED = 0xFFE7A579;
+    private static final int AMBER = 0xFFFFD49D, MUTED = 0xFFE7A579, WEEKEND = 0xFFFF6B6B;
     private static final String[] MONTHS = {"Januari", "Februari", "Maret", "April", "Mei", "Juni",
             "Juli", "Agustus", "September", "Oktober", "November", "Desember"};
-    private static final String[] WEEKDAYS = {"Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"};
+    private static final String[] WEEKDAYS = {"Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"};
     private Typeface doto;
     private LinearLayout page;
     private LocalDate selected = LocalDate.now();
@@ -131,8 +131,8 @@ public class CalendarActivity extends SwipeBackActivity {
         next.setEnabled(!(selected.getYear() == 2100 && selected.getMonthValue() == 12));
         nav.addView(next, new LinearLayout.LayoutParams(dp(48), dp(48))); page.addView(nav); space(12);
         LinearLayout weekdays = new LinearLayout(this);
-        for (String day : WEEKDAYS) {
-            TextView title = text(day, 11, MUTED); title.setGravity(Gravity.CENTER);
+        for (int col = 0; col < WEEKDAYS.length; col++) {
+            TextView title = text(WEEKDAYS[col], 11, col >= 5 ? WEEKEND : MUTED); title.setGravity(Gravity.CENTER);
             weekdays.addView(title, new LinearLayout.LayoutParams(0, dp(30), 1));
         }
         page.addView(weekdays);
@@ -148,7 +148,7 @@ public class CalendarActivity extends SwipeBackActivity {
                 if (dayNumber < 1 || dayNumber > length) { week.addView(new View(this), cell); continue; }
                 LocalDate day = monthValue.atDay(dayNumber);
                 boolean has = hasEvents(events, day);
-                TextView item = text(String.valueOf(dayNumber) + (has ? "·" : ""), 14, day.equals(LocalDate.now()) ? 0xFFFFE5B1 : AMBER);
+                TextView item = text(String.valueOf(dayNumber) + (has ? "·" : ""), 14, col >= 5 ? WEEKEND : (day.equals(LocalDate.now()) ? 0xFFFFE5B1 : AMBER));
                 item.setGravity(Gravity.CENTER); item.setContentDescription(dateLabel(day) + (has ? ", ada acara" : ""));
                 if (day.equals(selected)) item.setBackground(bg(0xFF61402C));
                 else if (day.equals(LocalDate.now())) item.setBackground(bg(0xFF211A17));

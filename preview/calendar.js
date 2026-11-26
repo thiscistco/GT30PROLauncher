@@ -6,9 +6,9 @@
 })(typeof window !== 'undefined' ? window : null, function () {
   'use strict';
   var months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  var weekdays = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  var weekdays = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
   function daysInMonth(year, month) { return new Date(year, month, 0).getDate(); }
-  function leadingDays(year, month) { return new Date(year, month - 1, 1).getDay(); }
+  function leadingDays(year, month) { return (new Date(year, month - 1, 1).getDay() + 6) % 7; }
   function shiftMonth(date, delta) {
     var index = Math.max(1900 * 12, Math.min(2100 * 12 + 11, date.year * 12 + date.month - 1 + delta));
     var year = Math.floor(index / 12), month = index % 12 + 1;
@@ -59,8 +59,8 @@
       byId('calendarPrev').disabled = selected.year === 1900 && selected.month === 1;
       byId('calendarNext').disabled = selected.year === 2100 && selected.month === 12;
       grid.replaceChildren();
-      weekdays.forEach(function (name) {
-        var day = doc.createElement('span'); day.className = 'calendar-weekday'; day.textContent = name; grid.appendChild(day);
+      weekdays.forEach(function (name, index) {
+        var day = doc.createElement('span'); day.className = 'calendar-weekday'; day.classList.toggle('weekend', index >= 5); day.textContent = name; grid.appendChild(day);
       });
       for (var empty = 0; empty < leadingDays(selected.year, selected.month); empty++) {
         var spacer = doc.createElement('span'); spacer.setAttribute('aria-hidden', 'true'); grid.appendChild(spacer);
@@ -71,6 +71,7 @@
         var has = records.some(function (e) { return e.date === keyForDay; });
         var button = doc.createElement('button'); button.type = 'button'; button.className = 'calendar-day';
         button.textContent = day + (has ? '·' : '');
+        button.classList.toggle('weekend', (leadingDays(selected.year, selected.month) + day - 1) % 7 >= 5);
         button.classList.toggle('today', keyForDay === todayKey);
         button.classList.toggle('selected', keyForDay === selectedKey);
         button.setAttribute('aria-label', label(date) + (has ? ', ada acara' : ''));

@@ -6,8 +6,12 @@ import java.time.YearMonth;
 public class CalendarDatesTest {
     private static void check(boolean value, String message) { if (!value) throw new AssertionError(message); }
     public static void main(String[] args) {
-        check(CalendarDates.leadingDays(YearMonth.of(2026, 11)) == 0, "Sunday starts in first column");
-        check(CalendarDates.leadingDays(YearMonth.of(2024, 1)) == 1, "Monday starts in second column");
+        check(CalendarDates.leadingDays(YearMonth.of(2026, 11)) == 6, "Sunday is last column");
+        check(CalendarDates.leadingDays(YearMonth.of(2024, 1)) == 0, "Monday starts in first column");
+        for (int i = 0; i < 7; i++) {
+            YearMonth month = YearMonth.of(2024, 1).plusMonths(i);
+            check(CalendarDates.leadingDays(month) == month.atDay(1).getDayOfWeek().getValue() - 1, "Monday-first alignment");
+        }
         check(CalendarDates.shiftMonth(LocalDate.of(2024, 1, 31), 1).equals(LocalDate.of(2024, 2, 29)), "leap day");
         check(CalendarDates.shiftMonth(LocalDate.of(2025, 1, 31), 1).equals(LocalDate.of(2025, 2, 28)), "common February");
         check(CalendarDates.shiftMonth(LocalDate.of(2026, 12, 31), 1).equals(LocalDate.of(2027, 1, 31)), "year transition");

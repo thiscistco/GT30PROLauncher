@@ -214,6 +214,7 @@
   .calendar-day { color: #ffd49d; background: transparent; border: 1px solid transparent; border-radius: 2mm; height: 9mm; font: 700 2.8mm 'Doto', monospace; cursor: pointer; }
   .calendar-day.today { background: #211a17; border-color: #8d604c; }
   .calendar-day.selected { background: #61402c; border-color: #8d604c; }
+  .calendar-weekday.weekend, .calendar-day.weekend { color: #ff6b6b; }
   .calendar-day:focus-visible { outline: 2px solid #ffd49d; outline-offset: -2px; }
   .calendar-event { display: flex; align-items: center; gap: 2mm; }
   .calendar-event span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
@@ -732,7 +733,7 @@
     }, 50);
   })();
 </script>
-<script src="calendar.js?v=1"></script>
+<script src="calendar.js?v=2"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

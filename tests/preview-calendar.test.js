@@ -3,7 +3,9 @@ const assert = require('assert'), fs = require('fs');
 const calendar = require('../preview/calendar.js');
 assert.equal(calendar.daysInMonth(2024,2), 29);
 assert.equal(calendar.daysInMonth(2025,2), 28);
-assert.equal(calendar.leadingDays(2026,11), 0);
+assert.equal(calendar.leadingDays(2026,11), 6);
+assert.equal(calendar.leadingDays(2024,1), 0);
+for (let month=1; month<=12; month++) assert.equal(calendar.leadingDays(2024,month), (new Date(2024,month-1,1).getDay()+6)%7);
 assert.deepEqual(calendar.shiftMonth({year:2024,month:1,day:31},1), {year:2024,month:2,day:29});
 assert.deepEqual(calendar.shiftMonth({year:2026,month:12,day:31},1), {year:2027,month:1,day:31});
 assert.deepEqual(calendar.shiftMonth({year:1900,month:1,day:31},-1), {year:1900,month:1,day:31});
@@ -31,6 +33,11 @@ function createUI(){
 }
 let ui=createUI();
 assert.equal(ui.calendarGrid.children.filter(e=>e.attrs['aria-pressed']==='true').length,1);
+assert.deepEqual(ui.calendarGrid.children.slice(0,7).map(e=>e.textContent), ['Sen','Sel','Rab','Kam','Jum','Sab','Min']);
+ui.calendarGrid.children.forEach((e,i)=>{ if(i<7 || e.attrs['aria-pressed']!==undefined) assert.equal(e.classes.has('weekend'), i%7>=5, 'weekend color for column '+i%7); });
+const weekendDay = ui.calendarGrid.children.find((e,i)=>i>=7 && i%7>=5 && e.attrs['aria-pressed']!==undefined);
+weekendDay.fire('click'); assert(ui.calendarGrid.children.find(e=>e.attrs['aria-pressed']==='true').classes.has('weekend'), 'selected weekend stays red');
+ui.calendarToday.fire('click');
 const selected=ui.calendarSelected.textContent;
 ui.calendarAdd.fire('click'); assert.equal(ui.calendarForm.hidden,false);
 ui.calendarTitle.value=' <img src=x> '; ui.calendarTime.value='09:30'; ui.calendarForm.fire('submit');
@@ -47,5 +54,6 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=1"/);
+assert.match(html,/src="calendar\.js\?v=2"/);
+assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend \{ color: #ff6b6b; \}/);
 console.log('Calendar preview: date rules, local persistence, deletion, safe text and navigation: OK');

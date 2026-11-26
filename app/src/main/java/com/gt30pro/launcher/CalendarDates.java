@@ -9,9 +9,9 @@ final class CalendarDates {
     private static final YearMonth MAX = YearMonth.of(2100, 12);
     private CalendarDates() {}
 
-    /** Calendar rows start on Sunday, matching the Indonesian weekday labels. */
+    /** Calendar rows start on Monday, matching the Indonesian weekday labels. */
     static int leadingDays(YearMonth month) {
-        return month.atDay(1).getDayOfWeek().getValue() % 7;
+        return month.atDay(1).getDayOfWeek().getValue() - 1;
     }
 
     /** Navigate by one month, preserving the selected day where it exists. */
