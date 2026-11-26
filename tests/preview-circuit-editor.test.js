@@ -15,7 +15,7 @@ function context() {
 }
 function initialize() {
   const ids = {};
-  for (const id of ['pathDraw','pathEdit','pathErase','pathUndo','pathReset','pathExport','pathStatus','pathWidth','pathWidthValue','tabHome','tabSuper']) ids[id] = element();
+  for (const id of ['pathDraw','pathEdit','pathErase','pathUndo','pathReset','pathExport','pathStatus','pathWidth','pathWidthValue','pathPalm','tabHome','tabSuper']) ids[id] = element();
   const guide = context(); ids.pathDraw.getContext = () => guide;
   ids.pathDraw.getBoundingClientRect = () => ({left: 50, top: 100, width: 300, height: 600});
   ids.pathDraw.setPointerCapture = () => {};
@@ -34,8 +34,8 @@ function initialize() {
   win.setupCircuitEditor(cfg, (paths, mask) => { applied = {paths, mask}; });
   return ids;
 }
-function pointer(el, type, x, y, pointerId=1) {
-  el.listeners[type]({clientX:x, clientY:y, pointerId, isPrimary:true, button:0, preventDefault() {}});
+function pointer(el, type, x, y, pointerId=1, pointerType='mouse', isPrimary=true) {
+  el.listeners[type]({clientX:x, clientY:y, pointerId, pointerType, isPrimary, button:0, preventDefault() {}});
 }
 function stroke(ids, a, b) { pointer(ids.pathDraw, 'pointerdown', ...a); pointer(ids.pathDraw, 'pointerup', ...b); }
 let ids = initialize();
@@ -123,4 +123,33 @@ stroke(ids,[80,200],[160,280]); stroke(ids,[160,200],[80,280]); ids.pathErase.cl
 pointer(ids.pathDraw,'pointerdown',120,240); pointer(ids.pathDraw,'pointerup',120,240);
 assert.equal(applied.paths.length, 8, 'crossing yields four preserved line portions');
 ids.pathUndo.click(); assert.equal(applied.paths.length, 4);
-console.log('Preview partial eraser, swept gestures, undo, smoothing, prediction, joins, export and storage: OK');
+// Palm rejection is opt-in: ignore touch/mouse before and during a pen stroke.
+store.clear(); ids = initialize(); assert.equal(ids.pathPalm.checked, false); ids.pathEdit.click();
+ids.pathPalm.checked = true; ids.pathPalm.listeners.change();
+assert.match(ids.pathStatus.textContent, /khusus stylus/);
+pointer(ids.pathDraw,'pointerdown',80,200,11,'touch');
+pointer(ids.pathDraw,'pointermove',100,220,11,'touch');
+pointer(ids.pathDraw,'pointerdown',110,210,22,'pen');
+pointer(ids.pathDraw,'pointercancel',100,220,11,'touch');
+pointer(ids.pathDraw,'pointermove',140,230,22,'pen');
+pointer(ids.pathDraw,'pointerup',150,240,22,'pen');
+assert.equal(applied.paths.length, 2, 'stylus works while palm touches');
+const kept = JSON.stringify(applied.paths);
+pointer(ids.pathDraw,'pointerdown',200,300,33,'mouse'); pointer(ids.pathDraw,'pointerup',250,300,33,'mouse');
+assert.equal(JSON.stringify(applied.paths), kept, 'mouse is ignored in stylus-only mode');
+ids.pathErase.click();
+pointer(ids.pathDraw,'pointerdown',130,223,44,'touch'); pointer(ids.pathDraw,'pointerup',130,223,44,'touch');
+assert.equal(JSON.stringify(applied.paths), kept, 'palm cannot erase');
+pointer(ids.pathDraw,'pointerdown',130,223,55,'pen'); pointer(ids.pathDraw,'pointerup',130,223,55,'pen');
+assert.notEqual(JSON.stringify(applied.paths), kept, 'stylus can erase');
+ids.pathUndo.click(); assert.equal(JSON.stringify(applied.paths), kept);
+ids = initialize(); assert.equal(ids.pathPalm.checked, true, 'palm preference survives reload');
+ids.pathPalm.checked = false; ids.pathPalm.listeners.change(); ids.pathEdit.click();
+pointer(ids.pathDraw,'pointerdown',200,300,66,'touch'); pointer(ids.pathDraw,'pointerup',250,300,66,'touch');
+assert.equal(applied.paths.length, 4, 'touch works after disabling palm rejection');
+// Switching modes mid-touch does not commit an accidental line.
+store.clear(); ids = initialize(); ids.pathEdit.click();
+pointer(ids.pathDraw,'pointerdown',80,200,77,'touch'); pointer(ids.pathDraw,'pointermove',110,230,77,'touch');
+ids.pathPalm.checked = true; ids.pathPalm.listeners.change();
+pointer(ids.pathDraw,'pointerup',150,240,77,'touch'); assert.equal(applied.paths, null);
+console.log('Preview palm rejection, stylus and touch, partial eraser, smoothing, joins and storage: OK');

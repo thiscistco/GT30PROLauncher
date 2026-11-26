@@ -2,6 +2,7 @@
 (function () {
   'use strict';
   var KEY = 'gt30-circuit-user-paths-v1';
+  var PALM_KEY = 'gt30-circuit-stylus-only-v1';
   var MAX_PATHS = 100, MAX_STROKE_POINTS = 600, MAX_PATH_POINTS = 6000;
   var protectedBoxes = [[30,1060,1195,2300], [35,925,330,1060],
     [900,875,1120,1080], [900,40,1080,200]];
@@ -12,6 +13,7 @@
     var undo = document.getElementById('pathUndo'), reset = document.getElementById('pathReset');
     var exportButton = document.getElementById('pathExport'), status = document.getElementById('pathStatus');
     var widthInput = document.getElementById('pathWidth'), widthValue = document.getElementById('pathWidthValue');
+    var palmInput = document.getElementById('pathPalm');
     if (!ctx) { status.textContent = 'Editor tidak didukung browser ini.'; return; }
     var paths = [], width = 10, drawing = null, erasing = null, mode = 'view', history = [], storageAvailable = true;
 
@@ -32,6 +34,9 @@
         if (!Array.isArray(parsed) && Number.isInteger(parsed.width) && parsed.width >= 4 && parsed.width <= 60) width = parsed.width;
       }
     } catch (error) { storageAvailable = false; }
+    // Keep this preference separate from path storage for backwards compatibility.
+    try { palmInput.checked = localStorage.getItem(PALM_KEY) === '1'; }
+    catch (error) { storageAvailable = false; }
 
     function pathSpecs() {
       var result = [];
@@ -105,6 +110,7 @@
       status.textContent = (paths.length ? paths.length + ' jalur buatan aktif.' : 'Belum ada jalur. Silakan gambar dari awal.') +
         (mode === 'draw' ? ' Tarik dari atau ke titik ujung untuk menyambung.' :
           mode === 'erase' ? ' Usap bagian garis yang ingin dihapus.' : '') +
+        (palmInput.checked ? ' Penolakan telapak aktif: khusus stylus.' : '') +
         (storageAvailable ? '' : ' Penyimpanan browser tidak tersedia; unduh sebelum menutup halaman.');
       drawGuides();
     }
@@ -226,7 +232,18 @@
       if (!erasing.changed) { snapshot(); erasing.changed = true; }
       paths = pieces; persist(); refresh();
     }
-    edit.disabled = false; widthInput.disabled = false;
+    edit.disabled = false; widthInput.disabled = false; palmInput.disabled = false;
+    palmInput.addEventListener('change', function () {
+      // If enabled mid-gesture, discard an unfinished non-pen stroke; already
+      // applied eraser changes remain undoable as a single operation.
+      if (palmInput.checked) {
+        if (drawing && drawing.type !== 'pen') drawing = null;
+        if (erasing && erasing.type !== 'pen') erasing = null;
+      }
+      try { localStorage.setItem(PALM_KEY, palmInput.checked ? '1' : '0'); }
+      catch (error) { storageAvailable = false; }
+      refresh();
+    });
     edit.setAttribute('aria-pressed', 'false');
     edit.addEventListener('click', function () {
       if (mode === 'view') { document.getElementById('tabHome').click(); setMode('draw'); }
@@ -257,15 +274,20 @@
       status.textContent = 'Berkas diunduh. Kirim jalur-animasi-gt30.json ke chat untuk dimasukkan ke APK.';
     });
     canvas.addEventListener('pointerdown', function (event) {
-      if (mode === 'view' || event.isPrimary === false || event.button !== 0 || drawing || erasing) return;
+      if (mode === 'view') return;
+      // Browsers identify an active stylus as pointerType "pen". When enabled,
+      // reject other pointer types even when the palm touches before the pen.
+      if (palmInput.checked && event.pointerType !== 'pen') { event.preventDefault(); return; }
+      if (event.isPrimary === false || event.button !== 0 || drawing || erasing) return;
       event.preventDefault();
       if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
       if (mode === 'erase') {
-        erasing = { id: event.pointerId, changed: false, last: toPoint(event) };
+        erasing = { id: event.pointerId, type: event.pointerType, changed: false, last: toPoint(event) };
         eraseSweep(erasing.last, erasing.last);
-      } else drawing = { id: event.pointerId, points: [toPoint(event)], predicted: [] };
+      } else drawing = { id: event.pointerId, type: event.pointerType, points: [toPoint(event)], predicted: [] };
     });
     canvas.addEventListener('pointermove', function (event) {
+      if (mode !== 'view' && palmInput.checked && event.pointerType !== 'pen') { event.preventDefault(); return; }
       if (erasing && erasing.id === event.pointerId) {
         event.preventDefault();
         var p = toPoint(event);
@@ -282,6 +304,7 @@
       drawGuides();
     });
     canvas.addEventListener('pointerup', function (event) {
+      if (mode !== 'view' && palmInput.checked && event.pointerType !== 'pen') { event.preventDefault(); return; }
       if (erasing && erasing.id === event.pointerId) {
         event.preventDefault();
         var p = toPoint(event);

@@ -488,6 +488,8 @@
         <button id="pathExport" type="button" disabled>Unduh jalur</button>
       </div>
       <label class="path-editor-size" for="pathWidth">Ketebalan jalur <input type="range" id="pathWidth" min="4" max="60" step="2" value="10" disabled><output id="pathWidthValue" for="pathWidth">10 px</output></label>
+      <label class="charging-toggle"><input type="checkbox" id="pathPalm" aria-describedby="pathPalmHelp" disabled> Penolakan telapak · khusus stylus</label>
+      <p id="pathPalmHelp">Saat aktif, hanya stylus yang terdeteksi browser dapat menggambar atau menghapus. Matikan untuk menggunakan jari atau mouse, atau jika stylus tidak terdeteksi.</p>
       <p id="pathStatus" class="path-editor-status" role="status">Memuat editor…</p>
       <p>Penghapus hanya menghilangkan bagian garis buatan yang disentuh. Garis yang terputus menjadi jalur terpisah; gunakan Urungkan untuk mengembalikan. Goresan dihaluskan otomatis; prediksi sentuhan dipakai jika browser mendukungnya. Ketebalan berlaku untuk semua jalur buatan (piksel gambar asli).</p>
       <p>Jalur bawaan sudah dikosongkan. Jalur buatan tersimpan di browser ini; gunakan Hapus semua jika ingin memulai ulang. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, unduh berkas lalu kirim ke chat.</p>
@@ -657,7 +659,7 @@
     }, 50);
   })();
 </script>
-<script src="circuit-editor.js?v=4"></script>
+<script src="circuit-editor.js?v=5"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
   (function () {
