@@ -144,9 +144,8 @@ public class MainActivity extends Activity {
         clockHourText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
         clockHourText.setTextColor(0xFFE7A579);
-        clockHourText.setShadowLayer(10f, 0f, 0f, 0xA6DD6234);
         clockHourText.setLetterSpacing(0.06f);
-        clockHourText.setFontVariationSettings("'wght' 700");
+        clockHourText.setFontVariationSettings("'wght' 800");
         clockHourText.setIncludeFontPadding(false);
         clockHourText.setText("00");
         clockBox.addView(clockHourText);
@@ -187,9 +186,8 @@ public class MainActivity extends Activity {
         clockMinText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
         clockMinText.setTextColor(0xFFE7A579);
-        clockMinText.setShadowLayer(10f, 0f, 0f, 0xA6DD6234);
         clockMinText.setLetterSpacing(0.06f);
-        clockMinText.setFontVariationSettings("'wght' 700");
+        clockMinText.setFontVariationSettings("'wght' 800");
         clockMinText.setIncludeFontPadding(false);
         clockMinText.setText("00");
         clockBox.addView(clockMinText);
@@ -255,6 +253,10 @@ public class MainActivity extends Activity {
         float clockSizePx = width * (2f / 70.9f);
         clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
         clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
+        // Match the tighter preview glow to keep the small Doto dots legible.
+        float clockGlowRadius = width * (0.4f / 70.9f);
+        clockHourText.setShadowLayer(clockGlowRadius, 0f, 0f, 0xA6DD6234);
+        clockMinText.setShadowLayer(clockGlowRadius, 0f, 0f, 0xA6DD6234);
         clockHourText.setLetterSpacing(0.2f / 2f);
         clockMinText.setLetterSpacing(0.2f / 2f);
         LinearLayout.LayoutParams sep = (LinearLayout.LayoutParams) clockSep.getLayoutParams();
@@ -269,9 +271,9 @@ public class MainActivity extends Activity {
         // 50% - 14.3% places the clock at the preview's 35.7% center.
         params.rightMargin = Math.round(width * 0.143f);
         params.bottomMargin = Math.round(height * 0.06f + 3f * cssPixel);
-        // Apply subpixel shifts relative to the previous layout (1 CSS px = cssPixel).
+        // Apply subpixel shifts in preview CSS pixels (1 CSS px = cssPixel).
         clockBox.setTranslationX(-0.5f * cssPixel);
-        clockBox.setTranslationY(0.75f * cssPixel);
+        clockBox.setTranslationY(1.25f * cssPixel);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
             android.graphics.Rect bounds = new android.graphics.Rect();
