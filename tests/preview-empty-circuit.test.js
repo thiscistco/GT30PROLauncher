@@ -10,7 +10,8 @@ const ctx = { clearRect() {}, save() {}, restore() {}, translate() {}, scale() {
   createRadialGradient(x,y) { gradients.push([x,y]); return { addColorStop() {} }; } };
 const canvas = { getContext: () => ctx, getBoundingClientRect: () => ({width:269, height:597}) };
 const toggle = { checked:true, addEventListener() {} }, status = {textContent:''};
-const document = { hidden:false, getElementById: id => ({amberGlow:canvas, amberToggle:toggle, amberStatus:status, superPage:{hidden:true}, clockPage:{hidden:true}})[id] };
+const ram = {value:'50', addEventListener() {}}, ramValue = {textContent:''};
+const document = { hidden:false, getElementById: id => ({amberGlow:canvas, amberToggle:toggle, amberStatus:status, ramSimulation:ram, ramValue, superPage:{hidden:true}, clockPage:{hidden:true}})[id] };
 class ImageMock { set src(value) { queueMicrotask(() => this.onload()); } }
 let apply;
 const window = {requestAnimationFrame: cb => frames.push(cb), matchMedia: () => ({matches:false}),

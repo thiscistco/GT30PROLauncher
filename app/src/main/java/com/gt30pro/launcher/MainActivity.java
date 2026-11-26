@@ -2,6 +2,7 @@ package com.gt30pro.launcher;
 
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import java.text.SimpleDateFormat;
@@ -47,6 +49,9 @@ public class MainActivity extends Activity {
     private ValueAnimator chargeAnim;
     private CircuitGlowView amberGlow;
     private ValueAnimator amberAnim;
+    private double amberPhase, amberDurationMs;
+    private long amberLastFrame, amberNextMemorySample;
+    private static final long MEMORY_SAMPLE_INTERVAL_MS = 3000;
     private boolean charging = false;
     private final BroadcastReceiver powerSaveReceiver = new BroadcastReceiver() {
         @Override public void onReceive(Context context, Intent intent) { updateAmberGlow(); }
@@ -306,6 +311,19 @@ public class MainActivity extends Activity {
         if (amberGlow != null) amberGlow.setVisibility(View.INVISIBLE);
     }
 
+    private double readUsedRamFraction() {
+        try {
+            ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+            if (manager == null) return 0.5;
+            ActivityManager.MemoryInfo memory = new ActivityManager.MemoryInfo();
+            manager.getMemoryInfo(memory);
+            return CircuitMotion.usedRamFraction(memory.totalMem, memory.availMem);
+        } catch (RuntimeException ignored) {
+            // Some devices may not expose memory info: use the original speed.
+            return 0.5;
+        }
+    }
+
     private void updateAmberGlow() {
         android.os.PowerManager power = (android.os.PowerManager) getSystemService(POWER_SERVICE);
         if (amberGlow == null || !amberGlow.isReady() || !isAmberGlowEnabled()
@@ -315,13 +333,27 @@ public class MainActivity extends Activity {
         }
         if (amberAnim != null) return;
         amberGlow.setVisibility(View.VISIBLE);
-        // One configured duration per direction; the second half returns to the start.
-        amberAnim = ValueAnimator.ofFloat(0f, 2f);
-        amberAnim.setDuration(amberGlow.getDurationMs() * 2);
+        // The animator only schedules frames. Integrating elapsed time preserves
+        // position when memory changes instead of restarting or jumping the light.
+        amberLastFrame = SystemClock.uptimeMillis();
+        amberDurationMs = CircuitMotion.durationMs(amberGlow.getDurationMs(), readUsedRamFraction());
+        amberNextMemorySample = amberLastFrame + MEMORY_SAMPLE_INTERVAL_MS;
+        amberGlow.setPhase((float) amberPhase);
+        amberAnim = ValueAnimator.ofFloat(0f, 1f);
+        amberAnim.setDuration(1000);
         amberAnim.setRepeatMode(ValueAnimator.RESTART);
         amberAnim.setRepeatCount(ValueAnimator.INFINITE);
         amberAnim.setInterpolator(new android.view.animation.LinearInterpolator());
-        amberAnim.addUpdateListener(a -> amberGlow.setPhase((float) a.getAnimatedValue()));
+        amberAnim.addUpdateListener(a -> {
+            long now = SystemClock.uptimeMillis();
+            amberPhase = CircuitMotion.advance(amberPhase, Math.max(0, now - amberLastFrame), amberDurationMs);
+            amberLastFrame = now;
+            if (now >= amberNextMemorySample) {
+                amberDurationMs = CircuitMotion.durationMs(amberGlow.getDurationMs(), readUsedRamFraction());
+                amberNextMemorySample = now + MEMORY_SAMPLE_INTERVAL_MS;
+            }
+            amberGlow.setPhase((float) amberPhase);
+        });
         amberAnim.start();
     }
 

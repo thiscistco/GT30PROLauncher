@@ -198,6 +198,9 @@
   .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }
   .charging-toggle input { accent-color: #f7a23b; }
   .animation-status { color: #a7aeba; font: 600 11px 'Doto', monospace; text-align: center; }
+  .ram-simulation { width: min(100%, 430px); display: grid; gap: 7px; padding: 12px 14px; border: 1px solid rgba(247,162,59,.3); border-radius: 12px; background: rgba(20,22,26,.92); color: #c3cad4; font: 600 12px/1.5 'Doto', monospace; }
+  .ram-simulation input { width: 100%; accent-color: #f7a23b; }
+  .ram-simulation output { color: #ffc477; }
   .super-page { position: absolute; inset: 0; z-index: 9; padding: 8mm 5mm;
     background: #000;
     font-family: 'Doto', monospace; font-weight: 700; }
@@ -478,6 +481,11 @@
 
     <label class="charging-toggle"><input type="checkbox" id="amberToggle" checked> Animasi jalur tembaga</label>
     <div class="animation-status" id="amberStatus" role="status">Memuat animasi…</div>
+    <div class="ram-simulation">
+      <label for="ramSimulation">Simulasi penggunaan RAM: <output id="ramValue" for="ramSimulation">50% · 6,0 detik per arah</output></label>
+      <input type="range" id="ramSimulation" min="0" max="100" step="1" value="50">
+      <span>Preview memakai simulasi, bukan RAM perangkat. RAM lebih tinggi = cahaya lebih cepat.</span>
+    </div>
     <label class="charging-toggle"><input type="checkbox" id="chargeToggle" checked> Simulasi pengisian daya</label>
 
     <section class="path-editor" aria-label="Gambar jalur animasi">
@@ -682,16 +690,29 @@
     }
     var canvas = document.getElementById('amberGlow');
     var toggle = document.getElementById('amberToggle');
+    var ramSlider = document.getElementById('ramSimulation'), ramValue = document.getElementById('ramValue');
+    var baseDuration = 6000;
+    function ramFraction() {
+      var value = Number(ramSlider.value);
+      return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) / 100 : 0.5;
+    }
+    function oneWayDuration() { return Math.max(1, baseDuration) * (1.5 - ramFraction()); }
+    function updateRamText() {
+      ramValue.textContent = Math.round(ramFraction() * 100) + '% · ' + (oneWayDuration() / 1000).toFixed(1).replace('.', ',') + ' detik per arah';
+    }
+    ramSlider.addEventListener('input', updateRamText);
+    updateRamText();
     var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
-    var ready = false, activePathCount = 0;
+    var ready = false, activePathCount = 0, phase = 0, lastFrame = null;
     function updateStatus() {
       if (!toggle.checked) status.textContent = 'Animasi dimatikan.';
       else if (reduced.matches) status.textContent = 'Nonaktif: pengaturan kurangi gerakan di perangkat.';
       else if (!ready) status.textContent = 'Memuat animasi…';
       else status.textContent = activePathCount ? 'Aktif · cahaya bergerak di jalur.' : 'Belum ada jalur animasi. Gambar jalur untuk memulai.';
     }
-    toggle.addEventListener('change', updateStatus);
-    if (reduced.addEventListener) reduced.addEventListener('change', updateStatus);
+    toggle.addEventListener('change', function () { lastFrame = null; updateStatus(); });
+    if (reduced.addEventListener) reduced.addEventListener('change', function () { lastFrame = null; updateStatus(); });
+    if (document.addEventListener) document.addEventListener('visibilitychange', function () { lastFrame = null; });
     updateStatus();
     var image = new Image();
     var imageReady = new Promise(function (resolve, reject) { image.onload = resolve; image.onerror = reject; });
@@ -700,6 +721,7 @@
       if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
     }), imageReady]).then(function (result) {
       var cfg = result[0];
+      baseDuration = cfg.durationMs; updateRamText();
       function preparePaths(items) { return items.map(function (path) {
         var lengths = [], total = 0;
         for (var i = 1; i < path.points.length; i++) {
@@ -732,22 +754,21 @@
         }
         return path.points[0];
       }
-      var start = null;
       function frame(now) {
         window.requestAnimationFrame(frame);
         if (!toggle.checked || reduced.matches || document.hidden ||
-            !document.getElementById('superPage').hidden || !document.getElementById('clockPage').hidden) return;
-        if (start === null) start = now;
+            !document.getElementById('superPage').hidden || !document.getElementById('clockPage').hidden) { lastFrame = null; return; }
         var box = canvas.getBoundingClientRect();
-        if (!box.width || !box.height) return;
+        if (!box.width || !box.height) { lastFrame = null; return; }
+        if (lastFrame !== null) phase = (phase + Math.max(0, now - lastFrame) / oneWayDuration()) % 2;
+        lastFrame = now;
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var w = Math.round(box.width*dpr), h = Math.round(box.height*dpr);
         if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
         ctx.clearRect(0, 0, w, h);
         var scale = Math.max(w/cfg.width, h/cfg.height);
         ctx.save(); ctx.translate((w-cfg.width*scale)/2, (h-cfg.height*scale)/2); ctx.scale(scale, scale);
-        // One duration per direction; each offset light turns around at its own endpoint.
-        var phase = ((now-start) % (cfg.durationMs * 2)) / cfg.durationMs;
+        // One duration per direction; changes to RAM speed never reset the phase.
         paths.forEach(function (path) {
           var cycle = (phase + path.offset) % 2;
           var fraction = cycle <= 1 ? cycle : 2 - cycle;
