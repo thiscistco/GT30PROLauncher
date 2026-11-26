@@ -77,7 +77,9 @@ public class MainActivity extends BottomSwipeActivity {
             int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
             int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100);
             if (level >= 0 && scale > 0 && batteryLed != null) {
-                batteryLed.setText((level * 100 / scale) + "%");
+                int percent = level * 100 / scale;
+                batteryLed.setText(String.valueOf(percent));
+                batteryLed.setContentDescription("Baterai " + percent + " persen");
                 int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
                 charging = status == BatteryManager.BATTERY_STATUS_CHARGING
                         || intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
@@ -106,16 +108,21 @@ public class MainActivity extends BottomSwipeActivity {
         batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
         batteryLed.setLetterSpacing(0.06f);
         batteryLed.setFontVariationSettings("'wght' 700");
-        batteryLed.setText("85%");
+        batteryLed.setText("85");
+        batteryLed.setContentDescription("Baterai 85 persen");
         FrameLayout.LayoutParams ledParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
-        ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
+        FrameLayout homeRoot = findViewById(R.id.root);
+        homeRoot.addView(batteryLed, ledParams);
+        homeRoot.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
+            if (r - l != oldR - oldL) updateBatteryOffset(homeRoot, batteryLed);
+        });
+        homeRoot.post(() -> updateBatteryOffset(homeRoot, batteryLed));
 
         // The clock is a single explicitly measured drawing, above the wallpaper.
-        FrameLayout homeRoot = findViewById(R.id.root);
         HomeClockView clockBox = new HomeClockView(this);
         clockLed = clockBox;
         clockBox.setVisibility(View.VISIBLE);
@@ -176,6 +183,12 @@ public class MainActivity extends BottomSwipeActivity {
         root.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }
 
+    private void updateBatteryOffset(FrameLayout root, TextView batteryBox) {
+        if (root.getWidth() <= 0) return;
+        float cssPixel = (root.getWidth() / 70.9f) * 25.4f / 96f;
+        batteryBox.setTranslationY(cssPixel);
+    }
+
     private void updateClockLayout(FrameLayout root, HomeClockView clockBox) {
         int width = root.getWidth(), height = root.getHeight();
         if (width <= 0 || height <= 0) return;
@@ -185,7 +198,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxHeight = Math.max(1, Math.round(HomeClockView.HEIGHT_MM * pixelsPerMm));
         // Keep the content (not its glow padding) anchored to the preview position.
         float left = width * .357f - .5f * cssPixel - boxWidth / 2f;
-        float bottom = height * .06f + 1.55f * cssPixel;
+        float bottom = height * .06f + .55f * cssPixel;
         float top = height - bottom - boxHeight + HomeClockView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) clockBox.getLayoutParams();
         params.width = boxWidth;
@@ -216,7 +229,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxHeight = Math.max(1, Math.round(HomeDateView.HEIGHT_MM * pixelsPerMm));
         // Match the preview offsets (1 CSS px = 25.4/96 mm).
         float left = width * .49f + 115f * cssPixel - boxWidth / 2f;
-        float bottom = height * .06f + 391.55f * cssPixel;
+        float bottom = height * .06f + 388.55f * cssPixel;
         float top = height - bottom - boxHeight + HomeDateView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) dateBox.getLayoutParams();
         params.width = boxWidth; params.height = boxHeight;

@@ -165,7 +165,7 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    bottom: 1.2%;
+    bottom: calc(1.2% - 1px);
     font-family: 'Doto', monospace;
     font-size: 2.8mm;
     font-weight: 700;
@@ -180,7 +180,7 @@
     position: absolute;
     left: calc(35.7% - 0.5px);
     transform: translateX(-50%);
-    bottom: calc(6% + 1.55px);
+    bottom: calc(6% + 0.55px);
     font-family: 'Doto', monospace;
     font-size: 2mm;
     font-weight: 800;
@@ -200,7 +200,7 @@
     position: absolute;
     left: calc(49% + 115px);
     transform: translateX(-50%);
-    bottom: calc(6% + 391.55px);
+    bottom: calc(6% + 388.55px);
     font-family: 'Doto', monospace;
     font-size: calc(2.64mm + 10px);
     font-weight: 800;
@@ -470,7 +470,7 @@
                 <span id="homeDateNumber">--</span>
                 <span id="homeDateMonth">---</span>
               </div>
-              <div class="battery-led" id="batteryLed">85%</div>
+              <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen">85</div>
               <section class="drawer-page" id="drawerPage" aria-label="Semua Aplikasi" hidden>
                 <button class="super-back" id="drawerBack" type="button">← Kembali</button>
                 <h2>Semua Aplikasi</h2>

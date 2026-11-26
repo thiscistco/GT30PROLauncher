@@ -6,7 +6,7 @@ const view = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeClockVi
 const clock = html.match(/\.clock-led\s*\{([^}]*)\}/)[1];
 const sep = html.match(/\.clock-sep\s*\{([^}]*)\}/)[1];
 assert.match(clock, /left:\s*calc\(35\.7%\s*-\s*0\.5px\)/);
-assert.match(clock, /bottom:\s*calc\(6%\s*\+\s*1\.55px\)/);
+assert.match(clock, /bottom:\s*calc\(6%\s*\+\s*0\.55px\)/);
 assert.match(clock, /font-size:\s*2mm/);
 assert.match(clock, /font-weight:\s*800/);
 assert.match(clock, /font-variation-settings:\s*'wght'\s*800/);
@@ -34,7 +34,7 @@ assert.match(java, /clockLed\.bringToFront\(\)/);
 assert.match(java, /clockLed\.setTime\(t\.substring\(0, 2\), t\.substring\(3, 5\)\)/);
 assert.match(java, /clockLed\.setSeparatorAlpha\(\(float\) a\.getAnimatedValue\(\)\)/);
 assert.match(java, /width \* \.357f - \.5f \* cssPixel - boxWidth \/ 2f/);
-assert.match(java, /height \* \.06f \+ 1\.55f \* cssPixel/);
+assert.match(java, /height \* \.06f \+ \.55f \* cssPixel/);
 assert.match(view, /setLayerType\(View\.LAYER_TYPE_SOFTWARE, null\)/);
 assert.match(view, /text\.setTextSize\(2f \* pixelsPerMm\)/);
 assert.match(view, /text\.setFontVariationSettings\("'wght' 800"\)/);
@@ -44,14 +44,16 @@ assert.match(view, /dots\.setAlpha\(Math\.round\(separatorAlpha \* 255\)\)/);
 assert.match(view, /drawDigits\(canvas, hour/);
 assert.match(view, /drawDigits\(canvas, minute, dotTop \+ \.22f \* pxPerMm \+ \.45f \* pxPerMm, line\)/);
 // Explicit view bounds include glow padding, while the content remains anchored
-// to the preview's 35.7% center and 6% + 1.55 CSS px bottom position.
+// to the preview's 35.7% center and 6% + 0.55 CSS px bottom position.
 for (const [w,h] of [[269,596],[1224,2720],[720,1600]]) {
   const mm = w/70.9, css = mm*25.4/96;
   const boxWidth = Math.round(3.6*mm), boxHeight = Math.round((5.731+.8)*mm);
   const left = w*.357 - .5*css - boxWidth/2;
-  const top = h - (h*.06 + 1.55*css) - boxHeight + .4*mm;
+  const top = h - (h*.06 + .55*css) - boxHeight + .4*mm;
+  const previousTop = h - (h*.06 + 1.55*css) - boxHeight + .4*mm;
+  assert(Math.abs(top - previousTop - css) < 1e-9, 'entire clock moved down 1 CSS px');
   assert(Math.abs(left + boxWidth/2 - (w*.357 - .5*css)) < 1e-9);
-  assert(Math.abs((h-(top+boxHeight-.4*mm)) - (h*.06 + 1.55*css)) < 1e-9);
+  assert(Math.abs((h-(top+boxHeight-.4*mm)) - (h*.06 + .55*css)) < 1e-9);
   // The clock box keeps its former height; only the minute line moves up.
   const dotTop = top + .4*mm + 2.3*mm + .461*mm - css;
   const oldMinuteTop = dotTop + .22*mm + .45*mm + .5*css;

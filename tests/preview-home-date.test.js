@@ -20,7 +20,7 @@ assert.equal(elements.homeDateWeekday.textContent,'JUM');assert.equal(elements.h
 assert.equal(elements.homeDate.attrs['aria-label'],'Jumat, 1 Januari 2027');
 const html=fs.readFileSync('preview/index.html','utf8'), java=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java','utf8'), view=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeDateView.java','utf8');
 const css=html.match(/\.date-led\s*\{([^}]*)\}/)[1];
-assert.match(css,/left:\s*calc\(49%\s*\+\s*115px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*391\.55px\)/);assert.match(css,/font-size:\s*calc\(2\.64mm \+ 10px\)/);assert.match(css,/letter-spacing:\s*calc\(0\.264mm \+ 1px\)/);assert.match(css,/line-height:\s*1\s*;/);assert.match(css,/gap:\s*1px/);assert.match(css,/pointer-events:\s*none/);
+assert.match(css,/left:\s*calc\(49%\s*\+\s*115px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*388\.55px\)/);assert.match(css,/font-size:\s*calc\(2\.64mm \+ 10px\)/);assert.match(css,/letter-spacing:\s*calc\(0\.264mm \+ 1px\)/);assert.match(css,/line-height:\s*1\s*;/);assert.match(css,/gap:\s*1px/);assert.match(css,/pointer-events:\s*none/);
 const labelCss=html.match(/#homeDateWeekday,\s*#homeDateMonth\s*\{([^}]*)\}/)[1];
 assert.match(labelCss,/font-size:\s*calc\(1\.716mm \+ 6\.5px\)/);
 assert.match(labelCss,/letter-spacing:\s*calc\(0\.1716mm \+ 0\.65px\)/);
@@ -28,7 +28,7 @@ assert.match(html,/id="homeDateWeekday"[\s\S]*id="homeDateNumber"[\s\S]*id="home
 assert.match(html,/src="home-date\.js\?v=1"/);
 const dateLayout = java.match(/private void updateDateLayout\([\s\S]*?\n    }/)[0];
 assert.match(dateLayout,/float left = width \* \.49f \+ 115f \* cssPixel - boxWidth \/ 2f/);
-assert.match(dateLayout,/float bottom = height \* \.06f \+ 391\.55f \* cssPixel/);
+assert.match(dateLayout,/float bottom = height \* \.06f \+ 388\.55f \* cssPixel/);
 assert.match(java,/dateLed\.setDate\(now\.toInstant\(\)\.atZone\(ZoneId\.systemDefault\(\)\)\.toLocalDate\(\)\)/);
 assert.match(view,/setLayerType\(View\.LAYER_TYPE_SOFTWARE/); assert.match(view,/setContentDescription\(HomeDateText\.description/);
 assert.match(view,/SIZE_SCALE = \(2\.64f \+ 10f \* 25\.4f \/ 96f\) \/ 2f/);
@@ -58,9 +58,9 @@ for(const w of [269,720,1224]) {
  // view bounds still extend past the screen edge, but the visible text fits.
  const contentWidth=(1.2*2*sizeScale + 2*.2*sizeScale)*mm;
  assert(dateCenter + contentWidth/2 < w, 'date text remains inside the screen horizontally');
- const h=w*2720/1224, initialBottom=h-h*.06-1.55*cssPixel, previousBottom=h-h*.06-381.55*cssPixel, newBottom=h-h*.06-391.55*cssPixel;
- assert(Math.abs((initialBottom-newBottom)-390*cssPixel)<1e-9, 'exactly 390 CSS px above initial position');
- assert(Math.abs((previousBottom-newBottom)-10*cssPixel)<1e-9, 'exactly 10 CSS px above previous position');
+ const h=w*2720/1224, initialBottom=h-h*.06-1.55*cssPixel, previousBottom=h-h*.06-391.55*cssPixel, newBottom=h-h*.06-388.55*cssPixel;
+ assert(Math.abs((initialBottom-newBottom)-387*cssPixel)<1e-9, 'exactly 387 CSS px above initial position');
+ assert(Math.abs((newBottom-previousBottom)-3*cssPixel)<1e-9, 'exactly 3 CSS px below previous position');
  const labelHeight=2*sizeScale*.65*mm, numberHeight=2*sizeScale*mm, rowGap=cssPixel;
  const weekdayTop=newBottom-(2*labelHeight+numberHeight+2*rowGap), numberTop=weekdayTop+labelHeight+rowGap, monthTop=numberTop+numberHeight+rowGap;
  assert(Math.abs((numberTop-(weekdayTop+labelHeight))-cssPixel)<1e-9, 'first gap is one CSS px');
