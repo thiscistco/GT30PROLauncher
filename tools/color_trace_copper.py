@@ -48,9 +48,6 @@ for box in [(30,1060,1195,2300), (35,925,330,1060), (900,875,1120,1080),
             (900,40,1080,200), (465,110,650,235)]:
     guard.rectangle(box, fill=0)
 mask = ImageChops.multiply(mask, protected)
-# The added copper layer is only 10% opaque; original wallpaper details and
-# colors remain visible beneath it. This does not affect the animation overlay.
-mask = mask.point(lambda value: round(value * 0.10))
 # The existing metallic trace is a muted beige-copper. Preserve local shading,
 # compressing its luminance range so darker traversed areas still read as copper.
 source = image.load()
