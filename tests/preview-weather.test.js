@@ -9,7 +9,7 @@ for (const [name,rows] of Object.entries(weather.icons)) {
  assert(match,name); assert.deepEqual([...match[1].matchAll(/"([.#]+)"/g)].map(m=>m[1]),rows);
 }
 const html=fs.readFileSync('preview/index.html','utf8'),native=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/WeatherController.java','utf8');
-assert.match(html,/id="homeWeather"/);assert.match(html,/id="superWeather"/);assert.match(html,/bottom: calc\(6% \+ 420px\)/);
+assert.match(html,/id="homeWeather"/);assert.match(html,/id="superWeather"/);assert.match(html,/bottom: calc\(6% \+ 460px\)/);
 const superButton=html.match(/<button class="weather-widget super-weather"[\s\S]*?<\/button>/)[0];
 assert(!superButton.includes('weather-temp'));assert.match(html,/\.super-weather svg \{ width: 8mm; height: 8mm; top: 2mm/);
 const view=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/WeatherView.java','utf8');
