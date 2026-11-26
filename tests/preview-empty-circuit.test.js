@@ -3,7 +3,8 @@ const fs = require('fs'), vm = require('vm'), assert = require('assert');
 const html = fs.readFileSync('preview/index.html', 'utf8');
 const source = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g)).at(-1)[1];
 const cfg = JSON.parse(fs.readFileSync('preview/assets/circuit-paths.json', 'utf8'));
-assert.equal(cfg.paths.length, 0);
+// Empty configurations must remain supported when the user clears every path.
+cfg.paths = [];
 const frames = [], gradients = [];
 const ctx = { clearRect() {}, save() {}, restore() {}, translate() {}, scale() {}, beginPath() {}, arc() {}, fill() {}, drawImage() {},
   createRadialGradient(x,y) { gradients.push([x,y]); return { addColorStop() {} }; } };

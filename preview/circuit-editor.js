@@ -11,6 +11,7 @@
     var canvas = document.getElementById('pathDraw'), ctx = canvas.getContext('2d');
     var edit = document.getElementById('pathEdit'), erase = document.getElementById('pathErase');
     var undo = document.getElementById('pathUndo'), reset = document.getElementById('pathReset');
+    var loadDefault = document.getElementById('pathLoadDefault');
     var exportButton = document.getElementById('pathExport'), status = document.getElementById('pathStatus');
     var widthInput = document.getElementById('pathWidth'), widthValue = document.getElementById('pathWidthValue');
     var palmInput = document.getElementById('pathPalm');
@@ -18,7 +19,17 @@
     var codeText = document.getElementById('pathCodeText'), codeCopy = document.getElementById('pathCodeCopy');
     var codeStatus = document.getElementById('pathCodeStatus');
     if (!ctx) { status.textContent = 'Editor tidak didukung browser ini.'; return; }
-    var paths = [], width = 10, drawing = null, erasing = null, mode = 'view', history = [], storageAvailable = true;
+    // The supplied configuration has two light offsets per drawn path. Keep
+    // one editable polyline for each unique path, in its original order.
+    var defaultPaths = [], seen = Object.create(null), defaultWidth = 10;
+    cfg.paths.forEach(function (path) {
+      if (path.kind !== 'copper' || !Array.isArray(path.points)) return;
+      var key = JSON.stringify(path.points);
+      if (!seen[key]) { seen[key] = true; defaultPaths.push(path.points.map(function (p) { return p.slice(); })); }
+      if (Number.isInteger(path.width) && path.width >= 4 && path.width <= 60) defaultWidth = path.width;
+    });
+    function copyPaths(list) { return list.map(function (path) { return path.map(function (p) { return p.slice(); }); }); }
+    var paths = copyPaths(defaultPaths), width = defaultWidth, drawing = null, erasing = null, mode = 'view', history = [], storageAvailable = true;
 
     function valid(list) {
       return Array.isArray(list) && list.length <= MAX_PATHS && list.every(function (path) {
@@ -48,6 +59,12 @@
         result.push({ offset: 0.5, kind: 'copper', width: width, points: points });
       });
       return result;
+    }
+    function matchesDefault() {
+      // Compare data, not object key order, so unedited defaults use the exact
+      // shared bitmap also shipped in Android instead of the live-drawn mask.
+      function signature(items) { return JSON.stringify(items.map(function (p) { return [p.offset, p.kind, p.width, p.points]; })); }
+      return signature(pathSpecs()) === signature(cfg.paths);
     }
     function pathCode() {
       return JSON.stringify({ width: cfg.width, height: cfg.height, durationMs: cfg.durationMs,
@@ -81,8 +98,8 @@
       try { localStorage.setItem(KEY, JSON.stringify({ paths: paths, width: width })); storageAvailable = true; }
       catch (error) { storageAvailable = false; }
     }
-    function snapshot() {
-      history.push(paths.map(function (path) { return path.map(function (point) { return point.slice(); }); }));
+    function snapshot(restoreWidth) {
+      history.push({ paths: copyPaths(paths), width: restoreWidth ? width : null });
       if (history.length > 30) history.shift();
     }
     function geometry() {
@@ -116,12 +133,14 @@
       });
     }
     function refresh() {
-      apply(paths.length ? pathSpecs() : null, paths.length ? makeMask() : null);
+      var isDefault = matchesDefault();
+      apply(isDefault ? null : pathSpecs(), !isDefault && paths.length ? makeMask() : null);
       undo.disabled = !history.length; reset.disabled = !paths.length;
+      loadDefault.disabled = !defaultPaths.length || isDefault;
       exportButton.disabled = !paths.length; erase.disabled = !paths.length && mode !== 'erase';
       widthInput.value = String(width); widthValue.textContent = width + ' px';
       syncCode();
-      status.textContent = (paths.length ? paths.length + ' jalur buatan aktif.' : 'Belum ada jalur. Silakan gambar dari awal.') +
+      status.textContent = (paths.length ? paths.length + (isDefault ? ' jalur awal aktif.' : ' jalur buatan aktif.') : 'Belum ada jalur. Silakan gambar dari awal.') +
         (mode === 'draw' ? ' Tarik dari atau ke titik ujung untuk menyambung.' :
           mode === 'erase' ? ' Usap bagian garis yang ingin dihapus.' : '') +
         (palmInput.checked ? ' Penolakan telapak aktif: khusus stylus.' : '') +
@@ -287,7 +306,16 @@
       setMode(mode === 'erase' ? 'draw' : 'erase');
     });
     document.getElementById('tabSuper').addEventListener('click', function () { if (mode !== 'view') setMode('view'); });
-    undo.addEventListener('click', function () { if (drawing || erasing || !history.length) return; paths = history.pop(); persist(); refresh(); });
+    undo.addEventListener('click', function () {
+      if (drawing || erasing || !history.length) return;
+      var previous = history.pop(); paths = previous.paths;
+      if (previous.width !== null) width = previous.width;
+      persist(); refresh();
+    });
+    loadDefault.addEventListener('click', function () {
+      if (drawing || erasing || (paths.length && !window.confirm('Ganti jalur tersimpan dengan jalur awal?'))) return;
+      snapshot(true); paths = copyPaths(defaultPaths); width = defaultWidth; persist(); refresh();
+    });
     reset.addEventListener('click', function () {
       if (drawing || erasing || !window.confirm('Hapus semua jalur buatan di browser ini?')) return;
       snapshot(); paths = []; persist(); refresh();

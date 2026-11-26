@@ -1,6 +1,7 @@
 // Run with: node tests/preview-circuit-editor.test.js
 const fs = require('fs'), vm = require('vm'), assert = require('assert');
-const cfg = JSON.parse(fs.readFileSync('preview/assets/circuit-paths.json', 'utf8'));
+const bundledConfig = JSON.parse(fs.readFileSync('preview/assets/circuit-paths.json', 'utf8'));
+const cfg = {...bundledConfig, paths: []};
 const source = fs.readFileSync('preview/circuit-editor.js', 'utf8');
 const store = new Map(); let applied, downloadBlob, downloaded, revoked = false;
 function element() {
@@ -14,9 +15,9 @@ function context() {
   return { cleared: [], lines: [], beginPath() {}, moveTo() {}, lineTo(x, y) { this.lines.push([x, y]); }, stroke() {}, arc() {}, fill() {},
     setTransform() {}, translate() {}, scale() {}, clearRect(...rect) { this.cleared.push(rect); } };
 }
-function initialize() {
+function initialize(config = cfg) {
   const ids = {};
-  for (const id of ['pathDraw','pathEdit','pathErase','pathUndo','pathReset','pathExport','pathStatus','pathWidth','pathWidthValue','pathPalm','pathCodeToggle','pathCodePanel','pathCodeText','pathCodeCopy','pathCodeStatus','tabHome','tabSuper']) ids[id] = element();
+  for (const id of ['pathDraw','pathEdit','pathErase','pathUndo','pathReset','pathLoadDefault','pathExport','pathStatus','pathWidth','pathWidthValue','pathPalm','pathCodeToggle','pathCodePanel','pathCodeText','pathCodeCopy','pathCodeStatus','tabHome','tabSuper']) ids[id] = element();
   ids.pathCodePanel.hidden = true;
   const guide = context(); ids.pathDraw.getContext = () => guide;
   ids.pathDraw.getBoundingClientRect = () => ({left: 50, top: 100, width: 300, height: 600});
@@ -33,7 +34,7 @@ function initialize() {
   class BlobMock { constructor(data, options) { this.data = data; this.options = options; downloadBlob = this; } }
   const URL = {createObjectURL: () => 'blob:test', revokeObjectURL: () => { revoked = true; }};
   vm.runInNewContext(source, {window: win, document: doc, localStorage: storage, Blob: BlobMock, URL, setTimeout: fn => fn(), Math, Number, JSON});
-  win.setupCircuitEditor(cfg, (paths, mask) => { applied = {paths, mask}; });
+  win.setupCircuitEditor(config, (paths, mask) => { applied = {paths, mask}; });
   ids.window = win;
   return ids;
 }
@@ -162,6 +163,20 @@ store.clear(); ids = initialize(); ids.pathEdit.click();
 pointer(ids.pathDraw,'pointerdown',80,200,77,'touch'); pointer(ids.pathDraw,'pointermove',110,230,77,'touch');
 ids.pathPalm.checked = true; ids.pathPalm.listeners.change();
 pointer(ids.pathDraw,'pointerup',150,240,77,'touch'); assert.equal(applied.paths, null);
+// The supplied paths appear as three editable routes and use the shared mask.
+store.clear(); ids = initialize(bundledConfig);
+assert.equal(applied.paths, null, 'unedited supplied paths use shared APK mask');
+assert.match(ids.pathStatus.textContent, /3 jalur awal/); assert.equal(ids.pathWidth.value, '8');
+ids.pathCodeToggle.click(); assert.deepEqual(JSON.parse(ids.pathCodeText.value), bundledConfig);
+ids.pathReset.click(); assert.equal(applied.paths.length, 0, 'clear removes even the bundled paths');
+assert.match(ids.pathStatus.textContent, /Belum ada/); assert.equal(JSON.parse(ids.pathCodeText.value).paths.length, 0);
+ids.pathLoadDefault.click(); assert.equal(applied.paths, null); assert.match(ids.pathStatus.textContent, /3 jalur awal/);
+ids.pathUndo.click(); assert.equal(applied.paths.length, 0, 'loading defaults can be undone');
+ids = initialize(bundledConfig); assert.equal(applied.paths.length, 0, 'saved empty paths remain empty after reload');
+ids.pathLoadDefault.click(); assert.equal(applied.paths, null);
+ids.pathWidth.value = '20'; ids.pathWidth.listeners.input(); assert.equal(applied.paths.length, 6);
+ids.pathLoadDefault.click(); assert.equal(ids.pathWidth.value, '8'); assert.equal(applied.paths, null);
+ids.pathUndo.click(); assert.equal(ids.pathWidth.value, '20'); assert.equal(applied.paths.length, 6);
 // Clipboard success and permission denial both leave a usable code panel.
 (async () => {
   store.clear(); const ui = initialize(); ui.pathCodeToggle.click();

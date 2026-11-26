@@ -488,6 +488,7 @@
         <button id="pathErase" type="button" disabled aria-pressed="false">Penghapus garis</button>
         <button id="pathUndo" type="button" disabled>Urungkan</button>
         <button id="pathReset" type="button" disabled>Hapus semua</button>
+        <button id="pathLoadDefault" type="button" disabled>Muat jalur awal</button>
         <button id="pathExport" type="button" disabled>Unduh jalur</button>
         <button id="pathCodeToggle" type="button" aria-controls="pathCodePanel" aria-expanded="false" disabled>Tampilkan kode jalur</button>
       </div>
@@ -503,7 +504,7 @@
       <p id="pathPalmHelp">Saat aktif, hanya stylus yang terdeteksi browser dapat menggambar atau menghapus. Matikan untuk menggunakan jari atau mouse, atau jika stylus tidak terdeteksi.</p>
       <p id="pathStatus" class="path-editor-status" role="status">Memuat editor…</p>
       <p>Penghapus hanya menghilangkan bagian garis buatan yang disentuh. Garis yang terputus menjadi jalur terpisah; gunakan Urungkan untuk mengembalikan. Goresan dihaluskan otomatis; prediksi sentuhan dipakai jika browser mendukungnya. Ketebalan berlaku untuk semua jalur buatan (piksel gambar asli).</p>
-      <p>Jalur bawaan sudah dikosongkan. Jalur buatan tersimpan di browser ini; gunakan Hapus semua jika ingin memulai ulang. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, kirim kode atau berkas jalur ke chat.</p>
+      <p>Jalur awal mengikuti gambar yang Anda kirim. Jalur hasil edit tersimpan di browser ini; pilih Muat jalur awal untuk mengembalikan gambar tersebut atau Hapus semua untuk mulai kosong. Baterai dan kabel tetap terlindungi. Untuk memperbarui APK, kirim kode atau berkas jalur ke chat.</p>
     </section>
   </div>
 
@@ -670,7 +671,7 @@
     }, 50);
   })();
 </script>
-<script src="circuit-editor.js?v=6"></script>
+<script src="circuit-editor.js?v=7"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
   (function () {
@@ -694,8 +695,8 @@
     updateStatus();
     var image = new Image();
     var imageReady = new Promise(function (resolve, reject) { image.onload = resolve; image.onerror = reject; });
-    image.src = 'assets/wallpaper-amber-glow.png?v=4';
-    Promise.all([fetch('assets/circuit-paths.json?v=3').then(function (response) {
+    image.src = 'assets/wallpaper-amber-glow.png?v=5';
+    Promise.all([fetch('assets/circuit-paths.json?v=4').then(function (response) {
       if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
     }), imageReady]).then(function (result) {
       var cfg = result[0];

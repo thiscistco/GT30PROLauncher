@@ -6,8 +6,7 @@ const html = fs.readFileSync('preview/index.html', 'utf8');
 const scripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g));
 const source = scripts[scripts.length - 1][1];
 const config = JSON.parse(fs.readFileSync('preview/assets/circuit-paths.json', 'utf8'));
-// Exercise motion using synthetic paths; shipped defaults intentionally contain none.
-assert.equal(config.paths.length, 0);
+// Exercise motion using short synthetic paths, independently of the user's drawing.
 config.paths = [
   {offset: 0, points: [[100,200], [200,200], [200,400]]},
   {offset: 0.5, points: [[100,200], [200,200], [200,400]]},
