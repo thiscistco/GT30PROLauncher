@@ -24,6 +24,8 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -43,6 +45,7 @@ public class MainActivity extends BottomSwipeActivity {
     private GestureDetector detector;
     private TextView batteryLed;
     private HomeClockView clockLed;
+    private HomeDateView dateLed;
     private ValueAnimator chargeAnim;
     private CircuitGlowView amberGlow;
     private ValueAnimator amberAnim;
@@ -58,10 +61,12 @@ public class MainActivity extends BottomSwipeActivity {
     private final Runnable clockTick = new Runnable() {
         @Override
         public void run() {
+            Date now = new Date();
             if (clockLed != null) {
-                String t = new SimpleDateFormat("HH:mm", Locale.US).format(new Date());
+                String t = new SimpleDateFormat("HH:mm", Locale.US).format(now);
                 clockLed.setTime(t.substring(0, 2), t.substring(3, 5));
             }
+            if (dateLed != null) dateLed.setDate(now.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
             clockHandler.postDelayed(this, 1000);
         }
     };
@@ -128,6 +133,17 @@ public class MainActivity extends BottomSwipeActivity {
         });
         homeRoot.post(() -> updateClockLayout(homeRoot, clockBox));
 
+        // Date is a separate non-interactive overlay, leaving clock touch/gestures unchanged.
+        HomeDateView dateBox = new HomeDateView(this);
+        dateLed = dateBox;
+        dateBox.setDate(LocalDate.now());
+        dateBox.setElevation(4f * getResources().getDisplayMetrics().density);
+        homeRoot.addView(dateBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
+        homeRoot.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
+            if (r - l != oldR - oldL || b - t != oldB - oldT) updateDateLayout(homeRoot, dateBox);
+        });
+        homeRoot.post(() -> updateDateLayout(homeRoot, dateBox));
+
         View root = findViewById(R.id.root);
         detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -191,6 +207,25 @@ public class MainActivity extends BottomSwipeActivity {
         });
     }
 
+    private void updateDateLayout(FrameLayout root, HomeDateView dateBox) {
+        int width = root.getWidth(), height = root.getHeight();
+        if (width <= 0 || height <= 0) return;
+        float pixelsPerMm = width / 70.9f;
+        float cssPixel = pixelsPerMm * 25.4f / 96f;
+        int boxWidth = Math.max(1, Math.round(HomeDateView.WIDTH_MM * pixelsPerMm));
+        int boxHeight = Math.max(1, Math.round(HomeDateView.HEIGHT_MM * pixelsPerMm));
+        float left = width * .49f - boxWidth / 2f;
+        float bottom = height * .06f + 1.55f * cssPixel;
+        float top = height - bottom - boxHeight + HomeDateView.GLOW_PAD_MM * pixelsPerMm;
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) dateBox.getLayoutParams();
+        params.width = boxWidth; params.height = boxHeight;
+        params.leftMargin = Math.round(left); params.topMargin = Math.round(top);
+        dateBox.setTranslationX(left - params.leftMargin);
+        dateBox.setTranslationY(top - params.topMargin);
+        dateBox.setScale(pixelsPerMm);
+        dateBox.setLayoutParams(params);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -201,6 +236,11 @@ public class MainActivity extends BottomSwipeActivity {
             clockLed.setVisibility(View.VISIBLE);
             clockLed.setAlpha(1f);
             clockLed.bringToFront();
+        }
+        if (dateLed != null) {
+            dateLed.setVisibility(View.VISIBLE);
+            dateLed.setAlpha(1f);
+            dateLed.bringToFront();
         }
         clockHandler.removeCallbacks(clockTick);
         clockHandler.post(clockTick);

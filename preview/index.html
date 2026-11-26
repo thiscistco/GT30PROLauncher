@@ -194,6 +194,24 @@
     align-items: center;
     line-height: 1.15;
   }
+  .date-led {
+    position: absolute;
+    left: 49%;
+    transform: translateX(-50%);
+    bottom: calc(6% + 1.55px);
+    font-family: 'Doto', monospace;
+    font-size: 2mm;
+    font-weight: 800;
+    font-variation-settings: 'wght' 800;
+    letter-spacing: 0.2mm;
+    color: #ffc477;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.15;
+    pointer-events: none;
+  }
   .phone-row { display: flex; align-items: stretch; }
   .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }
   .charging-toggle input { accent-color: #f7a23b; }
@@ -255,7 +273,7 @@
     transform: translate(-50%, -50%);
   }
   .clock-led:focus-visible { outline: 1px solid #ffc477; outline-offset: 3px; }
-  .clock-led > span:not(.clock-sep) {
+  .clock-led > span:not(.clock-sep), .date-led > span {
     background: linear-gradient(to bottom, #cb633e 0%, #ffb568 24%, #ffe5b1 50%, #ffb568 76%, #cb633e 100%);
     -webkit-background-clip: text;
     background-clip: text;
@@ -438,6 +456,11 @@
                 <span id="clockHour">00</span>
                 <span class="clock-sep"></span>
                 <span id="clockMin">00</span>
+              </div>
+              <div class="date-led" id="homeDate" role="img" aria-label="Tanggal hari ini">
+                <span id="homeDateWeekday">---</span>
+                <span id="homeDateNumber">--</span>
+                <span id="homeDateMonth">---</span>
               </div>
               <div class="battery-led" id="batteryLed">85%</div>
               <section class="drawer-page" id="drawerPage" aria-label="Semua Aplikasi" hidden>
@@ -782,6 +805,7 @@
     }, 50);
   })();
 </script>
+<script src="home-date.js?v=1"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
 <script src="calendar.js?v=5"></script>
