@@ -15,6 +15,7 @@ final class WeatherView extends View {
     private String temperature = "--°";
     private final int color;
     private final boolean home;
+    private float homeCssPixel;
     WeatherView(Context context, boolean home) {
         super(context);
         this.home = home;
@@ -25,6 +26,12 @@ final class WeatherView extends View {
         setClickable(true);
         setFocusable(true);
         setWeather(-1, true, null, "Ketuk untuk mengaktifkan cuaca");
+    }
+    // Use the root's physical CSS-pixel scale so the 5px gap adjustment matches preview.
+    void setHomeCssPixel(float value) {
+        if (!home || homeCssPixel == value) return;
+        homeCssPixel = value;
+        invalidate();
     }
     void setWeather(int weatherCode, boolean isDay, Integer temp, String status) {
         code = weatherCode; day = isDay;
@@ -48,7 +55,7 @@ final class WeatherView extends View {
         if (home) {
             paint.setTextSize(5.5f*s);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(temperature, getWidth()/2f, y0+20.8f*s, paint);
+            canvas.drawText(temperature, getWidth()/2f, y0+20.8f*s - 5f*homeCssPixel, paint);
         }
         paint.clearShadowLayer();
     }
