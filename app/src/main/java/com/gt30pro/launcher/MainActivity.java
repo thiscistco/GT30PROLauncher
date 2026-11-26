@@ -200,7 +200,7 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.286f);
+        clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.143f);
         clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.0646f);
         FrameLayout homeRoot = findViewById(R.id.root);
         homeRoot.addView(clockBox, clockParams);
@@ -250,13 +250,13 @@ public class MainActivity extends Activity {
     private void updateClockLayout(FrameLayout root, LinearLayout clockBox) {
         int width = root.getWidth(), height = root.getHeight();
         if (width <= 0 || height <= 0) return;
-        // Preview screen: 70.9mm wide. Match its 1.8mm font and CSS-pixel offsets.
+        // Preview screen: 70.9mm wide. Match its 1.7mm font and CSS-pixel offsets.
         float cssPixel = width / (70.9f * 96f / 25.4f);
-        float clockSizePx = width * (1.8f / 70.9f);
+        float clockSizePx = width * (1.7f / 70.9f);
         clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
         clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
-        clockHourText.setLetterSpacing(0.2f / 1.8f);
-        clockMinText.setLetterSpacing(0.2f / 1.8f);
+        clockHourText.setLetterSpacing(0.2f / 1.7f);
+        clockMinText.setLetterSpacing(0.2f / 1.7f);
         LinearLayout.LayoutParams sep = (LinearLayout.LayoutParams) clockSep.getLayoutParams();
         sep.height = Math.max(1, Math.round(width * (0.22f / 70.9f)));
         sep.topMargin = Math.max(0, Math.round((0.461f * 96f / 25.4f - 1f) * cssPixel));
@@ -265,8 +265,13 @@ public class MainActivity extends Activity {
         sep.rightMargin = Math.round(1.01f * cssPixel);
         clockSep.setLayoutParams(sep);
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) clockBox.getLayoutParams();
-        params.rightMargin = Math.round(width * 0.286f);
+        // FrameLayout subtracts the full right margin from CENTER_HORIZONTAL.
+        // 50% - 14.3% places the clock at the preview's 35.7% center.
+        params.rightMargin = Math.round(width * 0.143f);
         params.bottomMargin = Math.round(height * 0.06f + 3f * cssPixel);
+        // Apply subpixel shifts relative to the previous layout (1 CSS px = cssPixel).
+        clockBox.setTranslationX(-0.5f * cssPixel);
+        clockBox.setTranslationY(0.75f * cssPixel);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
             android.graphics.Rect bounds = new android.graphics.Rect();
