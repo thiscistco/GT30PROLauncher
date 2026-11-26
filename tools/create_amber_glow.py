@@ -51,10 +51,10 @@ for x0, y0, x1, y1 in (regions if any(p.get('kind') == 'amber' for p in config['
                 strength = min(1.0, (r - g - 35) / 50) * min(1.0, (r - 110) / 80)
                 mask_px[x, y] = max(mask_px[x, y], int(200 * strength))
 soft = mask.filter(ImageFilter.GaussianBlur(8))
-# Brighter neon orange, with a sharp core and restrained halo.
+# Cool gunmetal light, with a sharp core and restrained halo.
 alpha = ImageChops.lighter(mask.point(lambda v: int(v * 0.70)), soft.point(lambda v: min(220, int(v * 2.0))))
 alpha = ImageChops.multiply(alpha, allowed)
-overlay = Image.new('RGBA', (w, h), (255, 115, 36, 0))
+overlay = Image.new('RGBA', (w, h), (105, 122, 132, 0))
 overlay.putalpha(alpha)
 
 # Paint copper highlights only for the paths supplied in the configuration.
@@ -83,15 +83,15 @@ protected = Image.new('L', (w, h), 255)
 guard = ImageDraw.Draw(protected)
 for box in [(30, 1060, 1195, 2300), (35, 925, 330, 1060), (900, 875, 1120, 1080), (900, 40, 1080, 200)]:
     guard.rectangle(box, fill=0)
-# Orange neon halo and a luminous golden-amber centre, both kept inside safe areas.
+# Dark gunmetal halo and cool metallic centre, both inside safe areas.
 halo_alpha = copper_core.filter(ImageFilter.GaussianBlur(9)).point(lambda v: min(210, int(v * 2.2)))
 halo_alpha = ImageChops.multiply(halo_alpha, protected)
-halo = Image.new('RGBA', (w, h), (255, 105, 25, 0))
+halo = Image.new('RGBA', (w, h), (55, 72, 82, 0))
 halo.putalpha(halo_alpha)
 overlay = Image.alpha_composite(overlay, halo)
 core_alpha = copper_core.filter(ImageFilter.GaussianBlur(0.8)).point(lambda v: int(v * 0.92))
 core_alpha = ImageChops.multiply(core_alpha, protected)
-copper = Image.new('RGBA', (w, h), (255, 205, 106, 0))
+copper = Image.new('RGBA', (w, h), (116, 135, 145, 0))
 copper.putalpha(core_alpha)
 overlay = Image.alpha_composite(overlay, copper)
 overlay.save(sys.argv[2], optimize=True)

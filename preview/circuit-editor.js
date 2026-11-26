@@ -88,10 +88,10 @@
       mask.width = cfg.width; mask.height = cfg.height;
       var m = mask.getContext('2d');
       m.lineJoin = 'round'; m.lineCap = 'round';
-      m.strokeStyle = 'rgba(255,105,25,0.65)'; m.lineWidth = width * 2;
-      m.shadowColor = 'rgba(255,105,25,0.9)'; m.shadowBlur = 18;
+      m.strokeStyle = 'rgba(55,72,82,0.65)'; m.lineWidth = width * 2;
+      m.shadowColor = 'rgba(55,72,82,0.9)'; m.shadowBlur = 18;
       paths.forEach(function (path) { line(m, path); });
-      m.shadowBlur = 0; m.strokeStyle = 'rgba(255,205,106,0.92)'; m.lineWidth = width;
+      m.shadowBlur = 0; m.strokeStyle = 'rgba(116,135,145,0.92)'; m.lineWidth = width;
       paths.forEach(function (path) { line(m, path); });
       protectedBoxes.forEach(function (b) { m.clearRect(b[0], b[1], b[2]-b[0]+1, b[3]-b[1]+1); });
       return mask;
@@ -118,7 +118,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.translate(g.x, g.y); ctx.scale(g.scale, g.scale);
       ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.lineWidth = width;
-      ctx.strokeStyle = '#fff1cd'; ctx.shadowColor = '#ff8c18'; ctx.shadowBlur = 15;
+      ctx.strokeStyle = '#b8c9d0'; ctx.shadowColor = '#607784'; ctx.shadowBlur = 15;
       paths.forEach(function (path) { line(ctx, path); });
       if (drawing && drawing.points.length > 1) line(ctx, smoothStroke(drawing.points));
       // Predictions are a temporary visual tail, never saved or exported.
@@ -127,7 +127,7 @@
         line(ctx, [drawing.points[drawing.points.length - 1]].concat(drawing.predicted));
         ctx.globalAlpha = 1;
       }
-      ctx.shadowBlur = 0; ctx.fillStyle = '#ffb63e';
+      ctx.shadowBlur = 0; ctx.fillStyle = '#a8bdc6';
       paths.forEach(function (path) {
         [path[0], path[path.length - 1]].forEach(function (p) {
           ctx.beginPath(); ctx.arc(p[0], p[1], Math.max(width / 2, 4 / g.scale), 0, Math.PI * 2); ctx.fill();

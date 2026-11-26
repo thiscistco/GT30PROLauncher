@@ -55,6 +55,8 @@ const dx = (300 - cfg.width * scale) / 2, dy = (600 - cfg.height * scale) / 2;
 assert.equal(applied.paths[0].points[0][0], Math.round((80 - 50 - dx) / scale));
 assert.equal(applied.paths[0].points[0][1], Math.round((200 - 100 - dy) / scale));
 assert.equal(applied.mask.ctx.cleared.length, 4, 'mask protects battery and flex cables');
+assert.equal(applied.mask.ctx.strokeStyle, 'rgba(116,135,145,0.92)', 'custom animation core uses gunmetal');
+assert.equal(applied.mask.ctx.shadowColor, 'rgba(55,72,82,0.9)', 'custom animation halo uses gunmetal');
 stroke(ids, [122,251], [160,280]);
 assert.equal(applied.paths.length, 3, 'nearby endpoints form one route, with three lights');
 assert(applied.paths[0].points.length > 3, 'connected route contains rounded join samples');

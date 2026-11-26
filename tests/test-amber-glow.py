@@ -11,6 +11,12 @@ assert preview == android, 'Preview and Android glow layers differ'
 image = Image.open('preview/assets/wallpaper-amber-glow.png')
 assert image.size == (1224, 2720) and image.mode == 'RGBA'
 a = image.getchannel('A')
+# Every visible animation pixel must be cool gunmetal, never orange.
+from PIL import ImageChops
+red, green, blue, _ = image.split()
+visible = a.point(lambda value: 255 if value else 0)
+assert ImageChops.multiply(ImageChops.subtract(red, green), visible).getbbox() is None
+assert ImageChops.multiply(ImageChops.subtract(green, blue), visible).getbbox() is None
 for name, bounds in {
     'battery': (30, 1060, 1195, 2300),
     'left flex': (35, 925, 330, 1060),
