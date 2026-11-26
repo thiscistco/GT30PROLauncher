@@ -211,10 +211,17 @@
   .calendar-nav button { flex: 0 0 10mm; padding: 1mm; }
   .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1mm 0; }
   .calendar-weekday { text-align: center; color: #e7a579; font-size: 2.2mm; padding: 2mm 0; }
-  .calendar-day { color: #ffd49d; background: transparent; border: 1px solid transparent; border-radius: 2mm; height: 9mm; font: 700 2.8mm 'Doto', monospace; cursor: pointer; }
+  .calendar-day { position: relative; color: #ffd49d; background: transparent; border: 1px solid transparent; border-radius: 2mm; height: 9mm; font: 700 2.8mm 'Doto', monospace; cursor: pointer; }
   .calendar-day.today { background: #211a17; border-color: #8d604c; }
   .calendar-day.selected { background: #61402c; border-color: #8d604c; }
   .calendar-weekday.weekend, .calendar-day.weekend, .calendar-day.holiday { color: #ff6b6b; }
+  .calendar-day.marker-holiday::after, .calendar-day.marker-observance::after {
+    content: ''; position: absolute; left: 50%; bottom: 0.7mm; width: 0.8mm; height: 0.8mm;
+    border-radius: 50%; transform: translateX(-50%); background: #ff6b6b;
+  }
+  .calendar-day.marker-observance:not(.marker-holiday)::after { background: #ffd49d; }
+  .calendar-day.marker-holiday.marker-observance::after { left: calc(50% - 0.6mm); box-shadow: 1.2mm 0 #ffd49d; }
+  .calendar-legend { color: #e7a579; font-size: 2.2mm; line-height: 1.5; margin: 2mm 0; }
   .calendar-holiday-detail { color: #ffd49d; font-size: 2.8mm; line-height: 1.5; margin: 2mm 0; }
   .calendar-holiday-detail.holiday { color: #ff6b6b; }
   .calendar-day:focus-visible { outline: 2px solid #ffd49d; outline-offset: -2px; }
@@ -492,6 +499,7 @@
                   <button class="clock-action" id="calendarNext" type="button" aria-label="Bulan berikutnya">&gt;</button>
                 </div>
                 <div class="calendar-grid" id="calendarGrid" aria-label="Tanggal bulan ini"></div>
+                <p class="calendar-legend">Titik merah: libur nasional · titik amber: peringatan</p>
                 <button class="clock-action clock-wide" id="calendarToday" type="button">Hari ini</button>
                 <div class="clock-section">
                   <h3 id="calendarSelected"></h3>
@@ -740,7 +748,7 @@
   })();
 </script>
 <script src="holiday-data.js?v=1"></script>
-<script src="calendar.js?v=3"></script>
+<script src="calendar.js?v=4"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

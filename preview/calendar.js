@@ -95,10 +95,13 @@
         var date = {year:selected.year, month:selected.month, day:day}, keyForDay = dateKey(date);
         var has = records.some(function (e) { return e.date === keyForDay; });
         var dayHolidays = holidaysFor(keyForDay), isHoliday = dayHolidays.some(function (entry) { return entry.type === 'libur'; });
+        var isObservance = dayHolidays.some(function (entry) { return entry.type === 'peringatan'; });
         var button = doc.createElement('button'); button.type = 'button'; button.className = 'calendar-day';
         button.textContent = day + (has ? '·' : '');
         button.classList.toggle('weekend', (leadingDays(selected.year, selected.month) + day - 1) % 7 >= 5);
         button.classList.toggle('holiday', isHoliday);
+        button.classList.toggle('marker-holiday', isHoliday);
+        button.classList.toggle('marker-observance', isObservance);
         button.classList.toggle('today', keyForDay === todayKey);
         button.classList.toggle('selected', keyForDay === selectedKey);
         button.setAttribute('aria-label', label(date) + (dayHolidays.length ? ', ' + dayHolidays.map(holidayText).join(', ') : '') + (has ? ', ada acara' : ''));

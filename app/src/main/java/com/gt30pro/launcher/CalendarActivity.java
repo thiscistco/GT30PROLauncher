@@ -10,6 +10,7 @@ import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -131,12 +132,20 @@ public class CalendarActivity extends SwipeBackActivity {
         String label = "libur".equals(type) ? "Libur nasional" : "cuti".equals(type) ? "Cuti bersama" : "Peringatan (bukan libur nasional)";
         return label + " · " + event.optString("name");
     }
-    private boolean isNationalHoliday(JSONArray events) {
+    private boolean hasHolidayType(JSONArray events, String type) {
         for (int i = 0; i < events.length(); i++) {
             JSONObject event = events.optJSONObject(i);
-            if (event != null && "libur".equals(event.optString("type"))) return true;
+            if (event != null && type.equals(event.optString("type"))) return true;
         }
         return false;
+    }
+    private View markerDot(int color) {
+        View dot = new View(this);
+        GradientDrawable circle = new GradientDrawable();
+        circle.setShape(GradientDrawable.OVAL); circle.setColor(color);
+        dot.setBackground(circle);
+        dot.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        return dot;
     }
     private void addHolidayEntries(LocalDate date, boolean showDate) {
         JSONArray events = holidaysFor(date);
@@ -192,14 +201,36 @@ public class CalendarActivity extends SwipeBackActivity {
                 LocalDate day = monthValue.atDay(dayNumber);
                 boolean has = hasEvents(events, day);
                 JSONArray dayHolidays = holidaysFor(day);
-                TextView item = text(String.valueOf(dayNumber) + (has ? "·" : ""), 14, col >= 5 || isNationalHoliday(dayHolidays) ? WEEKEND : (day.equals(LocalDate.now()) ? 0xFFFFE5B1 : AMBER));
+                boolean isHoliday = hasHolidayType(dayHolidays, "libur");
+                boolean isObservance = hasHolidayType(dayHolidays, "peringatan");
+                FrameLayout item = new FrameLayout(this);
+                TextView number = text(String.valueOf(dayNumber) + (has ? "·" : ""), 14,
+                        col >= 5 || isHoliday ? WEEKEND : (day.equals(LocalDate.now()) ? 0xFFFFE5B1 : AMBER));
+                number.setGravity(Gravity.CENTER);
+                number.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+                item.addView(number, new FrameLayout.LayoutParams(-1, -1));
+                if (isHoliday || isObservance) {
+                    LinearLayout dots = new LinearLayout(this);
+                    dots.setGravity(Gravity.CENTER);
+                    dots.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+                    if (isHoliday) dots.addView(markerDot(WEEKEND), new LinearLayout.LayoutParams(dp(5), dp(5)));
+                    if (isObservance) {
+                        LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dp(5), dp(5));
+                        if (isHoliday) dotParams.leftMargin = dp(3);
+                        dots.addView(markerDot(AMBER), dotParams);
+                    }
+                    FrameLayout.LayoutParams dotPosition = new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+                    dotPosition.bottomMargin = dp(4);
+                    item.addView(dots, dotPosition);
+                }
                 StringBuilder description = new StringBuilder(dateLabel(day));
                 for (int i = 0; i < dayHolidays.length(); i++) {
                     JSONObject event = dayHolidays.optJSONObject(i);
                     if (event != null) description.append(", ").append(holidayText(event));
                 }
                 if (has) description.append(", ada acara");
-                item.setGravity(Gravity.CENTER); item.setContentDescription(description.toString());
+                item.setContentDescription(description.toString());
+                item.setFocusable(true);
                 if (day.equals(selected)) item.setBackground(bg(0xFF61402C));
                 else if (day.equals(LocalDate.now())) item.setBackground(bg(0xFF211A17));
                 item.setSelected(day.equals(selected));
@@ -207,7 +238,8 @@ public class CalendarActivity extends SwipeBackActivity {
             }
             page.addView(week);
         }
-        space(12); page.addView(button("Hari ini", () -> { selected = LocalDate.now(); render(); })); space(16);
+        space(6); page.addView(text("Titik merah: libur nasional · titik amber: peringatan", 11, MUTED));
+        space(6); page.addView(button("Hari ini", () -> { selected = LocalDate.now(); render(); })); space(16);
         page.addView(text(dateLabel(selected), 19, AMBER)); space(10);
         addHolidayEntries(selected, false);
         page.addView(button("+ Tambah acara", this::addEvent)); space(12);
