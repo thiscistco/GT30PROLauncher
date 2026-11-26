@@ -17,7 +17,11 @@ final class HomeDateView extends View {
     private static final float LABEL_SCALE = .65f;
     static final float WIDTH_MM = 5.2f * SIZE_SCALE;
     static final float GLOW_PAD_MM = .4f;
-    static final float HEIGHT_MM = 6.9f * SIZE_SCALE + 2f * GLOW_PAD_MM;
+    // Three line boxes at line-height 1 plus a 1 CSS px gap between them.
+    static final float CSS_PX_MM = 25.4f / 96f;
+    static final float TEXT_MM = 2f * SIZE_SCALE;
+    static final float CONTENT_HEIGHT_MM = TEXT_MM * (1f + 2f * LABEL_SCALE) + 2f * CSS_PX_MM;
+    static final float HEIGHT_MM = CONTENT_HEIGHT_MM + 2f * GLOW_PAD_MM;
     private static final int[] AMBER = {0xFFFF6919, 0xFFFF9D2F, 0xFFFFCD6A, 0xFFFF9D2F, 0xFFFF6919};
     private static final float[] STOPS = {0f, .24f, .5f, .76f, 1f};
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
@@ -47,7 +51,7 @@ final class HomeDateView extends View {
         }
     }
     private void drawLine(Canvas canvas, String value, float top, float sizeFactor) {
-        float line = 2.3f * SIZE_SCALE * pxPerMm, gap = .2f * SIZE_SCALE * sizeFactor * pxPerMm;
+        float line = TEXT_MM * sizeFactor * pxPerMm, gap = .2f * SIZE_SCALE * sizeFactor * pxPerMm;
         text.setTextSize(2f * SIZE_SCALE * sizeFactor * pxPerMm);
         Paint.FontMetrics metrics = text.getFontMetrics();
         float baseline = top + (line - (metrics.descent - metrics.ascent)) / 2f - metrics.ascent;
@@ -64,8 +68,11 @@ final class HomeDateView extends View {
         super.onDraw(canvas);
         if (date == null) return;
         float top = GLOW_PAD_MM * pxPerMm;
+        float labelLine = TEXT_MM * LABEL_SCALE * pxPerMm;
+        float numberLine = TEXT_MM * pxPerMm;
+        float rowGap = CSS_PX_MM * pxPerMm;
         drawLine(canvas, HomeDateText.weekday(date), top, LABEL_SCALE);
-        drawLine(canvas, HomeDateText.day(date), top + 2.3f * SIZE_SCALE * pxPerMm, 1f);
-        drawLine(canvas, HomeDateText.month(date), top + 4.6f * SIZE_SCALE * pxPerMm, LABEL_SCALE);
+        drawLine(canvas, HomeDateText.day(date), top + labelLine + rowGap, 1f);
+        drawLine(canvas, HomeDateText.month(date), top + labelLine + numberLine + 2f * rowGap, LABEL_SCALE);
     }
 }

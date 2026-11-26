@@ -11,9 +11,9 @@ assert.match(clock, /font-size:\s*2mm/);
 assert.match(clock, /font-weight:\s*800/);
 assert.match(clock, /font-variation-settings:\s*'wght'\s*800/);
 assert.match(clock, /letter-spacing:\s*0\.2mm/);
-assert.match(clock, /padding-bottom:\s*0\.5px/);
+assert.match(clock, /padding-bottom:\s*1px/);
 assert.match(sep, /height:\s*0\.22mm/);
-assert.match(sep, /margin:\s*calc\(0\.461mm - 1px\) 0 calc\(0\.45mm \+ 0\.5px\) 0/);
+assert.match(sep, /margin:\s*calc\(0\.461mm - 1px\) 0 0\.45mm 0/);
 const digits = html.match(/\.clock-led > span:not\(\.clock-sep\),\s*\.date-led > span\s*\{([^}]*)\}/)[1];
 // Both home overlays use the circuit animation's orange halo and golden core.
 assert.match(digits, /#ff6919 0%, #ff9d2f 24%, #ffcd6a 50%, #ff9d2f 76%, #ff6919 100%/);
@@ -42,7 +42,7 @@ assert.match(view, /text\.setShadowLayer\(\.4f \* pixelsPerMm/);
 assert.match(view, /for \(int i = 0; i < 5; i\+\+\)/);
 assert.match(view, /dots\.setAlpha\(Math\.round\(separatorAlpha \* 255\)\)/);
 assert.match(view, /drawDigits\(canvas, hour/);
-assert.match(view, /drawDigits\(canvas, minute, dotTop \+ \.22f \* pxPerMm \+ \.45f \* pxPerMm \+ \.5f \* cssPx, line\)/);
+assert.match(view, /drawDigits\(canvas, minute, dotTop \+ \.22f \* pxPerMm \+ \.45f \* pxPerMm, line\)/);
 // Explicit view bounds include glow padding, while the content remains anchored
 // to the preview's 35.7% center and 6% + 1.55 CSS px bottom position.
 for (const [w,h] of [[269,596],[1224,2720],[720,1600]]) {
@@ -54,8 +54,8 @@ for (const [w,h] of [[269,596],[1224,2720],[720,1600]]) {
   assert(Math.abs((h-(top+boxHeight-.4*mm)) - (h*.06 + 1.55*css)) < 1e-9);
   // The clock box keeps its former height; only the minute line moves up.
   const dotTop = top + .4*mm + 2.3*mm + .461*mm - css;
-  const oldMinuteTop = dotTop + .22*mm + .45*mm + css;
-  const minuteTop = dotTop + .22*mm + .45*mm + .5*css;
+  const oldMinuteTop = dotTop + .22*mm + .45*mm + .5*css;
+  const minuteTop = dotTop + .22*mm + .45*mm;
   assert(Math.abs((oldMinuteTop-minuteTop) - .5*css) < 1e-9);
 }
 console.log('Explicit Android clock rendering and preview-relative placement: OK');
