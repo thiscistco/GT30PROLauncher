@@ -164,6 +164,8 @@ public class MainActivity extends BottomSwipeActivity {
 
         WeatherView weatherBox = new WeatherView(this, true);
         weatherLed = weatherBox;
+        weatherBox.setScaleX(.9f);
+        weatherBox.setScaleY(.9f);
         weatherBox.setElevation(4f * getResources().getDisplayMetrics().density);
         homeRoot.addView(weatherBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
         weather = new WeatherController(this, weatherBox);
@@ -291,7 +293,7 @@ public class MainActivity extends BottomSwipeActivity {
         float ppm = width / 70.9f, cssPixel = ppm * 25.4f / 96f;
         int w = Math.max(1, Math.round(11f * ppm));
         int h = Math.max(1, Math.round(13.75f * ppm));
-        float left = width * .49f - 10f * cssPixel - w / 2f;
+        float left = width * .49f - w / 2f;
         float top = height - (height * .06f + 460f * cssPixel) - h;
         box.setHomeCssPixel(cssPixel);
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) box.getLayoutParams();
