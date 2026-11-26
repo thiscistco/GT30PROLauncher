@@ -30,7 +30,7 @@ final class WeatherController {
     private final WeatherView view;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final LocationManager manager;
-    private boolean active, loading;
+    private boolean active, loading, pendingManual;
     private int generation;
     private LocationListener listener;
     private Runnable timeout;
@@ -43,7 +43,9 @@ final class WeatherController {
     void resume() {
         active = true;
         if (!permitted()) { view.setWeather(-1, true, null, "Ketuk untuk mengaktifkan cuaca"); return; }
-        showCached(); refresh(false);
+        showCached();
+        boolean manual = pendingManual; pendingManual = false;
+        refresh(manual);
     }
     void pause() {
         active = false; generation++; loading = false;
@@ -51,8 +53,11 @@ final class WeatherController {
     }
     void permissionResult(int request) {
         if (request != REQUEST_LOCATION) return;
-        if (permitted()) refresh(true);
-        else { view.setWeather(-1, true, null, "Izin lokasi ditolak; ketuk untuk mencoba lagi"); toast("Izin lokasi diperlukan untuk cuaca."); }
+        if (permitted()) {
+            if (active) { pendingManual = false; refresh(true); }
+            else pendingManual = true;
+        }
+        else { pendingManual = false; view.setWeather(-1, true, null, "Izin lokasi ditolak; ketuk untuk mencoba lagi"); toast("Izin lokasi diperlukan untuk cuaca."); }
     }
     private void clicked() {
         if (permitted()) { refresh(true); return; }
@@ -65,6 +70,7 @@ final class WeatherController {
                                 .setNegativeButton("Batal", null).setPositiveButton("Setelan", (dlg, which) -> activity.startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + activity.getPackageName())))).show();
                     } else {
                         activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).edit().putBoolean("weather_asked", true).apply();
+                        pendingManual = true;
                         activity.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
                     }
                 }).show();
@@ -78,7 +84,8 @@ final class WeatherController {
         } else view.setWeather(-1, true, null, "Ketuk untuk memperbarui");
     }
     private void refresh(boolean manual) {
-        if (!active || !permitted() || loading) return;
+        if (!active || !permitted()) return;
+        if (loading) { if (manual) toast("Cuaca sedang diperbarui…"); return; }
         android.content.SharedPreferences p = activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE);
         long age = System.currentTimeMillis() - p.getLong("time", 0);
         if (!manual && age >= 0 && age < INTERVAL) { schedule(INTERVAL-age); return; }

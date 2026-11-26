@@ -248,8 +248,7 @@
   .weather-widget .weather-temp { position: absolute; top: 68%; left: 0; width: 100%; text-align: center; line-height: 1; font-size: 3.025mm; }
   .home-weather { position: absolute; z-index: 6; left: calc(49% + 115px); bottom: calc(6% + 320px); transform: translateX(-50%); width: 11mm; height: 13.75mm; color: #ff9d2f; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
   .super-weather { width: 100%; height: 12mm; }
-  .super-weather svg { width: 6.24mm; height: 6.24mm; left: calc(50% - 3.12mm); }
-  .super-weather .weather-temp { font-size: 2.64mm; }
+  .super-weather svg { width: 8mm; height: 8mm; top: 2mm; left: calc(50% - 4mm); }
   .weather-widget:focus-visible { outline: 1px solid currentColor; outline-offset: 2px; }
   .phone-row { display: flex; align-items: stretch; }
   .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }
@@ -521,7 +520,7 @@
                 <div class="super-grid" aria-label="Aplikasi bawaan">
                   <button class="super-icon-button" id="openClockModule" type="button" aria-label="Jam"><img src="assets/module-clock.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="super-icon-button" id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets/module-calendar.svg?v=1" alt="" aria-hidden="true"></button>
-                  <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk mengaktifkan cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg><span class="weather-temp">--°</span></button>
+                  <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk mengaktifkan cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg></button>
                 </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
@@ -850,7 +849,7 @@
   })();
 </script>
 <script src="home-date.js?v=1"></script>
-<script src="weather.js?v=1"></script>
+<script src="weather.js?v=2"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
 <script src="calendar.js?v=5"></script>

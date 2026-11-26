@@ -19,7 +19,7 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
   long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).
 - **App Drawer** — daftar semua aplikasi terpasang + pencarian real-time.
-- **Super App** — grid ikon untuk Jam, Kalender dan indikator cuaca.
+- **Super App** — grid ikon untuk Jam, Kalender dan cuaca (tanpa label suhu).
 - **Launcher penuh** — muncul di pemilih Home (tombol Home membuka launcher ini).
 
 ## Struktur proyek
@@ -85,4 +85,4 @@ tidak dibackup, dan hanya ditampilkan hingga dua jam. Tanpa izin, lokasi, atau
 koneksi, tampilan menunjukkan `--°` (atau data terakhir yang masih berlaku).
 Izin dapat dicabut melalui setelan Android. Preview browser juga meminta izin
 setelah ikon diketuk, dan memerlukan HTTPS, geolocation dan akses Open-Meteo;
-nilai awal `--°` bukan simulasi suhu nyata.
+nilai awal `--°` bukan simulasi suhu nyata. Sebelum data diterima, gambar awan dan matahari adalah ikon umum, bukan kondisi cuaca aktual.
