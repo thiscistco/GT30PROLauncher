@@ -44,7 +44,7 @@ def simplify(points, tolerance=2.5):
     return [points[i] for i in sorted(keep)]
 
 
-def round_joins(points, radius=6.0):
+def round_joins(points, radius=8.0):
     # Cut only a short part of each adjoining segment, never connect distinct
     # routes or move their endpoints. Shared endpoints remain exactly shared.
     result = [points[0][:]]
@@ -62,7 +62,7 @@ def round_joins(points, radius=6.0):
         start = [corner[k] + (previous[k] - corner[k]) * cut / before for k in (0, 1)]
         end = [corner[k] + (following[k] - corner[k]) * cut / after for k in (0, 1)]
         add(start)
-        for t in (0.25, 0.5, 0.75):
+        for t in (0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875):
             add([(1-t)**2 * start[k] + 2*(1-t)*t*corner[k] + t*t*end[k] for k in (0, 1)])
         add(end)
     add(points[-1])

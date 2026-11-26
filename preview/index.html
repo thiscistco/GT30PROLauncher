@@ -21,7 +21,7 @@
   .bg {
     position: fixed;
     inset: -6%;
-    background: url("assets/gt30pro-internals.png?v=36") center/cover no-repeat;
+    background: url("assets/gt30pro-internals.png?v=37") center/cover no-repeat;
     filter: blur(52px) saturate(1.15) brightness(0.34);
     transform: scale(1.08);
     z-index: 0;
@@ -133,7 +133,7 @@
   .wallpaper {
     position: absolute;
     inset: 0;
-    background: url("assets/gt30pro-internals.png?v=36") center/cover no-repeat;
+    background: url("assets/gt30pro-internals.png?v=37") center/cover no-repeat;
     transition: transform .12s ease-out, filter .12s ease-out;
     will-change: transform, filter;
   }
@@ -679,7 +679,7 @@
     }, 50);
   })();
 </script>
-<script src="circuit-editor.js?v=10"></script>
+<script src="circuit-editor.js?v=11"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
   (function () {
@@ -716,8 +716,8 @@
     updateStatus();
     var image = new Image();
     var imageReady = new Promise(function (resolve, reject) { image.onload = resolve; image.onerror = reject; });
-    image.src = 'assets/wallpaper-amber-glow.png?v=10';
-    Promise.all([fetch('assets/circuit-paths.json?v=9').then(function (response) {
+    image.src = 'assets/wallpaper-amber-glow.png?v=11';
+    Promise.all([fetch('assets/circuit-paths.json?v=10').then(function (response) {
       if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
     }), imageReady]).then(function (result) {
       var cfg = result[0];

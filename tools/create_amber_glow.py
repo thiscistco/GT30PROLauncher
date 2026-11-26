@@ -58,7 +58,9 @@ overlay = Image.new('RGBA', (w, h), (255, 115, 36, 0))
 overlay.putalpha(alpha)
 
 # Paint copper highlights only for the paths supplied in the configuration.
-copper_core = Image.new('L', (w, h), 0)
+# Supersample the core so curves and joins retain smooth, even edges.
+scale = 3
+copper_core = Image.new('L', (w * scale, h * scale), 0)
 copper_draw = ImageDraw.Draw(copper_core)
 seen = set()
 for path in config['paths']:
@@ -71,10 +73,12 @@ for path in config['paths']:
     if (points, width) in seen:
         continue
     seen.add((points, width))
-    copper_draw.line(points, fill=255, width=width, joint='curve')
-    radius = width / 2
-    for x, y in points:
+    scaled = [(x * scale, y * scale) for x, y in points]
+    copper_draw.line(scaled, fill=255, width=width * scale, joint='curve')
+    radius = width * scale / 2
+    for x, y in scaled:
         copper_draw.ellipse((x-radius, y-radius, x+radius, y+radius), fill=255)
+copper_core = copper_core.resize((w, h), Image.Resampling.LANCZOS)
 protected = Image.new('L', (w, h), 255)
 guard = ImageDraw.Draw(protected)
 for box in [(30, 1060, 1195, 2300), (35, 925, 330, 1060), (900, 875, 1120, 1080), (900, 40, 1080, 200)]:

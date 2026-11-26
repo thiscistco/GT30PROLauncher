@@ -188,7 +188,7 @@
       var prev = left[left.length - 2], corner = right[0], next = right[1];
       var before = distance(prev, corner), after = distance(corner, next);
       if (!before || !after) return left.slice(0, -1).concat(right);
-      var cut = Math.min(6, before / 3, after / 3);
+      var cut = Math.min(8, before / 3, after / 3);
       var start = [0, 1].map(function (k) { return corner[k] + (prev[k] - corner[k]) * cut / before; });
       var end = [0, 1].map(function (k) { return corner[k] + (next[k] - corner[k]) * cut / after; });
       var result = left.slice(0, -1);
@@ -197,7 +197,7 @@
         if (!result.length || distance(p, result[result.length - 1]) > 0) result.push(p);
       }
       add(start);
-      [0.25, 0.5, 0.75].forEach(function (t) {
+      [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875].forEach(function (t) {
         add([0, 1].map(function (k) { return (1-t)*(1-t)*start[k] + 2*(1-t)*t*corner[k] + t*t*end[k]; }));
       });
       add(end);
@@ -221,7 +221,7 @@
         });
         if (!best) break;
         var other = remaining[best.index];
-        if (result.length + other.length + 4 > MAX_PATH_POINTS) return null;
+        if (result.length + other.length + 8 > MAX_PATH_POINTS) return null;
         if (!best.ourEnd) result.reverse();
         if (best.theirEnd) other = other.slice().reverse();
         result[result.length - 1] = other[0]; // snap to the existing endpoint
