@@ -1,0 +1,18 @@
+const assert=require('assert'),fs=require('fs');
+const page=require('../preview/weather-page.js');
+assert.equal(page.hourStart(['2026-11-24T10:00','2026-11-24T11:00','2026-11-24T12:00'],'2026-11-24T11:35'),1);
+assert.equal(page.hourStart(['2026-11-24T23:00','2026-11-25T00:00'],'2026-11-25T00:10'),1);
+assert.equal(page.hourStart(['2026-11-24T10:00'],'2026-11-24T11:00'),-1);
+assert.equal(page.hourStart(null,''),-1);
+assert.equal(page.number(28.6,'°'),'29°');assert.equal(page.number(null,'°'),'--');assert.equal(page.number(NaN,'%'),'--');
+const html=fs.readFileSync('preview/index.html','utf8');
+for(const id of ['weatherPage','weatherBack','weatherPageRefresh','weatherPageTemp','weatherPageCondition','weatherPageStatus','weatherPageEmpty','weatherPageDetails','weatherHours','weatherDays','weatherDetails']) assert(html.includes('id="'+id+'"'),id);
+assert.match(html,/PRAKIRAAN 24 JAM/);assert.match(html,/PRAKIRAAN 7 HARI/);assert.match(html,/id="weatherPageDetails" hidden/);
+const controller=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/WeatherController.java','utf8');
+assert.match(controller,/requestPermissions\(new String\[\]\{Manifest\.permission\.ACCESS_COARSE_LOCATION\}/);assert.match(controller,/shouldShowRequestPermissionRationale/);
+assert.match(controller,/WeatherForecast\.sanitized/);assert.match(controller,/hourly=temperature_2m,weather_code,precipitation_probability,is_day/);assert.match(controller,/forecast_days=7&timezone=auto/);
+const activity=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/WeatherActivity.java','utf8');
+assert.match(activity,/extends SwipeBackActivity/);assert.match(activity,/supportsBottomSwipe/);assert.match(activity,/weather\.requestFromUser\(\)/);assert.match(activity,/Math\.min\(start\+24,times\.length\(\)\)/);assert.match(activity,/Math\.min\(days\.length\(\),7\)/);
+assert.match(fs.readFileSync('app/src/main/AndroidManifest.xml','utf8'),/android:name="\.WeatherActivity"\s+android:exported="false"/);
+assert.match(fs.readFileSync('app/src/main/java/com/gt30pro/launcher/SuperAppActivity.java','utf8'),/new Intent\(this, WeatherActivity\.class\)/);
+console.log('Weather page: hourly selection, 7-day UI, permissions and Android navigation: OK');

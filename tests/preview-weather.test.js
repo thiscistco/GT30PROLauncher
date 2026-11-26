@@ -28,7 +28,7 @@ const win={document:doc,navigator:{geolocation:{getCurrentPosition(ok){requested
 const ctx={window:win,document:doc,fetch:u=>{url=u;return Promise.resolve({ok:true,json:()=>Promise.resolve({current:{temperature_2m:28.6,weather_code:61,is_day:1}})})},setTimeout:()=>1,clearTimeout:()=>{},Date,Math,Number};
 vm.runInNewContext(fs.readFileSync('preview/weather.js','utf8'),ctx);
 assert.equal(requested,0);assert.equal(buttons[0].label.textContent,'--°');assert.equal(typeof refreshButton.listeners.click,'function');refreshButton.listeners.click();
-setImmediate(()=>{assert.equal(confirmCalls,1);assert.equal(requested,1);assert(url.includes('latitude=-6.12&longitude=110.99'));assert.equal(buttons[0].label.textContent,'29°');assert.equal(buttons[1].label,null);assert.equal(buttons[0].svg.children.length,buttons[1].svg.children.length);assert(buttons[0].attrs['aria-label'].includes('Hujan'));assert(buttons[1].attrs['aria-label'].includes('29 derajat'));console.log('Weather: consent, rounded location, live icons and home temperature: OK');});
+setImmediate(()=>{assert.equal(confirmCalls,1);assert.equal(requested,1);assert(url.includes('latitude=-6.12&longitude=110.99'));assert.equal(buttons[0].label.textContent,'29°');assert.equal(buttons[1].label,null);assert.equal(buttons[1].listeners.click,undefined,'Super icon opens page via navigation, not a direct location request');assert.equal(buttons[0].svg.children.length,buttons[1].svg.children.length);assert(buttons[0].attrs['aria-label'].includes('Hujan'));assert(buttons[1].attrs['aria-label'].includes('29 derajat'));console.log('Weather: consent, rounded location, live icons and home temperature: OK');});
 // Denied consent must never request geolocation. A denied permission leaves --°.
 {
  const bs=[element(),element()];bs.forEach((b,i)=>{b.svg=element();b.label=i===0?element():null;b.querySelector=s=>s==='svg'?b.svg:b.label;});
@@ -36,5 +36,5 @@ setImmediate(()=>{assert.equal(confirmCalls,1);assert.equal(requested,1);assert(
  const doc2={getElementById:id=>id==='homeWeather'?bs[0]:(id==='superWeather'?bs[1]:null),createElementNS:()=>element()};
  const win2={document:doc2,navigator:{geolocation:{getCurrentPosition(ok,fail){calls++;fail({code:1});}}},confirm(){return consent},alert(){alerts++}};
  vm.runInNewContext(fs.readFileSync('preview/weather.js','utf8'),{window:win2,document:doc2,fetch(){throw Error('fetch on denied permission')},setTimeout:()=>1,clearTimeout(){},Date,Math,Number});
- bs[0].listeners.click();assert.equal(calls,0);consent=true;bs[1].listeners.click();assert.equal(calls,1);assert.equal(alerts,1);assert.equal(bs[0].label.textContent,'--°');assert.equal(bs[1].label,null);
+ bs[0].listeners.click();assert.equal(calls,0);consent=true;bs[0].listeners.click();assert.equal(calls,1);assert.equal(alerts,1);assert.equal(bs[0].label.textContent,'--°');assert.equal(bs[1].label,null);
 }

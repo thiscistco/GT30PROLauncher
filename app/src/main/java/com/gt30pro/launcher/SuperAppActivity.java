@@ -42,6 +42,9 @@ public class SuperAppActivity extends SwipeBackActivity {
         weatherParams.width = 1; weatherParams.height = dp(76);
         container.addView(weatherView, weatherParams);
         weather = new WeatherController(this, weatherView);
+        weatherView.setOpensDetails(true);
+        weatherView.setContentDescription("Buka Cuaca");
+        weatherView.setOnClickListener(v -> startActivity(new Intent(this, WeatherActivity.class)));
         container.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
             if (r - l != oldR - oldL) sizeGridCells(container);
         });

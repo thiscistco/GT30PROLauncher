@@ -11,28 +11,28 @@ assert.match(date,/if \(pxPerMm == pixelsPerMm\) return/);
 assert.match(main,/weather\.requestFromUser\(\)/);assert.match(html,/id="weatherRefresh"/);
 assert.match(weather,/LocationManager\.NETWORK_PROVIDER, LocationManager\.PASSIVE_PROVIDER/);
 assert(!weather.includes('ACCESS_FINE_LOCATION'));
-// Keep the 90% scale and move the weather group 5 CSS px left.
+// Keep the 90% scale and move the weather group 2 CSS px right.
 const weatherCss=html.match(/\.home-weather\s*\{([^}]*)\}/)[1];
 const weatherLayout=main.match(/private void updateWeatherLayout\([\s\S]*?\n    }/)[0];
 const weatherView=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/WeatherView.java','utf8');
-assert.match(weatherCss,/left:\s*calc\(49%\s*-\s*5px\)/);
+assert.match(weatherCss,/left:\s*calc\(49%\s*-\s*3px\)/);
 assert.match(weatherCss,/bottom:\s*calc\(6%\s*\+\s*460px\)/);
 assert.match(weatherCss,/transform:\s*translateX\(-50%\)\s+scale\(0\.9\)/);
 assert.match(main,/weatherBox\.setScaleX\(\.9f\)/);
 assert.match(main,/weatherBox\.setScaleY\(\.9f\)/);
 assert.match(html,/\.home-weather\s+\.weather-temp\s*\{\s*top:\s*calc\(68%\s*-\s*5px\)/);
-assert.match(weatherLayout,/width \* \.49f - 5f \* cssPixel - w \/ 2f/);
+assert.match(weatherLayout,/width \* \.49f - 3f \* cssPixel - w \/ 2f/);
 assert.match(weatherLayout,/height - \(height \* \.06f \+ 460f \* cssPixel\) - h/);
 assert.match(weatherLayout,/box\.setHomeCssPixel\(cssPixel\)/);
 assert.match(weatherView,/canvas\.drawText\(temperature, getWidth\(\)\/2f, y0\+20\.8f\*s - 5f\*homeCssPixel, paint\)/);
 for (const [w,h] of [[269,596],[720,1600],[1080,2400],[1224,2720]]) {
- const mm=w/70.9, css=mm*25.4/96, dateCenter=w*.49+115*css, center=w*.49-5*css;
+ const mm=w/70.9, css=mm*25.4/96, dateCenter=w*.49+115*css, center=w*.49-3*css;
  const dateScale=.855*(2.64+10*25.4/96)/2;
  const dateHeight=(2*dateScale*(1+2*.65)+2*25.4/96+.8)*mm;
  const dateTop=h-(h*.06+384.55*css)-dateHeight+.4*mm;
  const weatherTop=h-(h*.06+460*css)-13.75*mm;
- const previousCenter=w*.49;
- assert(Math.abs((previousCenter-center)-5*css)<1e-9);
+ const previousCenter=w*.49-5*css;
+ assert(Math.abs((center-previousCenter)-2*css)<1e-9);
  const previousWeatherTop=h-(h*.06+460*css)-13.75*mm;
  assert.equal(previousWeatherTop,weatherTop, 'weather box center keeps its vertical position');
  assert(Math.abs(.9*11*mm/(11*mm)-.9)<1e-12, 'width scaled to 90%');

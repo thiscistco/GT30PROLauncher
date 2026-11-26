@@ -49,6 +49,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".WeatherActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".AppDrawerActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />

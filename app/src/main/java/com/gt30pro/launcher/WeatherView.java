@@ -15,6 +15,7 @@ final class WeatherView extends View {
     private String temperature = "--°";
     private final int color;
     private final boolean home;
+    private boolean opensDetails;
     private float homeCssPixel;
     WeatherView(Context context, boolean home) {
         super(context);
@@ -27,6 +28,7 @@ final class WeatherView extends View {
         setFocusable(true);
         setWeather(-1, true, null, "Ketuk untuk mengaktifkan cuaca");
     }
+    void setOpensDetails(boolean value) { opensDetails = value; }
     // Use the root's physical CSS-pixel scale so the 5px gap adjustment matches preview.
     void setHomeCssPixel(float value) {
         if (!home || homeCssPixel == value) return;
@@ -37,7 +39,8 @@ final class WeatherView extends View {
         code = weatherCode; day = isDay;
         temperature = temp == null ? "--°" : temp + "°";
         setContentDescription("Cuaca: " + WeatherIcons.description(code, day) + ", "
-                + (temp == null ? "suhu belum tersedia" : temp + " derajat Celsius") + ". " + status);
+                + (temp == null ? "suhu belum tersedia" : temp + " derajat Celsius") + ". "
+                + (opensDetails ? "Ketuk untuk membuka Cuaca" : status));
         invalidate();
     }
     @Override protected void onDraw(Canvas canvas) {

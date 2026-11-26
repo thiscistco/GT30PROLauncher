@@ -246,7 +246,7 @@
   .weather-widget { padding: 0; border: 0; background: transparent; color: #fff; cursor: pointer; position: relative; font-family: 'Doto', monospace; font-weight: 700; }
   .weather-widget svg { position: absolute; left: 17.5%; top: 6%; width: 65%; height: 52%; fill: currentColor; }
   .weather-widget .weather-temp { position: absolute; top: 68%; left: 0; width: 100%; text-align: center; line-height: 1; font-size: 3.025mm; }
-  .home-weather { position: absolute; z-index: 6; left: calc(49% - 5px); bottom: calc(6% + 460px); transform: translateX(-50%) scale(0.9); width: 11mm; height: 13.75mm; color: #ff9d2f; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
+  .home-weather { position: absolute; z-index: 6; left: calc(49% - 3px); bottom: calc(6% + 460px); transform: translateX(-50%) scale(0.9); width: 11mm; height: 13.75mm; color: #ff9d2f; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
   .home-weather .weather-temp { top: calc(68% - 5px); }
   .super-weather { width: 100%; height: 12mm; }
   .super-weather svg { width: 8mm; height: 8mm; top: 2mm; left: calc(50% - 4mm); }
@@ -270,7 +270,7 @@
     background: #000;
     font-family: 'Doto', monospace; font-weight: 700; }
   .super-page[hidden] { display: none; }
-  .super-page, .clock-page, .drawer-page { touch-action: pan-y; }
+  .super-page, .clock-page, .drawer-page, .weather-page { touch-action: pan-y; }
   .calendar-nav { display: flex; align-items: center; gap: 2mm; margin: 4mm 0 3mm; }
   .calendar-nav strong { flex: 1; text-align: center; font-size: 3.5mm; }
   .calendar-nav button { flex: 0 0 10mm; padding: 1mm; }
@@ -335,6 +335,27 @@
     filter: drop-shadow(0 0 0.6mm rgba(255, 105, 25, 0.65));
     margin: calc(0.461mm - 1px) 0 0.45mm 0;
   }
+  .weather-page { position: absolute; inset: 0; z-index: 10; overflow-y: auto; padding: 6.35mm 3.175mm 4.45mm; background: #000; color: #f5f5f5; font: 700 2.06475mm 'Doto', monospace; }
+  .weather-page[hidden] { display: none; }
+  .weather-page .super-back { font-size: 2.06475mm; min-height: 6mm; }
+  .weather-page h2 { font-size: 3.96875mm; margin: 1.27mm 0 1.6mm; }
+  .weather-location, .weather-status, .weather-observed { color: #abb3bc; font-size: 1.74625mm; line-height: 1.5; }
+  .weather-summary { display: flex; align-items: center; justify-content: space-between; margin-top: 2.22mm; }
+  .weather-summary-temp { font-size: 7.62mm; line-height: 1.15; }
+  .weather-condition { color: #ffb65c; font-size: 2.2225mm; margin: .635mm 0; }
+  .weather-hero { width: 14.2875mm; height: 14.2875mm; display: grid; place-items: center; }
+  .weather-summary svg { width: 9.4mm; height: 9.4mm; fill: #fff; }
+  .weather-action { display: block; width: 100%; margin-top: 2.22mm; border: 0; border-radius: 1.59mm; min-height: 7.62mm; padding: 1.9mm; color: #000; background: #ffb65c; font: 700 2.06475mm 'Doto', monospace; cursor: pointer; }
+  .weather-page h3 { color: #ffb65c; font-size: 2.2225mm; margin: 3.81mm 0 1.6mm; }
+  .weather-hourly { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .weather-hour { flex: 0 0 10.5mm; display: grid; justify-items: center; gap: .635mm; font-size: 1.905mm; color: #abb3bc; }
+  .weather-hour svg { width: 5mm; height: 5mm; fill: white; }
+  .weather-hour strong { color: white; font-size: 2.2225mm; }
+  .weather-daily-row, .weather-detail-row { display: flex; align-items: center; gap: 2mm; min-height: 6.6675mm; font-size: 2.06475mm; }
+  .weather-daily-row .weather-day, .weather-detail-row span:first-child { flex: 1; }
+  .weather-daily-row svg { width: 4.4mm; height: 4.4mm; fill: white; }
+  .weather-daily-row .weather-rain { color: #abb3bc; width: 8mm; text-align: center; }
+  .weather-detail-row span:first-child { color: #abb3bc; }
   .clock-page {
     position: absolute; inset: 0; z-index: 10;
     background: #000;
@@ -598,6 +619,24 @@
                   <p class="clock-muted" id="calendarStorageNote">Acara disimpan di browser ini; tidak disinkronkan atau diberi pengingat. Menghapus data browser menghapus acara.</p>
                 </div>
               </section>
+              <section class="weather-page" id="weatherPage" aria-label="Cuaca di Super App" hidden>
+                <button class="super-back" id="weatherBack" type="button">← Kembali</button>
+                <h2>CUACA</h2>
+                <div class="weather-location">LOKASI SAAT INI · PERKIRAAN</div>
+                <div class="weather-summary">
+                  <div><div class="weather-summary-temp" id="weatherPageTemp">--°</div><div class="weather-condition" id="weatherPageCondition">Cuaca belum tersedia</div><div class="weather-observed" id="weatherPageObserved"></div></div>
+                  <div class="weather-hero"><svg id="weatherPageIcon" viewBox="0 0 13 13" aria-hidden="true"></svg></div>
+                </div>
+                <p class="weather-status" id="weatherPageStatus" role="status">Aktifkan lokasi untuk memuat cuaca.</p>
+                <button class="weather-action" type="button" id="weatherPageRefresh">Aktifkan / perbarui cuaca</button>
+                <div id="weatherPageEmpty" class="weather-status">Prakiraan per jam dan 7 hari akan muncul setelah lokasi dan data cuaca tersedia.</div>
+                <div id="weatherPageDetails" hidden>
+                  <h3>PRAKIRAAN 24 JAM</h3><div id="weatherHours" class="weather-hourly"></div><p class="weather-status">% = peluang hujan</p>
+                  <h3>PRAKIRAAN 7 HARI</h3><div id="weatherDays"></div>
+                  <h3>DETAIL SAAT INI</h3><div id="weatherDetails"></div>
+                  <p class="weather-status">Sumber: Open-Meteo · waktu sesuai lokasi perkiraan</p>
+                </div>
+              </section>
               <div class="punch-hole"></div>
               <div class="sheen"></div>
             </div>
@@ -677,6 +716,9 @@
     var page = document.getElementById('clockPage');
     var back = document.getElementById('clockBack');
     var calendarPage = document.getElementById('calendarPage');
+    var weatherPage = document.getElementById('weatherPage');
+    var weatherBack = document.getElementById('weatherBack');
+    var weatherOrigin = document.getElementById('superWeather');
     var calendarBack = document.getElementById('calendarBack');
     var calendarOrigin = document.getElementById('openCalendarModule');
     var superPage = document.getElementById('superPage');
@@ -688,6 +730,7 @@
     function setTab(superActive) {
       page.hidden = true;
       calendarPage.hidden = true;
+      weatherPage.hidden = true;
       drawerPage.hidden = true;
       superPage.hidden = !superActive;
       homeTab.classList.toggle('active', !superActive);
@@ -701,6 +744,7 @@
     function openClock(origin) { clockOrigin = origin; page.hidden = false; back.focus(); }
     document.getElementById('openClockModule').addEventListener('click', function () { openClock(this); });
     calendarOrigin.addEventListener('click', function () { calendarPage.hidden = false; calendarBack.focus(); });
+    weatherOrigin.addEventListener('click', function () { weatherPage.hidden = false; weatherBack.focus(); if (window.weatherPageOnOpen) window.weatherPageOnOpen(); });
     clockLed.addEventListener('click', function () { openClock(clockLed); });
     clockLed.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(clockLed); }
@@ -711,12 +755,14 @@
     function goBack() {
       if (!drawerPage.hidden) { drawerPage.hidden = true; homeTab.focus(); return; }
       if (!calendarPage.hidden) { calendarPage.hidden = true; calendarOrigin.focus(); return; }
+      if (!weatherPage.hidden) { weatherPage.hidden = true; weatherOrigin.focus(); return; }
       if (!page.hidden) { page.hidden = true; clockOrigin.focus(); return; }
       if (!superPage.hidden) { setTab(false); homeTab.focus(); }
     }
     drawerBack.addEventListener('click', goBack);
     back.addEventListener('click', goBack);
     calendarBack.addEventListener('click', goBack);
+    weatherBack.addEventListener('click', goBack);
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') goBack();
     });
@@ -730,7 +776,7 @@
       var drawing = document.getElementById('pathDraw');
       if (event.button !== 0 || (drawing && !drawing.hidden)) return;
       var rect = screen.getBoundingClientRect();
-      var internal = !page.hidden || !calendarPage.hidden || !superPage.hidden || !drawerPage.hidden;
+      var internal = !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !superPage.hidden || !drawerPage.hidden;
       var bottom = drawerPage.hidden && event.clientY >= rect.top + rect.height * .80 && event.clientY <= rect.bottom;
       var right = internal && event.clientX >= rect.right - rect.width * (32 / 445);
       if (bottom || right) swipe = { id: event.pointerId, x: event.clientX, y: event.clientY,
@@ -852,7 +898,8 @@
   })();
 </script>
 <script src="home-date.js?v=1"></script>
-<script src="weather.js?v=3"></script>
+<script src="weather-page.js?v=1"></script>
+<script src="weather.js?v=4"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
 <script src="calendar.js?v=5"></script>

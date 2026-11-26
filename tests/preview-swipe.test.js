@@ -17,14 +17,14 @@ class Element {
 }
 const ids = ['chargeToggle','batteryLed','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
   'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
-  'calendarPage','calendarBack','openCalendarModule','drawerPage','drawerBack','pathDraw'];
+  'calendarPage','calendarBack','openCalendarModule','weatherPage','weatherBack','superWeather','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
-elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.superPage.hidden = true;
+elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.weatherPage.hidden = true; elements.superPage.hidden = true;
 elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
 const screen = new Element(), separator = new Element(), doc = new Element();
 doc.getElementById = id => elements[id];
 doc.querySelector = selector => selector === '.screen' ? screen : separator;
-vm.runInNewContext(script, { document: doc, Date, Intl, String, setTimeout() {} });
+vm.runInNewContext(script, { document: doc, window: {}, Date, Intl, String, setTimeout() {} });
 function swipe(x1, y1, x2, y2) {
   screen.fire('pointerdown', { isPrimary:true, button:0, pointerId:1, clientX:x1, clientY:y1 });
   doc.fire('pointerup', { pointerId:1, clientX:x2, clientY:y2 });
@@ -55,7 +55,10 @@ assert.strictEqual(elements.calendarPage.hidden, false, 'calendar opens');
 swipe(440, 100, 360, 100);
 assert.strictEqual(elements.calendarPage.hidden, true, 'calendar closes on right-edge swipe');
 assert.strictEqual(elements.superPage.hidden, false, 'calendar returns to Super App');
-elements.openCalendarModule.fire('click'); elements.calendarBack.fire('click');
+elements.superWeather.fire('click'); assert.strictEqual(elements.weatherPage.hidden,false,'weather opens');
+swipe(440, 100, 360, 100); assert.strictEqual(elements.weatherPage.hidden,true,'weather back gesture');
+elements.superWeather.fire('click'); swipe(200,950,200,500); assert.strictEqual(elements.weatherPage.hidden,true,'weather bottom swipe returns home');
+elements.tabSuper.fire('click'); elements.openCalendarModule.fire('click'); elements.calendarBack.fire('click');
 assert.strictEqual(elements.calendarPage.hidden, true, 'calendar back button closes page');
 // Home swipe opens the preview drawer without requiring fling speed.
 elements.tabHome.fire('click');

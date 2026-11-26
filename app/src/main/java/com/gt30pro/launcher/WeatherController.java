@@ -28,6 +28,8 @@ final class WeatherController {
     private static final long INTERVAL = 30 * 60 * 1000L;
     private final Activity activity;
     private final WeatherView view;
+    interface DetailsListener { void onDetails(JSONObject data, String status); }
+    private DetailsListener detailsListener;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final LocationManager manager;
     private boolean active, loading, pendingManual;
@@ -39,10 +41,23 @@ final class WeatherController {
         activity = a; view = v; manager = (LocationManager) a.getSystemService(Context.LOCATION_SERVICE);
         view.setOnClickListener(w -> requestFromUser());
     }
+    void setDetailsListener(DetailsListener listener) { detailsListener = listener; }
+    private void notifyDetails(String status) {
+        if (detailsListener == null) return;
+        JSONObject data = null;
+        if (permitted()) {
+            android.content.SharedPreferences p = activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE);
+            long age = System.currentTimeMillis() - p.getLong("time", 0);
+            if (age >= 0 && age < 2 * 60 * 60 * 1000L) {
+                try { data = new JSONObject(p.getString("forecast_v1", "")); } catch (Exception ignored) { }
+            }
+        }
+        detailsListener.onDetails(data, status);
+    }
     private boolean permitted() { return activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED; }
     void resume() {
         active = true;
-        if (!permitted()) { view.setWeather(-1, true, null, "Ketuk untuk mengaktifkan cuaca"); return; }
+        if (!permitted()) { view.setWeather(-1, true, null, "Ketuk untuk mengaktifkan cuaca"); notifyDetails("Izinkan lokasi perkiraan untuk melihat cuaca."); return; }
         showCached();
         boolean manual = pendingManual; pendingManual = false;
         refresh(manual);
@@ -57,7 +72,7 @@ final class WeatherController {
             if (active) { pendingManual = false; refresh(true); }
             else pendingManual = true;
         }
-        else { pendingManual = false; view.setWeather(-1, true, null, "Izin lokasi ditolak; ketuk untuk mencoba lagi"); toast("Izin lokasi diperlukan untuk cuaca."); }
+        else { pendingManual = false; view.setWeather(-1, true, null, "Izin lokasi ditolak; ketuk untuk mencoba lagi"); notifyDetails("Izin lokasi ditolak. Ketuk Aktifkan / perbarui untuk mencoba lagi."); toast("Izin lokasi diperlukan untuk cuaca."); }
     }
     void requestFromUser() {
         if (permitted()) { refresh(true); return; }
@@ -81,15 +96,20 @@ final class WeatherController {
         long age = System.currentTimeMillis() - at;
         if (at > 0 && age >= 0 && age < 2 * 60 * 60 * 1000L) {
             view.setWeather(p.getInt("code", -1), p.getBoolean("day", true), p.getInt("temp", 0), "Data terakhir; ketuk untuk memperbarui");
-        } else view.setWeather(-1, true, null, "Ketuk untuk memperbarui");
+            notifyDetails("Data terakhir tersimpan; ketuk untuk memperbarui.");
+        } else {
+            view.setWeather(-1, true, null, "Ketuk untuk memperbarui");
+            notifyDetails("Cuaca belum tersedia; ketuk Aktifkan / perbarui.");
+        }
     }
     private void refresh(boolean manual) {
         if (!active || !permitted()) return;
         if (loading) { if (manual) toast("Cuaca sedang diperbarui…"); return; }
         android.content.SharedPreferences p = activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE);
         long age = System.currentTimeMillis() - p.getLong("time", 0);
-        if (!manual && age >= 0 && age < INTERVAL) { schedule(INTERVAL-age); return; }
+        if (!manual && age >= 0 && age < INTERVAL && (detailsListener == null || p.contains("forecast_v1"))) { schedule(INTERVAL-age); return; }
         loading = true; final int run = ++generation;
+        notifyDetails("Memperbarui cuaca…");
         if (manual) toast("Memperbarui cuaca…");
         try {
             if (manager == null) throw new IllegalStateException();
@@ -127,19 +147,21 @@ final class WeatherController {
         new Thread(() -> {
             HttpURLConnection conn = null;
             try {
-                String url = String.format(Locale.US, "https://api.open-meteo.com/v1/forecast?latitude=%.2f&longitude=%.2f&current=temperature_2m,weather_code,is_day", lat, lon);
+                String url = String.format(Locale.US, "https://api.open-meteo.com/v1/forecast?latitude=%.2f&longitude=%.2f&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&forecast_days=7&timezone=auto", lat, lon);
                 conn = (HttpURLConnection) new URL(url).openConnection(); conn.setConnectTimeout(12000); conn.setReadTimeout(12000);
                 if (conn.getResponseCode() != 200) throw new java.io.IOException("weather response");
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try (InputStream input = conn.getInputStream()) { byte[] buf = new byte[2048]; int n; while ((n=input.read(buf)) != -1) { out.write(buf,0,n); if(out.size()>65536) throw new java.io.IOException("weather response too large"); } }
-                JSONObject current = new JSONObject(out.toString("UTF-8")).getJSONObject("current");
+                JSONObject forecast = WeatherForecast.sanitized(new JSONObject(out.toString("UTF-8")));
+                JSONObject current = forecast.getJSONObject("current");
                 double value = current.getDouble("temperature_2m"); int code = current.getInt("weather_code"), isDay = current.getInt("is_day");
                 if (!Double.isFinite(value) || value < -100 || value > 70 || code < 0 || code > 99 || (isDay != 0 && isDay != 1)) throw new IllegalArgumentException();
                 int temp = (int)Math.round(value); boolean day = isDay == 1;
                 handler.post(() -> {
                     if (!active || run != generation || !permitted()) return;
-                    loading = false; activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).edit().putLong("time",System.currentTimeMillis()).putInt("temp",temp).putInt("code",code).putBoolean("day",day).apply();
-                    view.setWeather(code, day, temp, "Diperbarui; ketuk untuk memperbarui lagi"); schedule(INTERVAL);
+                    loading = false; activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).edit().putLong("time",System.currentTimeMillis()).putInt("temp",temp).putInt("code",code).putBoolean("day",day).putString("forecast_v1", forecast.toString()).apply();
+                    view.setWeather(code, day, temp, "Diperbarui; ketuk untuk memperbarui lagi");
+                    notifyDetails("Diperbarui · Open-Meteo"); schedule(INTERVAL);
                 });
             } catch (Exception e) { handler.post(() -> fail(run, manual, "Cuaca tidak tersedia. Periksa koneksi dan coba lagi.")); }
             finally { if (conn != null) conn.disconnect(); }
@@ -147,7 +169,7 @@ final class WeatherController {
     }
     private void fail(int run, boolean manual, String message) {
         if (!active || run != generation) return;
-        stopLocation(); loading = false; showCached(); schedule(INTERVAL);
+        stopLocation(); loading = false; showCached(); notifyDetails(message + " Data terakhir ditampilkan bila tersedia."); schedule(INTERVAL);
         if (manual) toast(message);
     }
     private void stopLocation() {
