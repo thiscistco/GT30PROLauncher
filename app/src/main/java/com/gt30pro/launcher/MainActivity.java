@@ -214,9 +214,9 @@ public class MainActivity extends BottomSwipeActivity {
         float cssPixel = pixelsPerMm * 25.4f / 96f;
         int boxWidth = Math.max(1, Math.round(HomeDateView.WIDTH_MM * pixelsPerMm));
         int boxHeight = Math.max(1, Math.round(HomeDateView.HEIGHT_MM * pixelsPerMm));
-        float left = width * .49f - boxWidth / 2f;
-        // Match the preview's total 360 CSS px upward shift (1 CSS px = 25.4/96 mm).
-        float bottom = height * .06f + 361.55f * cssPixel;
+        // Match the preview offsets (1 CSS px = 25.4/96 mm).
+        float left = width * .49f + 35f * cssPixel - boxWidth / 2f;
+        float bottom = height * .06f + 381.55f * cssPixel;
         float top = height - bottom - boxHeight + HomeDateView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) dateBox.getLayoutParams();
         params.width = boxWidth; params.height = boxHeight;
