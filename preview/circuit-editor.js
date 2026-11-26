@@ -188,7 +188,7 @@
       var prev = left[left.length - 2], corner = right[0], next = right[1];
       var before = distance(prev, corner), after = distance(corner, next);
       if (!before || !after) return left.slice(0, -1).concat(right);
-      var cut = Math.min(2.5, before / 3, after / 3);
+      var cut = Math.min(6, before / 3, after / 3);
       var start = [0, 1].map(function (k) { return corner[k] + (prev[k] - corner[k]) * cut / before; });
       var end = [0, 1].map(function (k) { return corner[k] + (next[k] - corner[k]) * cut / after; });
       var result = left.slice(0, -1);

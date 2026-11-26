@@ -3,7 +3,7 @@
 
 Several averaging passes remove small kinks; corners and endpoints remain fixed.
 Vertices move at most two source pixels per axis, then near-collinear points are
-simplified within one pixel. Coordinates stay integer for the editor and masks.
+simplified within 2.5 pixels. Coordinates stay integer for the editor and masks.
 Interior corners are rounded locally with quadratic curves while keeping each
 independent route and both endpoints intact. The two original light offsets
 remain unchanged; offset 1 starts at the opposite end.
@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 
-def simplify(points, tolerance=1.0):
+def simplify(points, tolerance=2.5):
     # Preserve sharp corners and reversals while removing near-collinear noise.
     anchors = [0]
     for i in range(1, len(points) - 1):
@@ -44,7 +44,7 @@ def simplify(points, tolerance=1.0):
     return [points[i] for i in sorted(keep)]
 
 
-def round_joins(points, radius=2.5):
+def round_joins(points, radius=6.0):
     # Cut only a short part of each adjoining segment, never connect distinct
     # routes or move their endpoints. Shared endpoints remain exactly shared.
     result = [points[0][:]]

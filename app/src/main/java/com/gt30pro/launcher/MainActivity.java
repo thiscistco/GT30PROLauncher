@@ -17,7 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.Typeface;
@@ -42,10 +41,7 @@ public class MainActivity extends Activity {
 
     private GestureDetector detector;
     private TextView batteryLed;
-    private View clockLed;
-    private View clockSep;
-    private TextView clockHourText;
-    private TextView clockMinText;
+    private HomeClockView clockLed;
     private ValueAnimator chargeAnim;
     private CircuitGlowView amberGlow;
     private ValueAnimator amberAnim;
@@ -57,37 +53,13 @@ public class MainActivity extends Activity {
         @Override public void onReceive(Context context, Intent intent) { updateAmberGlow(); }
     };
 
-    // Gradien simetris memberi pusat keemasan dan tepi jingga kemerahan.
-    private static final int[] AMBER_LED = {
-            0xFFCB633E, 0xFFFFB568, 0xFFFFE5B1, 0xFFFFB568, 0xFFCB633E
-    };
-    private static final float[] AMBER_STOPS = {0f, 0.24f, 0.5f, 0.76f, 1f};
-
-    private static class AmberClockText extends TextView {
-        private android.graphics.Shader gradient;
-        AmberClockText(Context context) { super(context); }
-
-        @Override
-        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-            super.onSizeChanged(w, h, oldw, oldh);
-            if (h > 0) gradient = new android.graphics.LinearGradient(0, 0, 0, h,
-                    AMBER_LED, AMBER_STOPS, android.graphics.Shader.TileMode.CLAMP);
-        }
-
-        @Override protected void onDraw(android.graphics.Canvas canvas) {
-            if (gradient != null) getPaint().setShader(gradient);
-            super.onDraw(canvas);
-        }
-    }
-
     private final Handler clockHandler = new Handler(Looper.getMainLooper());
     private final Runnable clockTick = new Runnable() {
         @Override
         public void run() {
-            if (clockHourText != null && clockMinText != null) {
+            if (clockLed != null) {
                 String t = new SimpleDateFormat("HH:mm", Locale.US).format(new Date());
-                clockHourText.setText(t.substring(0, 2));
-                clockMinText.setText(t.substring(3, 5));
+                clockLed.setTime(t.substring(0, 2), t.substring(3, 5));
             }
             clockHandler.postDelayed(this, 1000);
         }
@@ -136,84 +108,18 @@ public class MainActivity extends Activity {
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
         ((FrameLayout) findViewById(R.id.root)).addView(batteryLed, ledParams);
 
-        // Jam digital 3 baris: jam / titik / menit (font Doto, LED amber)
-        LinearLayout clockBox = new LinearLayout(this);
-        clockBox.setOrientation(LinearLayout.VERTICAL);
-        clockBox.setGravity(Gravity.CENTER_HORIZONTAL);
-        clockHourText = new AmberClockText(this);
-        clockHourText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
-        clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
-        clockHourText.setTextColor(0xFFE7A579);
-        clockHourText.setLetterSpacing(0.06f);
-        clockHourText.setFontVariationSettings("'wght' 800");
-        clockHourText.setIncludeFontPadding(false);
-        clockHourText.setText("00");
-        clockBox.addView(clockHourText);
-
-        float density = getResources().getDisplayMetrics().density;
-        clockSep = new View(this) {
-            private final android.graphics.Paint dotPaint =
-                    new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
-            {
-                dotPaint.setColor(0xFFE7A579);
-            }
-
-            @Override
-            protected void onDraw(android.graphics.Canvas canvas) {
-                float r = getHeight() / 2f;
-                float cy = getHeight() / 2f;
-                int n = 5;
-                float gap = (getWidth() - 2f * r) / (n - 1);
-                for (int i = 0; i < n; i++) {
-                    float x = r + i * gap;
-                    dotPaint.setShader(new android.graphics.RadialGradient(x, cy, r,
-                            new int[]{0xFFFFE5B1, 0xFFFFB568, 0xFFCB633E},
-                            new float[]{0f, 0.55f, 1f}, android.graphics.Shader.TileMode.CLAMP));
-                    canvas.drawCircle(x, cy, r, dotPaint);
-                }
-            }
-        };
-        LinearLayout.LayoutParams sepParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, (int) (1.2f * density)));
-        sepParams.topMargin = 0;
-        sepParams.bottomMargin = (int) (3.2f * density);
-        sepParams.leftMargin = -1;
-        sepParams.rightMargin = (int) (0.8f * density) * 2;
-        clockSep.setLayoutParams(sepParams);
-        clockBox.addView(clockSep);
-
-        clockMinText = new AmberClockText(this);
-        clockMinText.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
-        clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
-        clockMinText.setTextColor(0xFFE7A579);
-        clockMinText.setLetterSpacing(0.06f);
-        clockMinText.setFontVariationSettings("'wght' 800");
-        clockMinText.setIncludeFontPadding(false);
-        clockMinText.setText("00");
-        clockBox.addView(clockMinText);
-
-        clockLed = clockBox;
-        clockLed.setAlpha(1f);
-        FrameLayout.LayoutParams clockParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.143f);
-        clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.0646f);
+        // The clock is a single explicitly measured drawing, above the wallpaper.
         FrameLayout homeRoot = findViewById(R.id.root);
-        // Keep the live clock above the full-screen animated overlay and allow
-        // the small text glow to extend beyond child bounds on Android devices.
-        homeRoot.setClipChildren(false);
-        clockBox.setClipChildren(false);
-        clockBox.setClipToPadding(false);
+        HomeClockView clockBox = new HomeClockView(this);
+        clockLed = clockBox;
         clockBox.setVisibility(View.VISIBLE);
-        clockBox.setElevation(4f * density);
-        homeRoot.addView(clockBox, clockParams);
+        clockBox.setAlpha(1f);
+        clockBox.setElevation(4f * getResources().getDisplayMetrics().density);
+        homeRoot.setClipChildren(false);
+        homeRoot.addView(clockBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
         clockBox.bringToFront();
         clockBox.setContentDescription("Buka Jam di Super App");
         clockBox.setOnClickListener(v -> startActivity(new Intent(this, ClockActivity.class)));
-        // Ukuran dan posisi mengacu pada area wallpaper yang benar-benar terukur,
-        // bukan ukuran layar yang dapat mencakup status/navigation bar.
         homeRoot.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
             if (r - l != oldR - oldL || b - t != oldB - oldT) {
                 updateClockLayout(homeRoot, clockBox);
@@ -253,35 +159,25 @@ public class MainActivity extends Activity {
         root.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }
 
-    private void updateClockLayout(FrameLayout root, LinearLayout clockBox) {
+    private void updateClockLayout(FrameLayout root, HomeClockView clockBox) {
         int width = root.getWidth(), height = root.getHeight();
         if (width <= 0 || height <= 0) return;
-        // Preview screen: 70.9mm wide. Match its 2mm font and CSS-pixel offsets.
-        float cssPixel = width / (70.9f * 96f / 25.4f);
-        float clockSizePx = width * (2f / 70.9f);
-        clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
-        clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
-        // Match the tighter preview glow to keep the small Doto dots legible.
-        float clockGlowRadius = width * (0.4f / 70.9f);
-        clockHourText.setShadowLayer(clockGlowRadius, 0f, 0f, 0xA6DD6234);
-        clockMinText.setShadowLayer(clockGlowRadius, 0f, 0f, 0xA6DD6234);
-        clockHourText.setLetterSpacing(0.2f / 2f);
-        clockMinText.setLetterSpacing(0.2f / 2f);
-        LinearLayout.LayoutParams sep = (LinearLayout.LayoutParams) clockSep.getLayoutParams();
-        sep.height = Math.max(1, Math.round(width * (0.22f / 70.9f)));
-        sep.topMargin = Math.max(0, Math.round((0.461f * 96f / 25.4f - 1f) * cssPixel));
-        sep.bottomMargin = Math.max(0, Math.round((0.45f * 96f / 25.4f + 1f) * cssPixel));
-        sep.leftMargin = Math.round(-0.25f * cssPixel);
-        sep.rightMargin = Math.round(1.01f * cssPixel);
-        clockSep.setLayoutParams(sep);
+        float pixelsPerMm = width / 70.9f;
+        float cssPixel = pixelsPerMm * 25.4f / 96f;
+        int boxWidth = Math.max(1, Math.round(HomeClockView.WIDTH_MM * pixelsPerMm));
+        int boxHeight = Math.max(1, Math.round(HomeClockView.HEIGHT_MM * pixelsPerMm));
+        // Keep the content (not its glow padding) anchored to the preview position.
+        float left = width * .357f - .5f * cssPixel - boxWidth / 2f;
+        float bottom = height * .06f + 1.55f * cssPixel;
+        float top = height - bottom - boxHeight + HomeClockView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) clockBox.getLayoutParams();
-        // FrameLayout subtracts the full right margin from CENTER_HORIZONTAL.
-        // 50% - 14.3% places the clock at the preview's 35.7% center.
-        params.rightMargin = Math.round(width * 0.143f);
-        params.bottomMargin = Math.round(height * 0.06f + 3f * cssPixel);
-        // Apply subpixel shifts in preview CSS pixels (1 CSS px = cssPixel).
-        clockBox.setTranslationX(-0.5f * cssPixel);
-        clockBox.setTranslationY(1.45f * cssPixel);
+        params.width = boxWidth;
+        params.height = boxHeight;
+        params.leftMargin = Math.round(left);
+        params.topMargin = Math.round(top);
+        clockBox.setTranslationX(left - params.leftMargin);
+        clockBox.setTranslationY(top - params.topMargin);
+        clockBox.setScale(pixelsPerMm);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
             android.graphics.Rect bounds = new android.graphics.Rect();
@@ -386,13 +282,13 @@ public class MainActivity extends Activity {
             chargeAnim.setRepeatCount(ValueAnimator.INFINITE);
             chargeAnim.setInterpolator(new AccelerateDecelerateInterpolator());
             chargeAnim.addUpdateListener(a -> {
-                if (clockSep != null) clockSep.setAlpha((float) a.getAnimatedValue());
+                if (clockLed != null) clockLed.setSeparatorAlpha((float) a.getAnimatedValue());
             });
             chargeAnim.start();
         } else if (!charging && chargeAnim != null) {
             chargeAnim.cancel();
             chargeAnim = null;
-            if (clockSep != null) clockSep.setAlpha(1f);
+            if (clockLed != null) clockLed.setSeparatorAlpha(1f);
         }
     }
 

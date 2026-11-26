@@ -2,6 +2,7 @@
 const fs = require('fs'), assert = require('assert');
 const html = fs.readFileSync('preview/index.html', 'utf8');
 const java = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java', 'utf8');
+const view = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeClockView.java', 'utf8');
 const clock = html.match(/\.clock-led\s*\{([^}]*)\}/)[1];
 const sep = html.match(/\.clock-sep\s*\{([^}]*)\}/)[1];
 assert.match(clock, /left:\s*calc\(35\.7%\s*-\s*0\.5px\)/);
@@ -9,38 +10,37 @@ assert.match(clock, /bottom:\s*calc\(6%\s*\+\s*1\.55px\)/);
 assert.match(clock, /font-size:\s*2mm/);
 assert.match(clock, /font-weight:\s*800/);
 assert.match(clock, /font-variation-settings:\s*'wght'\s*800/);
-const digits = html.match(/\.clock-led > span:not\(\.clock-sep\)\s*\{([^}]*)\}/)[1];
-assert.match(digits, /drop-shadow\(0 0 0\.4mm rgba\(221, 98, 52, 0\.65\)\)/);
-assert.match(java, /clockHourText\.setFontVariationSettings\("'wght' 800"\)/);
-assert.match(java, /clockMinText\.setFontVariationSettings\("'wght' 800"\)/);
-assert.match(java, /clockGlowRadius\s*=\s*width\s*\*\s*\(0\.4f\s*\/\s*70\.9f\)/);
-assert.match(java, /clockHourText\.setShadowLayer\(clockGlowRadius/);
-assert.match(java, /clockMinText\.setShadowLayer\(clockGlowRadius/);
-assert.match(java, /clockBox\.setVisibility\(View\.VISIBLE\)/);
-assert.match(java, /clockBox\.setElevation\(4f\s*\*\s*density\)/);
-assert.match(java, /clockBox\.bringToFront\(\)/);
-assert.match(java, /clockLed\.setVisibility\(View\.VISIBLE\)/);
-assert.match(java, /clockLed\.bringToFront\(\)/);
-assert.match(java, /homeRoot\.setClipChildren\(false\)/);
 assert.match(clock, /letter-spacing:\s*0\.2mm/);
 assert.match(sep, /height:\s*0\.22mm/);
-assert.match(java, /clockSizePx\s*=\s*width\s*\*\s*\(2f\s*\/\s*70\.9f\)/);
-assert.match(java, /setLetterSpacing\(0\.2f\s*\/\s*2f\)/);
-assert.match(java, /clockBox\.setTranslationX\(-0\.5f\s*\*\s*cssPixel\)/);
-assert.match(java, /clockBox\.setTranslationY\(1\.45f\s*\*\s*cssPixel\)/);
-assert.match(java, /params\.rightMargin\s*=\s*Math\.round\(width\s*\*\s*0\.143f\)/);
-assert.match(java, /params\.bottomMargin\s*=\s*Math\.round\(height\s*\*\s*0\.06f\s*\+\s*3f\s*\*\s*cssPixel\)/);
-// FrameLayout subtracts the full right margin from its centered child.
-// Only layout/margin rounding can introduce up to a pixel of variation;
-// the requested offsets remain subpixel floats.
+const digits = html.match(/\.clock-led > span:not\(\.clock-sep\)\s*\{([^}]*)\}/)[1];
+assert.match(digits, /drop-shadow\(0 0 0\.4mm rgba\(221, 98, 52, 0\.65\)\)/);
+assert.match(java, /new HomeClockView\(this\)/);
+assert.match(java, /new FrameLayout\.LayoutParams\(1, 1, Gravity\.TOP \| Gravity\.LEFT\)/);
+assert.match(java, /params\.width = boxWidth/);
+assert.match(java, /params\.height = boxHeight/);
+assert.match(java, /clockBox\.setElevation\(4f/);
+assert.match(java, /clockLed\.setVisibility\(View\.VISIBLE\)/);
+assert.match(java, /clockLed\.bringToFront\(\)/);
+assert.match(java, /clockLed\.setTime\(t\.substring\(0, 2\), t\.substring\(3, 5\)\)/);
+assert.match(java, /clockLed\.setSeparatorAlpha\(\(float\) a\.getAnimatedValue\(\)\)/);
+assert.match(java, /width \* \.357f - \.5f \* cssPixel - boxWidth \/ 2f/);
+assert.match(java, /height \* \.06f \+ 1\.55f \* cssPixel/);
+assert.match(view, /setLayerType\(View\.LAYER_TYPE_SOFTWARE, null\)/);
+assert.match(view, /text\.setTextSize\(2f \* pixelsPerMm\)/);
+assert.match(view, /text\.setFontVariationSettings\("'wght' 800"\)/);
+assert.match(view, /text\.setShadowLayer\(\.4f \* pixelsPerMm/);
+assert.match(view, /for \(int i = 0; i < 5; i\+\+\)/);
+assert.match(view, /dots\.setAlpha\(Math\.round\(separatorAlpha \* 255\)\)/);
+assert.match(view, /drawDigits\(canvas, hour/);
+assert.match(view, /drawDigits\(canvas, minute/);
+// Explicit view bounds include glow padding, while the content remains anchored
+// to the preview's 35.7% center and 6% + 1.55 CSS px bottom position.
 for (const [w,h] of [[269,596],[1224,2720],[720,1600]]) {
-  const cssPixel = w/(70.9*96/25.4);
-  const expectedX = w*.357 - .5*cssPixel;
-  const androidX = w/2 - Math.round(w*.143) - .5*cssPixel;
-  assert(Math.abs(expectedX-androidX) <= .501, 'center position differs by more than margin rounding');
-  const expectedBottom = h*.06 + 1.55*cssPixel;
-  const androidBottom = Math.round(h*.06 + 3*cssPixel) - 1.45*cssPixel;
-  assert(Math.abs(expectedBottom-androidBottom) <= .501, 'bottom position differs by more than margin rounding');
-  assert(Math.abs(w*(2/70.9) - (2*96/25.4)*cssPixel) < 1e-10);
+  const mm = w/70.9, css = mm*25.4/96;
+  const boxWidth = Math.round(3.6*mm), boxHeight = Math.round((5.731+.8)*mm);
+  const left = w*.357 - .5*css - boxWidth/2;
+  const top = h - (h*.06 + 1.55*css) - boxHeight + .4*mm;
+  assert(Math.abs(left + boxWidth/2 - (w*.357 - .5*css)) < 1e-9);
+  assert(Math.abs((h-(top+boxHeight-.4*mm)) - (h*.06 + 1.55*css)) < 1e-9);
 }
-console.log('Clock size and relative subpixel offsets match preview and Android layout: OK');
+console.log('Explicit Android clock rendering and preview-relative placement: OK');
