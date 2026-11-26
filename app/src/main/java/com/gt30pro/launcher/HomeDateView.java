@@ -11,8 +11,10 @@ import java.time.LocalDate;
 
 /** Live, three-line date using the same Doto amber treatment as the home clock. */
 final class HomeDateView extends View {
-    // 10 CSS px larger than 2.64 mm, scaling the three lines proportionally.
+    // Numeric date: 10 CSS px larger than the previous 2.64 mm text.
     private static final float SIZE_SCALE = (2.64f + 10f * 25.4f / 96f) / 2f;
+    // Doto's fixed advance and spacing make 3 letters at 65% as wide as 2 digits.
+    private static final float LABEL_SCALE = .65f;
     static final float WIDTH_MM = 5.2f * SIZE_SCALE;
     static final float GLOW_PAD_MM = .4f;
     static final float HEIGHT_MM = 6.9f * SIZE_SCALE + 2f * GLOW_PAD_MM;
@@ -44,8 +46,9 @@ final class HomeDateView extends View {
             invalidate();
         }
     }
-    private void drawLine(Canvas canvas, String value, float top) {
-        float line = 2.3f * SIZE_SCALE * pxPerMm, gap = .2f * SIZE_SCALE * pxPerMm;
+    private void drawLine(Canvas canvas, String value, float top, float sizeFactor) {
+        float line = 2.3f * SIZE_SCALE * pxPerMm, gap = .2f * SIZE_SCALE * sizeFactor * pxPerMm;
+        text.setTextSize(2f * SIZE_SCALE * sizeFactor * pxPerMm);
         Paint.FontMetrics metrics = text.getFontMetrics();
         float baseline = top + (line - (metrics.descent - metrics.ascent)) / 2f - metrics.ascent;
         float width = text.measureText(value) + Math.max(0, value.length() - 1) * gap;
@@ -61,8 +64,8 @@ final class HomeDateView extends View {
         super.onDraw(canvas);
         if (date == null) return;
         float top = GLOW_PAD_MM * pxPerMm;
-        drawLine(canvas, HomeDateText.weekday(date), top);
-        drawLine(canvas, HomeDateText.day(date), top + 2.3f * SIZE_SCALE * pxPerMm);
-        drawLine(canvas, HomeDateText.month(date), top + 4.6f * SIZE_SCALE * pxPerMm);
+        drawLine(canvas, HomeDateText.weekday(date), top, LABEL_SCALE);
+        drawLine(canvas, HomeDateText.day(date), top + 2.3f * SIZE_SCALE * pxPerMm, 1f);
+        drawLine(canvas, HomeDateText.month(date), top + 4.6f * SIZE_SCALE * pxPerMm, LABEL_SCALE);
     }
 }

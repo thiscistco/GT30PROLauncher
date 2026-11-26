@@ -20,7 +20,10 @@ assert.equal(elements.homeDateWeekday.textContent,'JUM');assert.equal(elements.h
 assert.equal(elements.homeDate.attrs['aria-label'],'Jumat, 1 Januari 2027');
 const html=fs.readFileSync('preview/index.html','utf8'), java=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java','utf8'), view=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeDateView.java','utf8');
 const css=html.match(/\.date-led\s*\{([^}]*)\}/)[1];
-assert.match(css,/left:\s*calc\(49%\s*\+\s*115px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*391\.55px\)/);assert.match(css,/font-size:\s*calc\(2\.64mm \+ 10px\)/);assert.match(css,/letter-spacing:\s*calc\(0\.264mm \+ 1px\)/);assert.match(css,/line-height:\s*1\.15/);assert.match(css,/pointer-events:\s*none/);
+assert.match(css,/left:\s*calc\(49%\s*\+\s*115px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*391\.55px\)/);assert.match(css,/font-size:\s*calc\(2\.64mm \+ 10px\)/);assert.match(css,/letter-spacing:\s*calc\(0\.264mm \+ 1px\)/);assert.match(css,/line-height:\s*calc\(3\.036mm \+ 11\.5px\)/);assert.match(css,/pointer-events:\s*none/);
+const labelCss=html.match(/#homeDateWeekday,\s*#homeDateMonth\s*\{([^}]*)\}/)[1];
+assert.match(labelCss,/font-size:\s*calc\(1\.716mm \+ 6\.5px\)/);
+assert.match(labelCss,/letter-spacing:\s*calc\(0\.1716mm \+ 0\.65px\)/);
 assert.match(html,/id="homeDateWeekday"[\s\S]*id="homeDateNumber"[\s\S]*id="homeDateMonth"/);
 assert.match(html,/src="home-date\.js\?v=1"/);
 const dateLayout = java.match(/private void updateDateLayout\([\s\S]*?\n    }/)[0];
@@ -34,18 +37,20 @@ assert(Math.abs((2*sizeScale-2.64)*96/25.4 - 10) < 1e-9, 'date font grows exactl
 assert.match(view,/WIDTH_MM = 5\.2f \* SIZE_SCALE/);
 assert.match(view,/HEIGHT_MM = 6\.9f \* SIZE_SCALE \+ 2f \* GLOW_PAD_MM/);
 assert.match(view,/setTextSize\(2f \* SIZE_SCALE \* pxPerMm\)/);
-assert.match(view,/line = 2\.3f \* SIZE_SCALE \* pxPerMm, gap = \.2f \* SIZE_SCALE \* pxPerMm/);
-assert.match(view,/top \+ 2\.3f \* SIZE_SCALE \* pxPerMm/);
-assert.match(view,/top \+ 4\.6f \* SIZE_SCALE \* pxPerMm/);
+assert.match(view,/LABEL_SCALE = \.65f/);
+assert.match(view,/line = 2\.3f \* SIZE_SCALE \* pxPerMm, gap = \.2f \* SIZE_SCALE \* sizeFactor \* pxPerMm/);
+assert.match(view,/setTextSize\(2f \* SIZE_SCALE \* sizeFactor \* pxPerMm\)/);
+assert.match(view,/drawLine\(canvas, HomeDateText\.weekday\(date\), top, LABEL_SCALE\)/);
+assert.match(view,/drawLine\(canvas, HomeDateText\.day\(date\), top \+ 2\.3f \* SIZE_SCALE \* pxPerMm, 1f\)/);
+assert.match(view,/drawLine\(canvas, HomeDateText\.month\(date\), top \+ 4\.6f \* SIZE_SCALE \* pxPerMm, LABEL_SCALE\)/);
 assert(!/separatorAlpha/.test(view),'charging must not affect date');
 for(const w of [269,720,1224]) {
  const mm=w/70.9, cssPixel=mm*25.4/96, clockCenter=w*.357-.5*cssPixel, oldCenter=w*.49+110*cssPixel, dateCenter=w*.49+115*cssPixel;
  assert(Math.abs((dateCenter-oldCenter)-5*cssPixel)<1e-9, 'exactly 5 CSS px right of previous position');
  assert(dateCenter - clockCenter > (3.6+5.2*sizeScale)/2*mm,'date must not overlap clock');
- // Doto's widest three-letter abbreviation is 1.8 em plus three CSS letter spacings.
- // The larger Android view's conservative padding extends past the screen edge,
- // but the text itself fits. Its glow can be clipped close to the right edge.
- const contentWidth=(1.8*2*sizeScale + 3*.2*sizeScale)*mm;
+ // Two digits at full size are now the widest row; the conservative Android
+ // view bounds still extend past the screen edge, but the visible text fits.
+ const contentWidth=(1.2*2*sizeScale + 2*.2*sizeScale)*mm;
  assert(dateCenter + contentWidth/2 < w, 'date text remains inside the screen horizontally');
  const h=w*2720/1224, initialBottom=h-h*.06-1.55*cssPixel, previousBottom=h-h*.06-381.55*cssPixel, newBottom=h-h*.06-391.55*cssPixel;
  assert(Math.abs((initialBottom-newBottom)-390*cssPixel)<1e-9, 'exactly 390 CSS px above initial position');

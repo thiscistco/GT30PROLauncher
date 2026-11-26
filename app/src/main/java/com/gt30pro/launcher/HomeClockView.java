@@ -72,7 +72,7 @@ final class HomeClockView extends View {
         float line = 2.3f * pxPerMm;
         float top = GLOW_PAD_MM * pxPerMm;
         drawDigits(canvas, hour, top, line);
-        // CSS: 0.461 mm - 1 px above, 0.45 mm + 1 px below.
+        // CSS: 0.461 mm - 1 px above, 0.45 mm + 0.5 px below.
         float cssPx = pxPerMm * 25.4f / 96f;
         float dotTop = top + line + .461f * pxPerMm - cssPx;
         float r = .11f * pxPerMm;
@@ -90,6 +90,6 @@ final class HomeClockView extends View {
             canvas.drawCircle(x, y, r, dots);
         }
         dots.setShader(null);
-        drawDigits(canvas, minute, dotTop + .22f * pxPerMm + .45f * pxPerMm + cssPx, line);
+        drawDigits(canvas, minute, dotTop + .22f * pxPerMm + .45f * pxPerMm + .5f * cssPx, line);
     }
 }
