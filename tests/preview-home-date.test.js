@@ -20,18 +20,20 @@ assert.equal(elements.homeDateWeekday.textContent,'JUM');assert.equal(elements.h
 assert.equal(elements.homeDate.attrs['aria-label'],'Jumat, 1 Januari 2027');
 const html=fs.readFileSync('preview/index.html','utf8'), java=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java','utf8'), view=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeDateView.java','utf8');
 const css=html.match(/\.date-led\s*\{([^}]*)\}/)[1];
-assert.match(css,/left:\s*49%/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*101\.55px\)/);assert.match(css,/font-size:\s*2mm/);assert.match(css,/pointer-events:\s*none/);
+assert.match(css,/left:\s*49%/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*501\.55px\)/);assert.match(css,/font-size:\s*2mm/);assert.match(css,/pointer-events:\s*none/);
 assert.match(html,/id="homeDateWeekday"[\s\S]*id="homeDateNumber"[\s\S]*id="homeDateMonth"/);
 assert.match(html,/src="home-date\.js\?v=1"/); assert.match(java,/width \* \.49f - boxWidth \/ 2f/);
 const dateLayout = java.match(/private void updateDateLayout\([\s\S]*?\n    }/)[0];
-assert.match(dateLayout,/float bottom = height \* \.06f \+ 101\.55f \* cssPixel/);
+assert.match(dateLayout,/float bottom = height \* \.06f \+ 501\.55f \* cssPixel/);
 assert.match(java,/dateLed\.setDate\(now\.toInstant\(\)\.atZone\(ZoneId\.systemDefault\(\)\)\.toLocalDate\(\)\)/);
 assert.match(view,/setLayerType\(View\.LAYER_TYPE_SOFTWARE/); assert.match(view,/setContentDescription\(HomeDateText\.description/);
 assert(!/separatorAlpha/.test(view),'charging must not affect date');
 for(const w of [269,720,1224]) {
  const mm=w/70.9, cssPixel=mm*25.4/96, clockCenter=w*.357-.5*cssPixel, dateCenter=w*.49;
  assert(dateCenter - clockCenter > (3.6+5.2)/2*mm,'date must not overlap clock');
- const h=w*2720/1224, oldTop=h-h*.06-1.55*cssPixel, newTop=h-h*.06-101.55*cssPixel;
- assert(Math.abs((oldTop-newTop)-100*cssPixel)<1e-9, 'exactly 100 CSS px upwards on Android');
+ const h=w*2720/1224, initialBottom=h-h*.06-1.55*cssPixel, previousBottom=h-h*.06-101.55*cssPixel, newBottom=h-h*.06-501.55*cssPixel;
+ assert(Math.abs((initialBottom-newBottom)-500*cssPixel)<1e-9, 'exactly 500 CSS px above initial position');
+ assert(Math.abs((previousBottom-newBottom)-400*cssPixel)<1e-9, 'exactly 400 CSS px above previous position');
+ assert(newBottom-6.9*mm>0, 'date remains inside the screen');
 }
 console.log('Preview home date: local abbreviations, layout parity and clock separation: OK');
