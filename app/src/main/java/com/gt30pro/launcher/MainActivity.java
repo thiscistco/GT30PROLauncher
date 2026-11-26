@@ -250,13 +250,13 @@ public class MainActivity extends Activity {
     private void updateClockLayout(FrameLayout root, LinearLayout clockBox) {
         int width = root.getWidth(), height = root.getHeight();
         if (width <= 0 || height <= 0) return;
-        // Preview screen: 70.9mm wide. Match its 1.7mm font and CSS-pixel offsets.
+        // Preview screen: 70.9mm wide. Match its 2mm font and CSS-pixel offsets.
         float cssPixel = width / (70.9f * 96f / 25.4f);
-        float clockSizePx = width * (1.7f / 70.9f);
+        float clockSizePx = width * (2f / 70.9f);
         clockHourText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
         clockMinText.setTextSize(TypedValue.COMPLEX_UNIT_PX, clockSizePx);
-        clockHourText.setLetterSpacing(0.2f / 1.7f);
-        clockMinText.setLetterSpacing(0.2f / 1.7f);
+        clockHourText.setLetterSpacing(0.2f / 2f);
+        clockMinText.setLetterSpacing(0.2f / 2f);
         LinearLayout.LayoutParams sep = (LinearLayout.LayoutParams) clockSep.getLayoutParams();
         sep.height = Math.max(1, Math.round(width * (0.22f / 70.9f)));
         sep.topMargin = Math.max(0, Math.round((0.461f * 96f / 25.4f - 1f) * cssPixel));
