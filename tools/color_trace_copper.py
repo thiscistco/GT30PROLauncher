@@ -62,7 +62,9 @@ if bounds:
             if not mask_pixels[x, y]:
                 continue
             r, g, b = source[x, y]
-            level = 145 + 0.18 * (0.299*r + 0.587*g + 0.114*b)
+            # Slightly darker than the previous 145 baseline to blend with
+            # the existing copper traces while keeping their local shading.
+            level = 132 + 0.18 * (0.299*r + 0.587*g + 0.114*b)
             target[x, y] = (round(level * 1.08), round(level * 1.01), round(level * 0.85))
 image.paste(colors, (0, 0), mask)
 image.save(sys.argv[3], format='PNG', optimize=True)

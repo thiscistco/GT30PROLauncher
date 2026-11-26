@@ -33,6 +33,12 @@ with tempfile.TemporaryDirectory() as temp:
         for x, y in points:
             draw.ellipse((x-radius,y-radius,x+radius,y+radius), fill=255)
         assert any(difference.getpixel(p) > 0 for p in points), 'A route was not recolored'
+        # At the center of each route the copper has the intended darker tone,
+        # while preserving the original pixel's local luminance variation.
+        x, y = points[0]
+        r, g, b = before.getpixel((x, y))
+        level = 132 + 0.18 * (0.299*r + 0.587*g + 0.114*b)
+        assert after.getpixel((x, y)) == tuple(round(level * c) for c in (1.08, 1.01, 0.85))
     assert ImageChops.multiply(difference, ImageChops.invert(allowed)).getbbox() is None, 'Changed pixels away from animation paths'
     # Unlike the older global copper conversion, the original orange areas
     # outside the user's paths must remain byte-for-byte unchanged.
