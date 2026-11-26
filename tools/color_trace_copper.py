@@ -48,8 +48,8 @@ for box in [(30,1060,1195,2300), (35,925,330,1060), (900,875,1120,1080),
             (900,40,1080,200), (465,110,650,235)]:
     guard.rectangle(box, fill=0)
 mask = ImageChops.multiply(mask, protected)
-# The existing metallic trace is a muted beige-copper. Preserve local shading,
-# compressing its luminance range so darker traversed areas still read as copper.
+# Recolor the underlying pixels, not an opaque bright line: preserve each
+# pixel's luminance and texture while shifting its hue to muted copper.
 source = image.load()
 colors = Image.new('RGB', image.size)
 target = colors.load()
@@ -62,9 +62,8 @@ if bounds:
             if not mask_pixels[x, y]:
                 continue
             r, g, b = source[x, y]
-            # Slightly darker than the previous 145 baseline to blend with
-            # the existing copper traces while keeping their local shading.
-            level = 132 + 0.18 * (0.299*r + 0.587*g + 0.114*b)
-            target[x, y] = (round(level * 1.08), round(level * 1.01), round(level * 0.85))
+            luminance = 0.299*r + 0.587*g + 0.114*b
+            target[x, y] = tuple(min(255, round(luminance * multiplier))
+                                 for multiplier in (1.10, 1.03, 0.86))
 image.paste(colors, (0, 0), mask)
 image.save(sys.argv[3], format='PNG', optimize=True)
