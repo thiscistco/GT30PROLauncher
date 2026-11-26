@@ -37,7 +37,7 @@ final class WeatherController {
     private final Runnable scheduled = () -> refresh(false);
     WeatherController(Activity a, WeatherView v) {
         activity = a; view = v; manager = (LocationManager) a.getSystemService(Context.LOCATION_SERVICE);
-        view.setOnClickListener(w -> clicked());
+        view.setOnClickListener(w -> requestFromUser());
     }
     private boolean permitted() { return activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED; }
     void resume() {
@@ -59,7 +59,7 @@ final class WeatherController {
         }
         else { pendingManual = false; view.setWeather(-1, true, null, "Izin lokasi ditolak; ketuk untuk mencoba lagi"); toast("Izin lokasi diperlukan untuk cuaca."); }
     }
-    private void clicked() {
+    void requestFromUser() {
         if (permitted()) { refresh(true); return; }
         new AlertDialog.Builder(activity).setTitle("Aktifkan cuaca?")
                 .setMessage("Lokasi perkiraan diperlukan. Koordinat perkiraan dikirim ke Open-Meteo untuk mengambil cuaca. Lokasi tidak dipantau di latar belakang.")
@@ -92,9 +92,12 @@ final class WeatherController {
         loading = true; final int run = ++generation;
         if (manual) toast("Memperbarui cuaca…");
         try {
-            if (manager == null || !manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) throw new IllegalStateException();
-            Location last = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            if (last != null && System.currentTimeMillis() - last.getTime() >= 0 && System.currentTimeMillis() - last.getTime() < 10 * 60 * 1000L) { fetch(last, run, manual); return; }
+            if (manager == null) throw new IllegalStateException();
+            // A recent passive fix can exist even when the network provider has
+            // no cached fix. It is still filtered by Android's coarse permission.
+            Location last = recentLocation();
+            if (last != null) { fetch(last, run, manual); return; }
+            if (!manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) throw new IllegalStateException();
             listener = new LocationListener() {
                 @Override public void onLocationChanged(Location location) { stopLocation(); fetch(location, run, manual); }
                 @Override public void onStatusChanged(String provider, int status, Bundle extras) { }
@@ -105,6 +108,18 @@ final class WeatherController {
             timeout = () -> fail(run, manual, "Lokasi belum tersedia. Coba lagi.");
             handler.postDelayed(timeout, 20000);
         } catch (SecurityException | IllegalStateException | IllegalArgumentException ex) { fail(run, manual, "Aktifkan lokasi perangkat dan izinkan lokasi perkiraan."); }
+    }
+    private Location recentLocation() {
+        Location best = null;
+        for (String provider : new String[]{LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER}) {
+            try {
+                Location candidate = manager.getLastKnownLocation(provider);
+                long age = candidate == null ? -1 : System.currentTimeMillis() - candidate.getTime();
+                if (candidate != null && age >= 0 && age < 10 * 60 * 1000L
+                        && (best == null || candidate.getTime() > best.getTime())) best = candidate;
+            } catch (IllegalArgumentException | SecurityException ignored) { /* Provider absent or unavailable. */ }
+        }
+        return best;
     }
     private void fetch(Location loc, int run, boolean manual) {
         // Round before sending; do not persist coordinates.

@@ -25,7 +25,7 @@ final class HomeDateView extends View {
     private static final int[] AMBER = {0xFFFF6919, 0xFFFF9D2F, 0xFFFFCD6A, 0xFFFF9D2F, 0xFFFF6919};
     private static final float[] STOPS = {0f, .24f, .5f, .76f, 1f};
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
-    private float pxPerMm = 1f;
+    private float pxPerMm = -1f;
     private LocalDate date;
 
     HomeDateView(Context context) {
@@ -38,6 +38,7 @@ final class HomeDateView extends View {
         text.setColor(0xFFFFCD6A);
     }
     void setScale(float pixelsPerMm) {
+        if (pxPerMm == pixelsPerMm) return;
         pxPerMm = pixelsPerMm;
         text.setTextSize(2f * SIZE_SCALE * pxPerMm);
         text.setShadowLayer(.4f * pxPerMm, 0f, 0f, 0xA6FF6919);

@@ -76,6 +76,8 @@ tema gelap `#0A0C0F` dengan aksen oranye `#F7A23B` (nuansa Dark Flare).
 ## Cuaca berbasis lokasi
 
 Ketuk ikon cuaca di homescreen atau grid Super App untuk mengaktifkan cuaca.
+Jika ikon homescreen sulit terlihat, tekan lama area kosong homescreen lalu
+pilih **Aktifkan / perbarui cuaca**.
 Aplikasi meminta izin **lokasi perkiraan** dan memakai penyedia lokasi jaringan;
 koordinat dibulatkan ke dua desimal dan dikirim via HTTPS ke Open-Meteo untuk
 suhu dan kode cuaca saat ini. Tidak ada pelacakan latar belakang atau penyimpanan

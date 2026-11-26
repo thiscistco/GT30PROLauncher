@@ -73,10 +73,13 @@
       }).catch(function () { if (fetchTimeout) clearTimeout(fetchTimeout); failure('Cuaca tidak tersedia. Periksa koneksi dan coba lagi.',manual); });
     }, function (error) { if (error && error.code === 1) last = null; failure('Lokasi tidak tersedia atau izin ditolak. Periksa izin lokasi browser.',manual); }, {enableHighAccuracy:false, timeout:20000, maximumAge:600000});
   }
-  buttons.forEach(function (b) { b.addEventListener('click',function () {
+  function requestFromUser() {
     if (!active && !global.confirm('Lokasi perkiraan akan dikirim ke Open-Meteo untuk mengambil cuaca. Lanjutkan?')) return;
     active = true; refresh(true);
-  }); });
+  }
+  buttons.forEach(function (b) { b.addEventListener('click',requestFromUser); });
+  var refreshButton = document.getElementById('weatherRefresh');
+  if (refreshButton) refreshButton.addEventListener('click',requestFromUser);
   if (document.addEventListener) document.addEventListener('visibilitychange',function () {
     if (document.hidden) clearTimeout(timer);
     else if (active && !loading) { if (!last || Date.now()-last.time >= 30*60*1000) refresh(false); else schedule(); }

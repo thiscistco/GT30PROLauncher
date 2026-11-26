@@ -250,6 +250,7 @@
   .super-weather { width: 100%; height: 12mm; }
   .super-weather svg { width: 8mm; height: 8mm; top: 2mm; left: calc(50% - 4mm); }
   .weather-widget:focus-visible { outline: 1px solid currentColor; outline-offset: 2px; }
+  .weather-refresh { border: 1px solid #856a48; border-radius: 8px; background: #34302b; color: #f5e1c4; font: 700 12px Doto, monospace; padding: 9px 11px; cursor: pointer; }
   .phone-row { display: flex; align-items: stretch; }
   .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }
   .charging-toggle input { accent-color: #f7a23b; }
@@ -616,6 +617,7 @@
     </div>
 
     <p class="animation-status">Cuaca: ketuk ikon untuk mengizinkan lokasi dan memperbarui suhu. Data lokasi perkiraan dikirim ke Open-Meteo.</p>
+    <button class="weather-refresh" id="weatherRefresh" type="button">Aktifkan / perbarui cuaca</button>
     <label class="charging-toggle"><input type="checkbox" id="amberToggle" checked> Animasi jalur tembaga</label>
     <div class="animation-status" id="amberStatus" role="status">Memuat animasi…</div>
     <div class="ram-simulation">
@@ -849,7 +851,7 @@
   })();
 </script>
 <script src="home-date.js?v=1"></script>
-<script src="weather.js?v=2"></script>
+<script src="weather.js?v=3"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
 <script src="calendar.js?v=5"></script>

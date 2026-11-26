@@ -47,6 +47,7 @@ public class MainActivity extends BottomSwipeActivity {
     private BatteryBoltView batteryBolt;
     private HomeClockView clockLed;
     private HomeDateView dateLed;
+    private WeatherView weatherLed;
     private WeatherController weather;
     private ValueAnimator chargeAnim;
     private ValueAnimator dateAnim;
@@ -162,6 +163,7 @@ public class MainActivity extends BottomSwipeActivity {
         homeRoot.post(() -> updateDateLayout(homeRoot, dateBox));
 
         WeatherView weatherBox = new WeatherView(this, true);
+        weatherLed = weatherBox;
         weatherBox.setElevation(4f * getResources().getDisplayMetrics().density);
         homeRoot.addView(weatherBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
         weather = new WeatherController(this, weatherBox);
@@ -169,6 +171,14 @@ public class MainActivity extends BottomSwipeActivity {
             if (r - l != oldR - oldL || b - t != oldB - oldT) updateWeatherLayout(homeRoot, weatherBox);
         });
         homeRoot.post(() -> updateWeatherLayout(homeRoot, weatherBox));
+        // Reconcile once the complete view hierarchy has been laid out. This also
+        // retries if an earlier post ran before the root had a measured size.
+        homeRoot.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            if (homeRoot.getWidth() > 0 && homeRoot.getHeight() > 0) {
+                updateDateLayout(homeRoot, dateBox);
+                updateWeatherLayout(homeRoot, weatherBox);
+            }
+        });
 
         View root = findViewById(R.id.root);
         detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
@@ -264,12 +274,15 @@ public class MainActivity extends BottomSwipeActivity {
         float bottom = height * .06f + 384.55f * cssPixel;
         float top = height - bottom - boxHeight + HomeDateView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) dateBox.getLayoutParams();
+        int leftMargin = Math.round(left), topMargin = Math.round(top);
+        boolean changed = params.width != boxWidth || params.height != boxHeight
+                || params.leftMargin != leftMargin || params.topMargin != topMargin;
         params.width = boxWidth; params.height = boxHeight;
-        params.leftMargin = Math.round(left); params.topMargin = Math.round(top);
-        dateBox.setTranslationX(left - params.leftMargin);
-        dateBox.setTranslationY(top - params.topMargin);
+        params.leftMargin = leftMargin; params.topMargin = topMargin;
+        dateBox.setTranslationX(left - leftMargin);
+        dateBox.setTranslationY(top - topMargin);
         dateBox.setScale(pixelsPerMm);
-        dateBox.setLayoutParams(params);
+        if (changed) dateBox.setLayoutParams(params);
     }
 
     private void updateWeatherLayout(FrameLayout root, WeatherView box) {
@@ -281,9 +294,12 @@ public class MainActivity extends BottomSwipeActivity {
         float left = width * .49f + 115f * cssPixel - w / 2f;
         float top = height - (height * .06f + 320f * cssPixel) - h;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) box.getLayoutParams();
-        params.width = w; params.height = h; params.leftMargin = Math.round(left); params.topMargin = Math.round(top);
-        box.setTranslationX(left - params.leftMargin); box.setTranslationY(top - params.topMargin);
-        box.setLayoutParams(params);
+        int leftMargin = Math.round(left), topMargin = Math.round(top);
+        boolean changed = params.width != w || params.height != h
+                || params.leftMargin != leftMargin || params.topMargin != topMargin;
+        params.width = w; params.height = h; params.leftMargin = leftMargin; params.topMargin = topMargin;
+        box.setTranslationX(left - leftMargin); box.setTranslationY(top - topMargin);
+        if (changed) box.setLayoutParams(params);
     }
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -309,6 +325,16 @@ public class MainActivity extends BottomSwipeActivity {
             dateLed.bringToFront();
             startDateAnimation();
         }
+        if (weatherLed != null) {
+            weatherLed.setVisibility(View.VISIBLE);
+            weatherLed.setAlpha(1f);
+            weatherLed.bringToFront();
+        }
+        FrameLayout homeRoot = findViewById(R.id.root);
+        homeRoot.post(() -> {
+            if (dateLed != null) updateDateLayout(homeRoot, dateLed);
+            if (weatherLed != null) updateWeatherLayout(homeRoot, weatherLed);
+        });
         clockHandler.removeCallbacks(clockTick);
         clockHandler.post(clockTick);
     }
@@ -467,6 +493,7 @@ public class MainActivity extends BottomSwipeActivity {
                 getString(R.string.menu_all_apps),
                 getString(R.string.menu_settings),
                 getString(isAmberGlowEnabled() ? R.string.menu_amber_off : R.string.menu_amber_on),
+                getString(R.string.menu_weather),
         };
         new AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
@@ -485,6 +512,8 @@ public class MainActivity extends BottomSwipeActivity {
                         getSharedPreferences("launcher_effects", MODE_PRIVATE).edit()
                                 .putBoolean("amber_glow", !isAmberGlowEnabled()).apply();
                         updateAmberGlow();
+                    } else if (which == 4 && weather != null) {
+                        weather.requestFromUser();
                     }
                 })
                 .show();
