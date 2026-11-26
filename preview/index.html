@@ -163,7 +163,7 @@
   }
   .battery-led {
     position: absolute;
-    left: calc(50% + 0.5px);
+    left: calc(50% + 1px);
     transform: translateX(-50%);
     bottom: calc(1.2% - 1px);
     font-family: 'Doto', monospace;
@@ -181,7 +181,7 @@
     display: none;
     position: absolute;
     left: 50%;
-    top: calc(100% + 0.25px);
+    top: calc(100% - 0.75px);
     transform: translateX(-50%);
     width: 1mm;
     height: 1.4mm;
@@ -215,12 +215,12 @@
     position: absolute;
     left: calc(49% + 115px);
     transform: translateX(-50%);
-    bottom: calc(6% + 386.55px);
+    bottom: calc(6% + 384.55px);
     font-family: 'Doto', monospace;
-    font-size: calc(2.508mm + 9.5px);
+    font-size: calc(2.2572mm + 8.55px);
     font-weight: 800;
     font-variation-settings: 'wght' 800;
-    letter-spacing: calc(0.2508mm + 0.95px);
+    letter-spacing: calc(0.22572mm + 0.855px);
     color: #ffcd6a;
     z-index: 6;
     display: flex;
@@ -232,8 +232,8 @@
   }
   /* At Doto's fixed character advance, 65% makes three letters as wide as two digits. */
   #homeDateWeekday, #homeDateMonth {
-    font-size: calc(1.6302mm + 6.175px);
-    letter-spacing: calc(0.16302mm + 0.6175px);
+    font-size: calc(1.46718mm + 5.5575px);
+    letter-spacing: calc(0.146718mm + 0.55575px);
   }
   .phone-row { display: flex; align-items: stretch; }
   .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }

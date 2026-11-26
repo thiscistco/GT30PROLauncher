@@ -5,7 +5,7 @@ const java = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivit
 const clock = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeClockView.java', 'utf8');
 const boltJava = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/BatteryBoltView.java', 'utf8');
 const css = html.match(/\.battery-led\s*\{([^}]*)\}/)[1];
-assert.match(css, /left:\s*calc\(50%\s*\+\s*0\.5px\)/);
+assert.match(css, /left:\s*calc\(50%\s*\+\s*1px\)/);
 assert.match(css, /bottom:\s*calc\(1\.2%\s*-\s*1px\)/);
 assert.match(css, /color:\s*#ffffff/);
 assert.match(css, /opacity:\s*0\.6/);
@@ -17,13 +17,14 @@ assert.match(java, /batteryLed\.setText\("85"\)/);
 const offset = java.match(/private void updateBatteryOffset\([\s\S]*?\n    }/)[0];
 assert.match(offset, /pixelsPerMm = root\.getWidth\(\) \/ 70\.9f/);
 assert.match(offset, /cssPixel = pixelsPerMm \* 25\.4f \/ 96f/);
-assert.match(offset, /batteryBox\.setTranslationX\(\.5f \* cssPixel\)/);
+assert.match(offset, /batteryBox\.setTranslationX\(cssPixel\)/);
 assert.match(offset, /batteryBox\.setTranslationY\(cssPixel\)/);
-assert.match(offset, /float top = batteryBox\.getBottom\(\) \+ 1\.25f \* cssPixel/);
+assert.match(offset, /float left = root\.getWidth\(\) \/ 2f \+ cssPixel - boltWidth \/ 2f/);
+assert.match(offset, /float top = batteryBox\.getBottom\(\) \+ \.25f \* cssPixel/);
 assert.match(java, /updateBatteryOffset\(homeRoot, batteryLed\)/);
 const boltCss = html.match(/\.battery-bolt\s*\{([^}]*)\}/)[1];
 assert.match(boltCss, /display:\s*none/);
-assert.match(boltCss, /top:\s*calc\(100% \+ 0\.25px\)/);
+assert.match(boltCss, /top:\s*calc\(100% - 0\.75px\)/);
 assert.match(boltCss, /width:\s*1mm/); assert.match(boltCss, /height:\s*1\.4mm/);
 assert.match(html, /\.battery-led\.charging \.battery-bolt\s*\{\s*display:\s*block/);
 assert.match(boltJava, /WIDTH_MM = 1f/); assert.match(boltJava, /HEIGHT_MM = 1\.4f/);
@@ -39,8 +40,10 @@ for (const [, x, y] of svg.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="0\.3
 assert.deepStrictEqual(svgRows, [6, 12, 12, 30, 6, 12, 8]);
 for (const width of [269, 720, 1224]) {
   const mm=width/70.9, cssPixel=mm*25.4/96, height=width*2720/1224;
-  const room=height*.012-cssPixel; // new battery bottom margin
-  assert(room > .25*cssPixel + 1.4*mm, 'bolt fits below battery on the target aspect ratio');
+  const room=height*.012-cssPixel; // battery bottom margin
+  assert(Math.abs((cssPixel-.5*cssPixel)-.5*cssPixel)<1e-9, 'battery moved right .5 CSS px');
+  assert(Math.abs((1.25*cssPixel-.25*cssPixel)-cssPixel)<1e-9, 'bolt moved up one CSS px');
+  assert(room > -.75*cssPixel + 1.4*mm, 'bolt fits below battery on the target aspect ratio');
 }
 const charge = java.match(/private void updateChargeAnim\(\) \{[\s\S]*?\n    }/)[0];
 assert.match(charge, /ValueAnimator\.ofFloat\(\.21f, \.6f\)/);

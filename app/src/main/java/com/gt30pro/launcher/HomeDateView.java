@@ -11,8 +11,8 @@ import java.time.LocalDate;
 
 /** Live, three-line date using the same Doto amber treatment as the home clock. */
 final class HomeDateView extends View {
-    // Scale the previous numeric date and its labels down by five percent.
-    private static final float SIZE_SCALE = .95f * (2.64f + 10f * 25.4f / 96f) / 2f;
+    // Scale the previous numeric date and its labels down by another ten percent.
+    private static final float SIZE_SCALE = .855f * (2.64f + 10f * 25.4f / 96f) / 2f;
     // Doto's fixed advance and spacing make 3 letters at 65% as wide as 2 digits.
     private static final float LABEL_SCALE = .65f;
     static final float WIDTH_MM = 5.2f * SIZE_SCALE;

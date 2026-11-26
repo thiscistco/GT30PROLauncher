@@ -195,13 +195,13 @@ public class MainActivity extends BottomSwipeActivity {
         if (root.getWidth() <= 0) return;
         float pixelsPerMm = root.getWidth() / 70.9f;
         float cssPixel = pixelsPerMm * 25.4f / 96f;
-        batteryBox.setTranslationX(.5f * cssPixel);
+        batteryBox.setTranslationX(cssPixel);
         batteryBox.setTranslationY(cssPixel);
         if (batteryBolt == null || batteryBox.getBottom() <= 0) return;
         int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
         int boltHeight = Math.max(1, Math.round(BatteryBoltView.HEIGHT_MM * pixelsPerMm));
-        float left = root.getWidth() / 2f + .5f * cssPixel - boltWidth / 2f;
-        float top = batteryBox.getBottom() + 1.25f * cssPixel;
+        float left = root.getWidth() / 2f + cssPixel - boltWidth / 2f;
+        float top = batteryBox.getBottom() + .25f * cssPixel;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) batteryBolt.getLayoutParams();
         params.width = boltWidth; params.height = boltHeight;
         params.leftMargin = Math.round(left); params.topMargin = Math.round(top);
@@ -250,7 +250,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxHeight = Math.max(1, Math.round(HomeDateView.HEIGHT_MM * pixelsPerMm));
         // Match the preview offsets (1 CSS px = 25.4/96 mm).
         float left = width * .49f + 115f * cssPixel - boxWidth / 2f;
-        float bottom = height * .06f + 386.55f * cssPixel;
+        float bottom = height * .06f + 384.55f * cssPixel;
         float top = height - bottom - boxHeight + HomeDateView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) dateBox.getLayoutParams();
         params.width = boxWidth; params.height = boxHeight;
