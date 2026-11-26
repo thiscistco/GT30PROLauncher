@@ -21,8 +21,15 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 - **App Drawer** — daftar semua aplikasi terpasang + pencarian real-time.
 - **Super App** — grid ikon untuk Jam, Kalender dan cuaca (tanpa label suhu).
   Tanggal di homescreen dapat diketuk untuk langsung membuka Kalender; tombol
-  kembali mengembalikan ke homescreen. Kalender memakai kartu terang dan font Doto,
-  dengan akhir pekan serta libur nasional tetap ditandai merah.
+  kembali mengembalikan ke homescreen. Kalender memakai font Doto; tema dapat
+  dipilih Sistem (default, mengikuti perangkat), Terang, atau Gelap. Ketuk tanggal
+  untuk melihat dan menambah acara; geser kisi tanggal ke kiri/kanan untuk pindah
+  bulan, atau ketuk nama bulan untuk navigasi tanpa gestur. Akhir pekan dan libur
+  nasional tetap merah. Informasi tambahan tersedia pada **Info kalender**.
+  Data libur terkurasi dari GitHub diperiksa setiap kali kalender dibuka (permintaan
+  bersamaan digabung); jika offline atau terbatas, data terakhir/bawaan dipakai.
+  Sumber diperbarui manual, bukan verifikasi otomatis pemerintah. Acara pribadi
+  tersimpan lokal tanpa sinkronisasi, cadangan atau pengingat.
 - **Launcher penuh** — muncul di pemilih Home (tombol Home membuka launcher ini).
 
 ## Struktur proyek

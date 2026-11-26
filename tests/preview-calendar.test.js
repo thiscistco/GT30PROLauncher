@@ -20,16 +20,17 @@ class Element {
   appendChild(e){this.children.push(e);}
   replaceChildren(){this.children=[];}
   focus(){this.focused=true;}
-  fire(type){if(this.listeners[type]) this.listeners[type]({preventDefault(){}});}
+  fire(type,extra={}){if(this.listeners[type]) this.listeners[type].call(this,{preventDefault(){},stopPropagation(){},...extra});}
 }
 const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
 function createUI(){
  const ids = {};
- for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh']) ids[id]=new Element();
- ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
+ for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarMonthMenu','calendarWarning','calendarDayLabel']) ids[id]=new Element();
+ ids.calendarMonthMenu.hidden=true; ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
- const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer};
- calendar.mount(win); return ids;
+ const media={matches:true,addEventListener(type,fn){this.change=fn;}};
+ const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer,matchMedia:()=>media,setTimeout};
+ calendar.mount(win); ids._win=win; ids._media=media; return ids;
 }
 let ui=createUI();
 assert.equal(ui.calendarGrid.children.filter(e=>e.attrs['aria-pressed']==='true').length,1);
@@ -54,7 +55,7 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=6"/);
+assert.match(html,/src="calendar\.js\?v=7"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
@@ -100,3 +101,27 @@ assert.match(html,/class="calendar-card"/);assert.match(html,/radial-gradient\(c
 assert.match(html,/id="homeDate" role="button" tabindex="0"/);
 assert.match(mainActivity,/dateBox\.setOnClickListener\(v -> startActivity\(new Intent\(this, CalendarActivity\.class\)\)\)/);
 assert.match(nativeCalendar,/dayBackground\(/);assert.match(nativeCalendar,/0xFFF4F7FA/);assert.match(nativeCalendar,/fonts\/Doto\.ttf/);
+assert.equal(calendar.swipeDirection(-60,4,48),1);assert.equal(calendar.swipeDirection(60,4,48),-1);
+assert.equal(calendar.swipeDirection(12,2,48),0);assert.equal(calendar.swipeDirection(60,55,48),0);
+assert.match(nativeCalendar,/refreshHolidays\(true\)/);assert.match(nativeCalendar,/new MonthGrid\(\)/);
+assert.match(html,/id="calendarTheme"/);assert.match(html,/id="calendarMonthMenu"[^>]*hidden/);
+assert(!html.includes('id="calendarPrev" type="button" aria-label="Bulan sebelumnya">&lt;'));
+
+
+storage.clear(); const interactive=createUI();
+assert.equal(interactive.calendarTheme.value,'system'); assert.equal(interactive.calendarPage.attrs['data-theme'],'dark');
+interactive._media.matches=false;interactive._media.change();assert.equal(interactive.calendarPage.attrs['data-theme'],'light');
+interactive.calendarTheme.value='dark';interactive.calendarTheme.fire('change');assert.equal(storage.get('gt30-calendar-theme'),'dark');
+interactive._media.change();assert.equal(interactive.calendarPage.attrs['data-theme'],'dark');
+const initialMonth=interactive.calendarMonth.textContent;
+function drag(x,y,x2,y2) {
+ const e={pointerId:9,isPrimary:true,button:0,clientX:x,clientY:y,cancelable:true};
+ interactive.calendarGrid.fire('pointerdown',e);interactive.calendarGrid.fire('pointermove',{...e,clientX:x2,clientY:y2});interactive.calendarGrid.fire('pointerup',{...e,clientX:x2,clientY:y2});
+}
+drag(200,100,120,100);assert.notEqual(interactive.calendarMonth.textContent,initialMonth);
+drag(120,100,200,100);assert.equal(interactive.calendarMonth.textContent,initialMonth);
+drag(200,100,190,180);assert.equal(interactive.calendarMonth.textContent,initialMonth);
+interactive.calendarMonth.fire('click');assert(!interactive.calendarMonthMenu.hidden);interactive.calendarNext.fire('click');assert(interactive.calendarMonthMenu.hidden);
+interactive.calendarToday.fire('click');interactive.calendarAdd.fire('click');interactive.calendarTitle.value='Draft';
+interactive.calendarGrid.children.find(e=>e.attrs['aria-pressed']==='false').fire('click');assert(interactive.calendarForm.hidden);assert.equal(interactive.calendarTitle.value,'');
+console.log('Calendar preview: swipe, theme selection, system mode and discarded draft: OK');

@@ -16,6 +16,7 @@
     var year = Math.floor(index / 12), month = index % 12 + 1;
     return {year: year, month: month, day: Math.min(date.day, daysInMonth(year, month))};
   }
+  function swipeDirection(dx, dy, threshold) { return Math.abs(dx) < threshold || Math.abs(dx) <= Math.abs(dy) * 1.5 ? 0 : (dx < 0 ? 1 : -1); }
   function pad(value) { return String(value).padStart(2, '0'); }
   function dateKey(date) { return String(date.year).padStart(4, '0') + '-' + pad(date.month) + '-' + pad(date.day); }
   function label(date) { return date.day + ' ' + months[date.month-1] + ' ' + date.year; }
@@ -51,6 +52,21 @@
       updateInfo = updater.getState(); holidayData = updateInfo.data;
     } catch (ignored) { updater = null; }
     var note = byId('calendarStorageNote'), error = byId('calendarError');
+    var theme = byId('calendarTheme'), calendarPage = byId('calendarPage'), media = win.matchMedia ? win.matchMedia('(prefers-color-scheme: dark)') : null;
+    var themeChoice = 'system';
+    try { var savedTheme = win.localStorage.getItem('gt30-calendar-theme'); if (['system','light','dark'].indexOf(savedTheme) >= 0) themeChoice = savedTheme; } catch (ignored) {}
+    function applyTheme() {
+      var dark = themeChoice === 'dark' || (themeChoice === 'system' && media && media.matches);
+      if (calendarPage) calendarPage.setAttribute('data-theme', dark ? 'dark' : 'light');
+      if (theme) theme.value = themeChoice;
+    }
+    if (theme) theme.addEventListener('change', function () {
+      themeChoice = ['system','light','dark'].indexOf(theme.value) >= 0 ? theme.value : 'system';
+      try { win.localStorage.setItem('gt30-calendar-theme', themeChoice); } catch (ignored) {}
+      applyTheme();
+    });
+    if (media) { if (media.addEventListener) media.addEventListener('change', applyTheme); else if (media.addListener) media.addListener(applyTheme); }
+    applyTheme();
     var defaultNote = 'Acara disimpan di browser ini; tidak disinkronkan atau diberi pengingat. Menghapus data browser menghapus acara.';
     function showStorageNote() {
       note.textContent = writable ? defaultNote : 'Penyimpanan kalender tidak tersedia atau data tidak dapat dibaca; perubahan hanya sementara dan data lama tidak ditimpa.';
@@ -69,9 +85,11 @@
       try { win.localStorage.setItem(key, JSON.stringify(records)); }
       catch (e) { writable = false; showStorageNote(); }
     }
+    function discardForm() { form.hidden = true; form.reset(); error.hidden = true; }
     function render() {
       var selectedKey = dateKey(selected), todayKey = dateKey(today());
       byId('calendarMonth').textContent = months[selected.month-1] + ' ' + selected.year;
+      byId('calendarMonth').setAttribute('aria-label', 'Pilih bulan. ' + months[selected.month-1] + ' ' + selected.year);
       byId('calendarSelected').textContent = label(selected);
       var dayLabel = byId('calendarDayLabel'); if (dayLabel) dayLabel.textContent = selectedKey === todayKey ? 'HARI INI' : 'TANGGAL DIPILIH';
       var holidayDetails = byId('calendarHolidayDetails'); holidayDetails.replaceChildren();
@@ -85,6 +103,11 @@
       byId('calendarHolidayStatus').textContent = (supported ? 'Data libur tersedia: ' + availableYears + '. ' : 'Data libur belum tersedia untuk tahun ini; tersedia: ' + availableYears + '. ') +
         updateInfo.message + checked + ' Sumber GitHub dikelola manual; jadwal bisa berubah. Peringatan bukan libur nasional, dan cuti mengikuti aturan instansi.';
       byId('calendarRefresh').disabled = updateInfo.pending || !updater;
+      var warning = byId('calendarWarning');
+      if (warning) {
+        warning.textContent = !writable ? 'Penyimpanan kalender bermasalah; perubahan hanya sementara.' : !supported ? 'Data libur belum tersedia untuk tahun ini.' : updateInfo.message.indexOf('Pembaruan gagal') === 0 ? 'Data libur offline; memakai data tersimpan atau bawaan.' : '';
+        warning.hidden = !warning.textContent;
+      }
       var monthList = byId('calendarMonthHolidays'); monthList.replaceChildren();
       if (supported) {
         Object.keys(holidayData.entries).filter(function (key) { return key.slice(0, 7) === selectedKey.slice(0, 7); }).sort().forEach(function (key) {
@@ -120,7 +143,7 @@
         button.classList.toggle('selected', keyForDay === selectedKey);
         button.setAttribute('aria-label', label(date) + (dayHolidays.length ? ', ' + dayHolidays.map(holidayText).join(', ') : '') + (has ? ', ada acara' : ''));
         button.setAttribute('aria-pressed', String(keyForDay === selectedKey));
-        button.addEventListener('click', function () { selected = date; render(); });
+        button.addEventListener('click', function () { selected = date; discardForm(); render(); });
         grid.appendChild(button);
       })(number);
       var list = byId('calendarEvents'); list.replaceChildren();
@@ -140,11 +163,40 @@
         row.appendChild(name); row.appendChild(remove); list.appendChild(row);
       });
     }
-    win.calendarOnOpen = function () { selected = today(); render(); if (updater) updater.refresh(false); };
+    function changeMonth(delta) { selected = shiftMonth(selected, delta); discardForm(); render(); }
+    win.calendarOnOpen = function () { selected = today(); discardForm(); render(); if (updater) updater.refresh(true); };
     byId('calendarRefresh').addEventListener('click', function () { if (updater) updater.refresh(true); });
-    byId('calendarPrev').addEventListener('click', function () { selected = shiftMonth(selected, -1); render(); });
-    byId('calendarNext').addEventListener('click', function () { selected = shiftMonth(selected, 1); render(); });
-    byId('calendarToday').addEventListener('click', function () { selected = today(); render(); });
+    var monthMenu = byId('calendarMonthMenu');
+    if (monthMenu) byId('calendarMonth').addEventListener('click', function () { monthMenu.hidden = !monthMenu.hidden; this.setAttribute('aria-expanded', String(!monthMenu.hidden)); });
+    function closeMonthMenu() { if (monthMenu) { monthMenu.hidden = true; byId('calendarMonth').setAttribute('aria-expanded','false'); } }
+    byId('calendarPrev').addEventListener('click', function () { closeMonthMenu(); changeMonth(-1); });
+    byId('calendarNext').addEventListener('click', function () { closeMonthMenu(); changeMonth(1); });
+    var gesture = null, suppressClick = false;
+    grid.addEventListener('pointerdown', function (e) {
+      if (e.isPrimary === false || (e.button != null && e.button !== 0)) { gesture = null; return; }
+      var screen = doc.querySelector ? doc.querySelector('.screen') : null, rect = screen && screen.getBoundingClientRect();
+      // The right-edge back gesture has priority over calendar swiping.
+      if (rect && rect.width > 0 && e.clientX >= rect.right - rect.width * (32 / 445)) { gesture = null; return; }
+      var width = rect && rect.width > 0 ? rect.width : 445;
+      gesture = {id:e.pointerId,x:e.clientX,y:e.clientY,width:width,moving:false};
+    });
+    grid.addEventListener('pointermove', function (e) {
+      if (!gesture || e.pointerId !== gesture.id) return;
+      if (!gesture.moving && swipeDirection(e.clientX-gesture.x,e.clientY-gesture.y,gesture.width*(36/445))) {
+        gesture.moving = true;
+        if (grid.setPointerCapture) try { grid.setPointerCapture(e.pointerId); } catch (ignored) {}
+      }
+      if (gesture.moving && e.cancelable) e.preventDefault();
+    });
+    grid.addEventListener('pointerup', function (e) {
+      if (!gesture || e.pointerId !== gesture.id) return;
+      var direction = gesture.moving ? swipeDirection(e.clientX-gesture.x,e.clientY-gesture.y,gesture.width*(48/445)) : 0;
+      if (gesture.moving) { suppressClick = true; win.setTimeout(function () { suppressClick = false; }, 0); }
+      gesture = null; if (direction) { closeMonthMenu(); changeMonth(direction); }
+    });
+    grid.addEventListener('pointercancel', function () { gesture = null; });
+    grid.addEventListener('click', function (e) { if (suppressClick) { e.preventDefault(); e.stopPropagation(); suppressClick = false; } }, true);
+    byId('calendarToday').addEventListener('click', function () { selected = today(); discardForm(); render(); });
     byId('calendarAdd').addEventListener('click', function () { form.hidden = !form.hidden; error.hidden = true; if (!form.hidden) byId('calendarTitle').focus(); });
     byId('calendarCancel').addEventListener('click', function () { form.hidden = true; error.hidden = true; });
     form.addEventListener('submit', function (event) {
@@ -160,5 +212,5 @@
     render();
   }
   return {daysInMonth:daysInMonth, leadingDays:leadingDays, shiftMonth:shiftMonth, dateKey:dateKey,
-    validTime:validTime, validTitle:validTitle, validDate:validDate, holidaysFor:holidaysFor, mount:mount};
+    validTime:validTime, validTitle:validTitle, validDate:validDate, holidaysFor:holidaysFor, swipeDirection:swipeDirection, mount:mount};
 });
