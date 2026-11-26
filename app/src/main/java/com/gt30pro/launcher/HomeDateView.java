@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 /** Live, three-line date using the same Doto amber treatment as the home clock. */
 final class HomeDateView extends View {
-    private static final float SIZE_SCALE = 1.2f;
+    private static final float SIZE_SCALE = 1.32f;
     static final float WIDTH_MM = 5.2f * SIZE_SCALE;
     static final float GLOW_PAD_MM = .4f;
     static final float HEIGHT_MM = 6.9f * SIZE_SCALE + 2f * GLOW_PAD_MM;
