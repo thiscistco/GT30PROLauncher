@@ -233,9 +233,10 @@
     line-height: 1;
     gap: 1px;
     pointer-events: none;
+    opacity: 0.85;
     animation: datePulse 2s ease-in-out infinite alternate;
   }
-  @keyframes datePulse { from { opacity: 0.8; } to { opacity: 1; } }
+  @keyframes datePulse { from { opacity: 0.55; } to { opacity: 0.85; } }
   @media (prefers-reduced-motion: reduce) { .date-led { animation: none; } }
   /* At Doto's fixed character advance, 65% makes three letters as wide as two digits. */
   #homeDateWeekday, #homeDateMonth {

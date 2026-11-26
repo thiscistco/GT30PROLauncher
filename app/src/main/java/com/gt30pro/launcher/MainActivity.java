@@ -275,7 +275,7 @@ public class MainActivity extends BottomSwipeActivity {
         }
         if (dateLed != null) {
             dateLed.setVisibility(View.VISIBLE);
-            dateLed.setAlpha(1f);
+            dateLed.setAlpha(.85f);
             dateLed.bringToFront();
             startDateAnimation();
         }
@@ -304,7 +304,7 @@ public class MainActivity extends BottomSwipeActivity {
 
     private void startDateAnimation() {
         if (dateLed == null || dateAnim != null || !ValueAnimator.areAnimatorsEnabled()) return;
-        dateAnim = ValueAnimator.ofFloat(.8f, 1f);
+        dateAnim = ValueAnimator.ofFloat(.55f, .85f);
         dateAnim.setDuration(2000);
         dateAnim.setRepeatMode(ValueAnimator.REVERSE);
         dateAnim.setRepeatCount(ValueAnimator.INFINITE);
@@ -320,7 +320,7 @@ public class MainActivity extends BottomSwipeActivity {
             dateAnim.cancel();
             dateAnim = null;
         }
-        if (dateLed != null) dateLed.setAlpha(1f);
+        if (dateLed != null) dateLed.setAlpha(.85f);
     }
 
     private boolean isAmberGlowEnabled() {
