@@ -22,7 +22,7 @@
         doc.getElementById('homeDateWeekday').textContent = value.weekday;
         doc.getElementById('homeDateNumber').textContent = value.day;
         doc.getElementById('homeDateMonth').textContent = value.month;
-        box.setAttribute('aria-label', value.description); last = value.description;
+        box.setAttribute('aria-label', value.description + '. Buka Kalender di Super App'); last = value.description;
       }
       win.setTimeout(tick, 1000);
     }

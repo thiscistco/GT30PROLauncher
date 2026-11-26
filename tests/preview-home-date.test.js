@@ -17,10 +17,10 @@ vm.runInNewContext(fs.readFileSync('preview/home-date.js','utf8'),{window:win,Da
 assert.equal(elements.homeDateWeekday.textContent,'KAM');assert.equal(elements.homeDateNumber.textContent,'31');assert.equal(elements.homeDateMonth.textContent,'DES');
 current=new Date(2027,0,1,0,0,0);scheduled();
 assert.equal(elements.homeDateWeekday.textContent,'JUM');assert.equal(elements.homeDateNumber.textContent,'01');assert.equal(elements.homeDateMonth.textContent,'JAN');
-assert.equal(elements.homeDate.attrs['aria-label'],'Jumat, 1 Januari 2027');
+assert.equal(elements.homeDate.attrs['aria-label'],'Jumat, 1 Januari 2027. Buka Kalender di Super App');
 const html=fs.readFileSync('preview/index.html','utf8'), java=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java','utf8'), view=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeDateView.java','utf8');
 const css=html.match(/\.date-led\s*\{([^}]*)\}/)[1];
-assert.match(css,/left:\s*calc\(49%\s*\+\s*115px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*384\.55px\)/);assert.match(css,/font-size:\s*calc\(2\.2572mm \+ 8\.55px\)/);assert.match(css,/letter-spacing:\s*calc\(0\.22572mm \+ 0\.855px\)/);assert.match(css,/line-height:\s*1\s*;/);assert.match(css,/gap:\s*1px/);assert.match(css,/pointer-events:\s*none/);
+assert.match(css,/left:\s*calc\(49%\s*\+\s*115px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*384\.55px\)/);assert.match(css,/font-size:\s*calc\(2\.2572mm \+ 8\.55px\)/);assert.match(css,/letter-spacing:\s*calc\(0\.22572mm \+ 0\.855px\)/);assert.match(css,/line-height:\s*1\s*;/);assert.match(css,/gap:\s*1px/);assert.match(css,/cursor:\s*pointer/); assert(!/pointer-events:\s*none/.test(css));
 assert.match(css,/animation:\s*datePulse 2s ease-in-out infinite alternate/);
 assert.match(css,/opacity:\s*0\.85/);
 assert.match(html,/@keyframes datePulse\s*\{\s*from\s*\{\s*opacity:\s*0\.55;\s*\}\s*to\s*\{\s*opacity:\s*0\.85;/);
@@ -40,7 +40,7 @@ const labelCss=html.match(/#homeDateWeekday,\s*#homeDateMonth\s*\{([^}]*)\}/)[1]
 assert.match(labelCss,/font-size:\s*calc\(1\.46718mm \+ 5\.5575px\)/);
 assert.match(labelCss,/letter-spacing:\s*calc\(0\.146718mm \+ 0\.55575px\)/);
 assert.match(html,/id="homeDateWeekday"[\s\S]*id="homeDateNumber"[\s\S]*id="homeDateMonth"/);
-assert.match(html,/src="home-date\.js\?v=1"/);
+assert.match(html,/src="home-date\.js\?v=2"/);
 const dateLayout = java.match(/private void updateDateLayout\([\s\S]*?\n    }/)[0];
 assert.match(dateLayout,/float left = width \* \.49f \+ 115f \* cssPixel - boxWidth \/ 2f/);
 assert.match(dateLayout,/float bottom = height \* \.06f \+ 384\.55f \* cssPixel/);

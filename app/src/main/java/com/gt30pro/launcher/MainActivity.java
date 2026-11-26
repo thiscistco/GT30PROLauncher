@@ -151,10 +151,11 @@ public class MainActivity extends BottomSwipeActivity {
         });
         homeRoot.post(() -> updateClockLayout(homeRoot, clockBox));
 
-        // Date is a separate non-interactive overlay, leaving clock touch/gestures unchanged.
+        // Date remains a separate overlay and opens the same Calendar as Super App.
         HomeDateView dateBox = new HomeDateView(this);
         dateLed = dateBox;
         dateBox.setDate(LocalDate.now());
+        dateBox.setOnClickListener(v -> startActivity(new Intent(this, CalendarActivity.class)));
         dateBox.setElevation(4f * getResources().getDisplayMetrics().density);
         homeRoot.addView(dateBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
         homeRoot.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {

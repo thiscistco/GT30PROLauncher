@@ -54,8 +54,8 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=5"/);
-assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #ff6b6b; \}/);
+assert.match(html,/src="calendar\.js\?v=6"/);
+assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
 assert.equal(calendar.holidaysFor('2026-03-20')[0].type,'cuti');
@@ -93,3 +93,10 @@ assert(eventHoliday.classes.has('marker-holiday')); assert.match(eventHoliday.at
 events.calendarEvents.children[0].children[1].fire('click');
 assert(events.calendarGrid.children.find(e=>e.textContent==='17').classes.has('marker-holiday'));
 console.log('Calendar preview: date rules, holidays, local persistence, deletion, safe text and navigation: OK');
+
+const nativeCalendar=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/CalendarActivity.java','utf8');
+const mainActivity=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java','utf8');
+assert.match(html,/class="calendar-card"/);assert.match(html,/radial-gradient\(circle 3\.2mm/);
+assert.match(html,/id="homeDate" role="button" tabindex="0"/);
+assert.match(mainActivity,/dateBox\.setOnClickListener\(v -> startActivity\(new Intent\(this, CalendarActivity\.class\)\)\)/);
+assert.match(nativeCalendar,/dayBackground\(/);assert.match(nativeCalendar,/0xFFF4F7FA/);assert.match(nativeCalendar,/fonts\/Doto\.ttf/);

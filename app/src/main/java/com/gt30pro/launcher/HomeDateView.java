@@ -47,7 +47,7 @@ final class HomeDateView extends View {
     void setDate(LocalDate value) {
         if (!value.equals(date)) {
             date = value;
-            setContentDescription(HomeDateText.description(value));
+            setContentDescription(HomeDateText.description(value) + ". Buka Kalender di Super App");
             invalidate();
         }
     }

@@ -232,7 +232,7 @@
     align-items: center;
     line-height: 1;
     gap: 1px;
-    pointer-events: none;
+    cursor: pointer;
     opacity: 0.85;
     animation: datePulse 2s ease-in-out infinite alternate;
   }
@@ -387,6 +387,37 @@
   .alarm-form input, .alarm-form select, .timer-inputs input { color: #ffd49d; background: #191717; border: 1px solid #8d604c; border-radius: 2mm; padding: 2mm; font: 700 3mm 'Doto', monospace; }
   .alarm-days { display: flex; flex-wrap: wrap; gap: 1mm; }
   .alarm-days label { font-size: 2.5mm; }
+  /* Calendar: light, card-based reference style; controls remain functional. */
+  .calendar-page { background: #f4f7fa; color: #304355; padding: 5mm 4mm 8mm; }
+  .calendar-page .clock-back { color: #465d70; }
+  .calendar-title { font-size: 4.8mm; margin: 1mm 0 3mm; color: #304355; }
+  .calendar-card { background: #fff; border-radius: 3.5mm; padding: 2mm; box-shadow: 0 1mm 2mm #263c511b; }
+  .calendar-nav { margin: 0 0 2mm; gap: 1mm; }
+  .calendar-nav strong { background: #e0e8ef; border-radius: 9mm; padding: 2mm 1mm; color: #304355; font-size: 3mm; }
+  .calendar-page .clock-action { color: #304355; background: #e3eaf0; border-color: #cbd6df; }
+  .calendar-nav button { flex-basis: 9mm; padding: 1mm; }
+  .calendar-grid { gap: 0; }
+  .calendar-weekday { color: #526477; }
+  .calendar-day { color: #304355; border: 0; border-radius: 0; background: radial-gradient(circle 3.2mm at center, #dce5ed 99%, transparent 100%); }
+  .calendar-day.today { background: radial-gradient(circle 3.2mm at center, #fff 91%, #738596 94%, #738596 99%, transparent 100%); }
+  .calendar-day.selected { color: #fff; background: radial-gradient(circle 3.2mm at center, #304355 99%, transparent 100%); }
+  .calendar-weekday.weekend, .calendar-day.weekend, .calendar-day.holiday { color: #b3263b; }
+  .calendar-day.selected.weekend, .calendar-day.selected.holiday { color: #ff9ea8; }
+  .calendar-day.marker-holiday::after { background: #b3263b; }
+  .calendar-day.marker-observance:not(.marker-holiday)::after { background: #9b5700; }
+  .calendar-day.marker-holiday.marker-observance::after { box-shadow: 1.2mm 0 #9b5700; }
+  .calendar-legend { color: #526477; font-size: 2mm; }
+  .calendar-agenda { padding-top: 4mm; }
+  .calendar-agenda-head { display: flex; align-items: center; justify-content: space-between; gap: 2mm; border-left: 1mm solid #d6e0e8; padding-left: 2mm; }
+  .calendar-kicker { font-size: 2.2mm; color: #526477; }
+  .calendar-page .clock-section h3 { color: #304355; font-size: 3.5mm; margin: 1mm 0 2mm; }
+  .calendar-page .clock-muted { color: #526477; }
+  .calendar-page .calendar-holiday-detail { color: #8c5000; }
+  .calendar-page .calendar-holiday-detail.holiday { color: #b3263b; }
+  .calendar-page .alarm-form, .calendar-page .clock-entry { background: #e5ecf2; border: 0; border-radius: 3mm; }
+  .calendar-page .alarm-form input { color: #304355; background: #fff; border-color: #a9bbc9; }
+  .calendar-page .calendar-event button { background: #fff; }
+  .date-led:focus-visible { outline: 1px solid #ffc477; outline-offset: 3px; }
   .clock-display { font-size: 6.5mm; text-align: center; margin: 4mm 0; color: #ffd49d; }
   .timer-inputs { display: flex; gap: 1mm; margin-bottom: 3mm; }
   .timer-inputs input { width: 33%; min-width: 0; }
@@ -519,7 +550,7 @@
                 <span class="clock-sep"></span>
                 <span id="clockMin">00</span>
               </div>
-              <div class="date-led" id="homeDate" role="img" aria-label="Tanggal hari ini">
+              <div class="date-led" id="homeDate" role="button" tabindex="0" aria-label="Tanggal hari ini. Buka Kalender di Super App">
                 <span id="homeDateWeekday">---</span>
                 <span id="homeDateNumber">--</span>
                 <span id="homeDateMonth">---</span>
@@ -594,8 +625,8 @@
               </section>
               <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>
                 <button class="clock-back" id="calendarBack" type="button">← Kembali</button>
-                <div class="clock-kicker">SUPER APP</div>
-                <div class="clock-title">KALENDER</div>
+                <div class="calendar-title">KALENDER</div>
+                <div class="calendar-card">
                 <div class="calendar-nav">
                   <button class="clock-action" id="calendarPrev" type="button" aria-label="Bulan sebelumnya">&lt;</button>
                   <strong id="calendarMonth" aria-live="polite"></strong>
@@ -603,9 +634,9 @@
                 </div>
                 <div class="calendar-grid" id="calendarGrid" aria-label="Tanggal bulan ini"></div>
                 <p class="calendar-legend">Titik merah: libur nasional · titik amber: peringatan</p>
-                <button class="clock-action clock-wide" id="calendarToday" type="button">Hari ini</button>
-                <div class="clock-section">
-                  <h3 id="calendarSelected"></h3>
+                </div>
+                <div class="clock-section calendar-agenda">
+                  <div class="calendar-agenda-head"><div><span class="calendar-kicker" id="calendarDayLabel">TANGGAL DIPILIH</span><h3 id="calendarSelected"></h3></div><button class="clock-action" id="calendarToday" type="button">Hari ini</button></div>
                   <div id="calendarHolidayDetails" aria-live="polite"></div>
                   <button class="clock-action clock-wide" id="calendarAdd" type="button">+ Tambah acara</button>
                   <form class="alarm-form" id="calendarForm" hidden>
@@ -723,6 +754,7 @@
     var weatherOrigin = document.getElementById('superWeather');
     var calendarBack = document.getElementById('calendarBack');
     var calendarOrigin = document.getElementById('openCalendarModule');
+    var homeDate = document.getElementById('homeDate'), calendarReturn = calendarOrigin;
     var superPage = document.getElementById('superPage');
     var drawerPage = document.getElementById('drawerPage');
     var drawerBack = document.getElementById('drawerBack');
@@ -745,7 +777,10 @@
     document.getElementById('superBack').addEventListener('click', function () { setTab(false); homeTab.focus(); });
     function openClock(origin) { clockOrigin = origin; page.hidden = false; back.focus(); }
     document.getElementById('openClockModule').addEventListener('click', function () { openClock(this); });
-    calendarOrigin.addEventListener('click', function () { calendarPage.hidden = false; calendarBack.focus(); });
+    function openCalendar(origin) { calendarReturn = origin; calendarPage.hidden = false; calendarBack.focus(); if (window.calendarOnOpen) window.calendarOnOpen(); }
+    calendarOrigin.addEventListener('click', function () { openCalendar(calendarOrigin); });
+    homeDate.addEventListener('click', function () { openCalendar(homeDate); });
+    homeDate.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCalendar(homeDate); } });
     weatherOrigin.addEventListener('click', function () { weatherPage.hidden = false; weatherBack.focus(); if (window.weatherPageOnOpen) window.weatherPageOnOpen(); });
     clockLed.addEventListener('click', function () { openClock(clockLed); });
     clockLed.addEventListener('keydown', function (event) {
@@ -756,7 +791,7 @@
     }
     function goBack() {
       if (!drawerPage.hidden) { drawerPage.hidden = true; homeTab.focus(); return; }
-      if (!calendarPage.hidden) { calendarPage.hidden = true; calendarOrigin.focus(); return; }
+      if (!calendarPage.hidden) { calendarPage.hidden = true; calendarReturn.focus(); return; }
       if (!weatherPage.hidden) { weatherPage.hidden = true; weatherOrigin.focus(); return; }
       if (!page.hidden) { page.hidden = true; clockOrigin.focus(); return; }
       if (!superPage.hidden) { setTab(false); homeTab.focus(); }
@@ -899,12 +934,12 @@
     }, 50);
   })();
 </script>
-<script src="home-date.js?v=1"></script>
+<script src="home-date.js?v=2"></script>
 <script src="weather-page.js?v=2"></script>
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=5"></script>
+<script src="calendar.js?v=6"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

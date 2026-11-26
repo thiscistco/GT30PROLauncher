@@ -32,7 +32,7 @@ import java.util.UUID;
 /** Kalender lokal; data tidak disinkronkan dan tidak menjadwalkan pengingat. */
 public class CalendarActivity extends SwipeBackActivity {
     @Override protected boolean supportsBottomSwipe() { return true; }
-    private static final int AMBER = 0xFFFFD49D, MUTED = 0xFFE7A579, WEEKEND = 0xFFFF6B6B;
+    private static final int AMBER = 0xFF304355, MUTED = 0xFF526477, WEEKEND = 0xFFB3263B, OBSERVANCE = 0xFF9B5700;
     private static final String[] MONTHS = {"Januari", "Februari", "Maret", "April", "Mei", "Juni",
             "Juli", "Agustus", "September", "Oktober", "November", "Desember"};
     private static final String[] WEEKDAYS = {"Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"};
@@ -59,10 +59,11 @@ public class CalendarActivity extends SwipeBackActivity {
         if (state != null) {
             try { selected = LocalDate.parse(state.getString("selected")); } catch (Exception ignored) { selected = LocalDate.now(); }
         }
-        getWindow().setStatusBarColor(Color.BLACK);
-        getWindow().setNavigationBarColor(Color.BLACK);
+        getWindow().setStatusBarColor(0xFFF4F7FA);
+        getWindow().setNavigationBarColor(0xFFF4F7FA);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(Color.BLACK);
+        scroll.setBackgroundColor(0xFFF4F7FA);
         page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(dp(20), dp(16), dp(20), dp(24));
@@ -158,11 +159,11 @@ public class CalendarActivity extends SwipeBackActivity {
         return view;
     }
     private GradientDrawable bg(int color) {
-        GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(12)); d.setStroke(dp(1), 0x77E7A579); return d;
+        GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(12)); d.setStroke(dp(1), 0xFFC9D5DE); return d;
     }
     private TextView button(String label, Runnable click) {
         TextView v = text(label, 13, AMBER); v.setGravity(Gravity.CENTER); v.setMinHeight(dp(48));
-        v.setPadding(dp(8), dp(8), dp(8), dp(8)); v.setBackground(bg(0xFF211A17));
+        v.setPadding(dp(8), dp(8), dp(8), dp(8)); v.setBackground(bg(0xFFE3EAF0));
         v.setOnClickListener(w -> click.run()); return v;
     }
     private void space(int height) { page.addView(new View(this), new LinearLayout.LayoutParams(1, dp(height))); }
@@ -219,6 +220,11 @@ public class CalendarActivity extends SwipeBackActivity {
         }
         return false;
     }
+    private GradientDrawable dayBackground(int color, boolean outline) {
+        GradientDrawable d = new GradientDrawable(); d.setShape(GradientDrawable.OVAL); d.setColor(color);
+        if (outline) d.setStroke(dp(1), 0xFF738596);
+        return d;
+    }
     private View markerDot(int color) {
         View dot = new View(this);
         GradientDrawable circle = new GradientDrawable();
@@ -233,7 +239,7 @@ public class CalendarActivity extends SwipeBackActivity {
             JSONObject event = events.optJSONObject(i);
             if (event == null) continue;
             String prefix = showDate ? date.getDayOfMonth() + " · " : "";
-            page.addView(text(prefix + holidayText(event), 13, "libur".equals(event.optString("type")) ? WEEKEND : AMBER));
+            page.addView(text(prefix + holidayText(event), 13, "libur".equals(event.optString("type")) ? WEEKEND : OBSERVANCE));
             space(5);
         }
     }
@@ -249,14 +255,17 @@ public class CalendarActivity extends SwipeBackActivity {
         page.removeAllViews();
         TextView back = text("←  Kembali", 14, AMBER); back.setMinHeight(dp(48)); back.setGravity(Gravity.CENTER_VERTICAL);
         back.setOnClickListener(v -> finish()); page.addView(back);
-        page.addView(text("SUPER APP", 12, MUTED));
-        page.addView(text("KALENDER", 30, 0xFFFFE5B1)); space(16);
+        page.addView(text("KALENDER", 25, AMBER)); space(12);
+        LinearLayout root = page;
+        LinearLayout card = new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(8),dp(8),dp(8),dp(8)); card.setBackground(bg(Color.WHITE));
+        root.addView(card); page = card;
         LinearLayout nav = new LinearLayout(this); nav.setGravity(Gravity.CENTER_VERTICAL);
         TextView previous = button("<", () -> { selected = CalendarDates.shiftMonth(selected, -1); render(); });
         previous.setContentDescription("Bulan sebelumnya");
         nav.addView(previous, new LinearLayout.LayoutParams(dp(48), dp(48)));
         TextView month = text(MONTHS[selected.getMonthValue()-1] + " " + selected.getYear(), 17, AMBER);
-        month.setGravity(Gravity.CENTER); nav.addView(month, new LinearLayout.LayoutParams(0, -2, 1));
+        month.setGravity(Gravity.CENTER); month.setPadding(0,dp(8),0,dp(8)); month.setBackground(bg(0xFFE0E8EF)); nav.addView(month, new LinearLayout.LayoutParams(0, -2, 1));
         TextView next = button(">", () -> { selected = CalendarDates.shiftMonth(selected, 1); render(); });
         next.setContentDescription("Bulan berikutnya");
         previous.setEnabled(!(selected.getYear() == 1900 && selected.getMonthValue() == 1));
@@ -284,11 +293,13 @@ public class CalendarActivity extends SwipeBackActivity {
                 boolean isHoliday = hasHolidayType(dayHolidays, "libur");
                 boolean isObservance = hasHolidayType(dayHolidays, "peringatan");
                 FrameLayout item = new FrameLayout(this);
+                boolean chosen = day.equals(selected);
                 TextView number = text(String.valueOf(dayNumber) + (has ? "·" : ""), 14,
-                        col >= 5 || isHoliday ? WEEKEND : (day.equals(LocalDate.now()) ? 0xFFFFE5B1 : AMBER));
+                        col >= 5 || isHoliday ? (chosen ? 0xFFFF9EA8 : WEEKEND) : (chosen ? Color.WHITE : AMBER));
                 number.setGravity(Gravity.CENTER);
                 number.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-                item.addView(number, new FrameLayout.LayoutParams(-1, -1));
+                number.setBackground(dayBackground(chosen ? AMBER : day.equals(LocalDate.now()) ? Color.WHITE : 0xFFDCE5ED, !chosen && day.equals(LocalDate.now())));
+                item.addView(number, new FrameLayout.LayoutParams(dp(38), dp(38), Gravity.CENTER));
                 if (isHoliday || isObservance) {
                     LinearLayout dots = new LinearLayout(this);
                     dots.setGravity(Gravity.CENTER);
@@ -297,7 +308,7 @@ public class CalendarActivity extends SwipeBackActivity {
                     if (isObservance) {
                         LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dp(5), dp(5));
                         if (isHoliday) dotParams.leftMargin = dp(3);
-                        dots.addView(markerDot(AMBER), dotParams);
+                        dots.addView(markerDot(OBSERVANCE), dotParams);
                     }
                     FrameLayout.LayoutParams dotPosition = new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
                     dotPosition.bottomMargin = dp(4);
@@ -311,16 +322,20 @@ public class CalendarActivity extends SwipeBackActivity {
                 if (has) description.append(", ada acara");
                 item.setContentDescription(description.toString());
                 item.setFocusable(true);
-                if (day.equals(selected)) item.setBackground(bg(0xFF61402C));
-                else if (day.equals(LocalDate.now())) item.setBackground(bg(0xFF211A17));
                 item.setSelected(day.equals(selected));
                 item.setOnClickListener(v -> { selected = day; render(); }); week.addView(item, cell);
             }
             page.addView(week);
         }
         space(6); page.addView(text("Titik merah: libur nasional · titik amber: peringatan", 11, MUTED));
-        space(6); page.addView(button("Hari ini", () -> { selected = LocalDate.now(); render(); })); space(16);
-        page.addView(text(dateLabel(selected), 19, AMBER)); space(10);
+        page = root; space(16);
+        LinearLayout agenda = new LinearLayout(this); agenda.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout agendaTitle = new LinearLayout(this); agendaTitle.setOrientation(LinearLayout.VERTICAL);
+        agendaTitle.addView(text(selected.equals(LocalDate.now()) ? "HARI INI" : "TANGGAL DIPILIH", 11, MUTED));
+        agendaTitle.addView(text(dateLabel(selected), 19, AMBER));
+        agenda.addView(agendaTitle, new LinearLayout.LayoutParams(0,-2,1));
+        agenda.addView(button("Hari ini", () -> { selected = LocalDate.now(); render(); }));
+        page.addView(agenda); space(10);
         addHolidayEntries(selected, false);
         page.addView(button("+ Tambah acara", this::addEvent)); space(12);
         boolean found = false;
@@ -330,7 +345,7 @@ public class CalendarActivity extends SwipeBackActivity {
             found = true;
             String id = e.optString("id"), title = e.optString("title"), time = e.optString("time");
             LinearLayout row = new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL);
-            row.setPadding(dp(12), dp(8), dp(12), dp(8)); row.setBackground(bg(0xFF191717));
+            row.setPadding(dp(12), dp(8), dp(12), dp(8)); row.setBackground(bg(0xFFE5ECF2));
             TextView label = text((time.isEmpty() ? "" : time + " · ") + title, 14, AMBER);
             row.addView(label, new LinearLayout.LayoutParams(0, -2, 1));
             TextView remove = button("Hapus", () -> confirmDelete(id, title));

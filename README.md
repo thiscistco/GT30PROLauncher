@@ -20,6 +20,9 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
   long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).
 - **App Drawer** — daftar semua aplikasi terpasang + pencarian real-time.
 - **Super App** — grid ikon untuk Jam, Kalender dan cuaca (tanpa label suhu).
+  Tanggal di homescreen dapat diketuk untuk langsung membuka Kalender; tombol
+  kembali mengembalikan ke homescreen. Kalender memakai kartu terang dan font Doto,
+  dengan akhir pekan serta libur nasional tetap ditandai merah.
 - **Launcher penuh** — muncul di pemilih Home (tombol Home membuka launcher ini).
 
 ## Struktur proyek

@@ -73,6 +73,7 @@
       var selectedKey = dateKey(selected), todayKey = dateKey(today());
       byId('calendarMonth').textContent = months[selected.month-1] + ' ' + selected.year;
       byId('calendarSelected').textContent = label(selected);
+      var dayLabel = byId('calendarDayLabel'); if (dayLabel) dayLabel.textContent = selectedKey === todayKey ? 'HARI INI' : 'TANGGAL DIPILIH';
       var holidayDetails = byId('calendarHolidayDetails'); holidayDetails.replaceChildren();
       holidaysFor(selectedKey).forEach(function (entry) {
         var line = doc.createElement('p'); line.className = 'calendar-holiday-detail' + (entry.type === 'libur' ? ' holiday' : '');
@@ -139,8 +140,7 @@
         row.appendChild(name); row.appendChild(remove); list.appendChild(row);
       });
     }
-    var openCalendar = byId('openCalendarModule');
-    if (openCalendar) openCalendar.addEventListener('click', function () { if (updater) updater.refresh(false); });
+    win.calendarOnOpen = function () { selected = today(); render(); if (updater) updater.refresh(false); };
     byId('calendarRefresh').addEventListener('click', function () { if (updater) updater.refresh(true); });
     byId('calendarPrev').addEventListener('click', function () { selected = shiftMonth(selected, -1); render(); });
     byId('calendarNext').addEventListener('click', function () { selected = shiftMonth(selected, 1); render(); });
