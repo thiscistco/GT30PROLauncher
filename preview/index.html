@@ -259,7 +259,10 @@
   .clock-page { overflow-y: auto; }
   .clock-tabs { display: flex; gap: 1.5mm; overflow-x: auto; margin-top: 5mm; scrollbar-width: none; }
   .clock-tabs button, .clock-action { color: #ffd49d; background: #211a17; border: 1px solid #8d604c; border-radius: 3.5mm; padding: 3mm; font: 700 2.8mm 'Doto', monospace; cursor: pointer; white-space: nowrap; }
+  .clock-tabs button { flex: 0 0 11mm; width: 11mm; height: 11mm; padding: 2.3mm; display: grid; place-items: center; }
+  .clock-tabs button img { display: block; width: 6.4mm; height: 6.4mm; }
   .clock-tabs button.active { background: #61402c; }
+  .clock-tabs button:focus-visible { outline: 2px solid #ffd49d; outline-offset: 2px; }
   .clock-section { padding-top: 5mm; }
   .clock-section[hidden], .alarm-form[hidden] { display: none; }
   .clock-section h3 { font-size: 4.5mm; color: #ffd49d; margin-bottom: 4mm; }
@@ -422,10 +425,10 @@
                 <div class="clock-kicker">SUPER APP</div>
                 <div class="clock-title">JAM</div>
                 <nav class="clock-tabs" aria-label="Fitur jam">
-                  <button class="active" data-clock-tab="alarm" type="button">Alarm</button>
-                  <button data-clock-tab="world" type="button">Dunia</button>
-                  <button data-clock-tab="timer" type="button">Timer</button>
-                  <button data-clock-tab="stopwatch" type="button">Stopwatch</button>
+                  <button class="active" data-clock-tab="alarm" type="button" aria-label="Alarm" aria-pressed="true" title="Alarm"><img src="assets/clock-alarm.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button data-clock-tab="world" type="button" aria-label="Dunia" aria-pressed="false" title="Dunia"><img src="assets/clock-world.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button data-clock-tab="timer" type="button" aria-label="Timer" aria-pressed="false" title="Timer"><img src="assets/clock-timer.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button data-clock-tab="stopwatch" type="button" aria-label="Stopwatch" aria-pressed="false" title="Stopwatch"><img src="assets/clock-stopwatch.svg?v=1" alt="" aria-hidden="true"></button>
                 </nav>
                 <div class="clock-section" data-clock-panel="alarm">
                   <h3>ALARM</h3><button class="clock-action clock-wide" id="previewAddAlarm" type="button">+ Tambah alarm</button>
@@ -608,7 +611,10 @@
     document.querySelectorAll('[data-clock-tab]').forEach(function (button) {
       button.addEventListener('click', function () {
         var name = button.getAttribute('data-clock-tab');
-        document.querySelectorAll('[data-clock-tab]').forEach(function (b) { b.classList.toggle('active', b === button); });
+        document.querySelectorAll('[data-clock-tab]').forEach(function (b) {
+          b.classList.toggle('active', b === button);
+          b.setAttribute('aria-pressed', b === button ? 'true' : 'false');
+        });
         document.querySelectorAll('[data-clock-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-clock-panel') !== name; });
       });
     });

@@ -24,6 +24,8 @@ import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Switch;
@@ -41,6 +43,8 @@ import java.util.TimeZone;
 public class ClockActivity extends SwipeBackActivity {
     private static final int AMBER = 0xFFFFD49D, MUTED = 0xFFE7A579;
     private static final String[] TAB_NAMES = {"Alarm", "Dunia", "Timer", "Stopwatch"};
+    private static final int[] TAB_ICONS = {R.drawable.ic_clock_alarm, R.drawable.ic_clock_world,
+            R.drawable.ic_clock_timer, R.drawable.ic_clock_stopwatch};
     private static final String[] CITIES = {"Jakarta", "Makassar", "Jayapura", "Singapore", "Tokyo", "Seoul", "Dubai", "London", "Paris", "New York", "Los Angeles", "Sydney"};
     private static final String[] ZONES = {"Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura", "Asia/Singapore", "Asia/Tokyo", "Asia/Seoul", "Asia/Dubai", "Europe/London", "Europe/Paris", "America/New_York", "America/Los_Angeles", "Australia/Sydney"};
     private static final String[] DAYS = {"Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"};
@@ -104,9 +108,19 @@ public class ClockActivity extends SwipeBackActivity {
     private void showTab(int selected) {
         tab = selected; tabs.removeAllViews(); content.removeAllViews(); timerDisplay = null; stopwatchDisplay = null; worldList = null;
         for (int i = 0; i < TAB_NAMES.length; i++) {
-            final int index = i; TextView item = button(TAB_NAMES[i], () -> showTab(index));
+            final int index = i;
+            ImageButton item = new ImageButton(this);
+            item.setImageResource(TAB_ICONS[i]);
+            item.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            item.setPadding(dp(16), dp(16), dp(16), dp(16));
             item.setBackground(bg(i == selected ? 0xFF61402C : 0xFF181717));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-2, -2); if (i > 0) p.leftMargin = dp(6); tabs.addView(item, p);
+            item.setContentDescription(TAB_NAMES[i]);
+            item.setTooltipText(TAB_NAMES[i]);
+            item.setSelected(i == selected);
+            item.setOnClickListener(v -> showTab(index));
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(64), dp(64));
+            if (i > 0) p.leftMargin = dp(6);
+            tabs.addView(item, p);
         }
         if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else showStopwatch();
         updateLive();
