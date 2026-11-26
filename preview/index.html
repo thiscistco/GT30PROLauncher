@@ -21,7 +21,7 @@
   .bg {
     position: fixed;
     inset: -6%;
-    background: url("assets/gt30pro-internals.png?v=34") center/cover no-repeat;
+    background: url("assets/gt30pro-internals.png?v=35") center/cover no-repeat;
     filter: blur(52px) saturate(1.15) brightness(0.34);
     transform: scale(1.08);
     z-index: 0;
@@ -133,7 +133,7 @@
   .wallpaper {
     position: absolute;
     inset: 0;
-    background: url("assets/gt30pro-internals.png?v=34") center/cover no-repeat;
+    background: url("assets/gt30pro-internals.png?v=35") center/cover no-repeat;
     transition: transform .12s ease-out, filter .12s ease-out;
     will-change: transform, filter;
   }
@@ -716,8 +716,8 @@
     updateStatus();
     var image = new Image();
     var imageReady = new Promise(function (resolve, reject) { image.onload = resolve; image.onerror = reject; });
-    image.src = 'assets/wallpaper-amber-glow.png?v=5';
-    Promise.all([fetch('assets/circuit-paths.json?v=4').then(function (response) {
+    image.src = 'assets/wallpaper-amber-glow.png?v=6';
+    Promise.all([fetch('assets/circuit-paths.json?v=5').then(function (response) {
       if (!response.ok) throw new Error('Jalur tidak dapat dimuat'); return response.json();
     }), imageReady]).then(function (result) {
       var cfg = result[0];

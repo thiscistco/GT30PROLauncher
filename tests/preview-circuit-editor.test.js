@@ -163,20 +163,20 @@ store.clear(); ids = initialize(); ids.pathEdit.click();
 pointer(ids.pathDraw,'pointerdown',80,200,77,'touch'); pointer(ids.pathDraw,'pointermove',110,230,77,'touch');
 ids.pathPalm.checked = true; ids.pathPalm.listeners.change();
 pointer(ids.pathDraw,'pointerup',150,240,77,'touch'); assert.equal(applied.paths, null);
-// The supplied paths appear as three editable routes and use the shared mask.
+// The supplied paths appear as seven editable routes and use the shared mask.
 store.clear(); ids = initialize(bundledConfig);
 assert.equal(applied.paths, null, 'unedited supplied paths use shared APK mask');
-assert.match(ids.pathStatus.textContent, /3 jalur awal/); assert.equal(ids.pathWidth.value, '8');
+assert.match(ids.pathStatus.textContent, /7 jalur awal/); assert.equal(ids.pathWidth.value, '8');
 ids.pathCodeToggle.click(); assert.deepEqual(JSON.parse(ids.pathCodeText.value), bundledConfig);
 ids.pathReset.click(); assert.equal(applied.paths.length, 0, 'clear removes even the bundled paths');
 assert.match(ids.pathStatus.textContent, /Belum ada/); assert.equal(JSON.parse(ids.pathCodeText.value).paths.length, 0);
-ids.pathLoadDefault.click(); assert.equal(applied.paths, null); assert.match(ids.pathStatus.textContent, /3 jalur awal/);
+ids.pathLoadDefault.click(); assert.equal(applied.paths, null); assert.match(ids.pathStatus.textContent, /7 jalur awal/);
 ids.pathUndo.click(); assert.equal(applied.paths.length, 0, 'loading defaults can be undone');
 ids = initialize(bundledConfig); assert.equal(applied.paths.length, 0, 'saved empty paths remain empty after reload');
 ids.pathLoadDefault.click(); assert.equal(applied.paths, null);
-ids.pathWidth.value = '20'; ids.pathWidth.listeners.input(); assert.equal(applied.paths.length, 6);
+ids.pathWidth.value = '20'; ids.pathWidth.listeners.input(); assert.equal(applied.paths.length, 14);
 ids.pathLoadDefault.click(); assert.equal(ids.pathWidth.value, '8'); assert.equal(applied.paths, null);
-ids.pathUndo.click(); assert.equal(ids.pathWidth.value, '20'); assert.equal(applied.paths.length, 6);
+ids.pathUndo.click(); assert.equal(ids.pathWidth.value, '20'); assert.equal(applied.paths.length, 14);
 // Clipboard success and permission denial both leave a usable code panel.
 (async () => {
   store.clear(); const ui = initialize(); ui.pathCodeToggle.click();
