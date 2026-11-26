@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Generate a transparent animation overlay for the current wallpaper's LEDs.
 
-Usage: python tools/create_amber_glow.py WALLPAPER.png OVERLAY.png
-The source wallpaper is not modified. Circuit paths are loaded from the shared
-preview configuration; battery and gold/black flex cables are excluded.
+Usage: python tools/create_amber_glow.py WALLPAPER.png OVERLAY.png [PATHS.json]
+The source wallpaper is not modified. Circuit paths default to the shared
+preview configuration; an exported preview configuration can be supplied.
+Battery and gold/black flex cables are excluded.
 Requires Pillow.
 """
 import json
@@ -11,7 +12,7 @@ import sys
 from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
-if len(sys.argv) != 3:
+if len(sys.argv) not in (3, 4):
     raise SystemExit(__doc__)
 source = Image.open(sys.argv[1]).convert('RGB')
 if source.size != (1224, 2720):
@@ -55,7 +56,8 @@ overlay.putalpha(alpha)
 
 # The two broad metallic PCB traces are different from the orange LEDs.
 # Paint a thin, soft transparent highlight along their measured centre lines.
-config = json.loads((Path(__file__).resolve().parents[1] / 'preview/assets/circuit-paths.json').read_text())
+config_path = Path(sys.argv[3]) if len(sys.argv) == 4 else Path(__file__).resolve().parents[1] / 'preview/assets/circuit-paths.json'
+config = json.loads(config_path.read_text())
 copper_core = Image.new('L', (w, h), 0)
 copper_draw = ImageDraw.Draw(copper_core)
 seen = set()
@@ -63,12 +65,16 @@ for path in config['paths']:
     if path.get('kind') != 'copper':
         continue
     points = tuple(tuple(point) for point in path['points'])
-    if points in seen:
+    width = path.get('width', 10)
+    if not isinstance(width, int) or isinstance(width, bool) or not 4 <= width <= 60:
+        raise SystemExit('Copper path width must be an integer from 4 to 60 pixels.')
+    if (points, width) in seen:
         continue
-    seen.add(points)
-    copper_draw.line(points, fill=255, width=10, joint='curve')
+    seen.add((points, width))
+    copper_draw.line(points, fill=255, width=width, joint='curve')
+    radius = width / 2
     for x, y in points:
-        copper_draw.ellipse((x-5, y-5, x+5, y+5), fill=255)
+        copper_draw.ellipse((x-radius, y-radius, x+radius, y+radius), fill=255)
 protected = Image.new('L', (w, h), 255)
 guard = ImageDraw.Draw(protected)
 for box in [(30, 1060, 1195, 2300), (35, 925, 330, 1060), (900, 875, 1120, 1080), (900, 40, 1080, 200)]:

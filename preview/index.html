@@ -149,6 +149,9 @@
   .path-editor button.primary { background: #f7a23b; color: #17120a; border-color: #f7a23b; }
   .path-editor button:disabled { opacity: .45; cursor: not-allowed; }
   .path-editor-status { min-height: 1.5em; color: #ffc477; }
+  .path-editor-size { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: #e9ecf1; }
+  .path-editor-size input { flex: 1; min-width: 110px; accent-color: #f7a23b; }
+  .path-editor button[aria-pressed="true"] { background: #f7a23b; color: #17120a; border-color: #f7a23b; }
   @media (prefers-reduced-motion: reduce) { .amber-glow { display: none; } }
   @font-face {
     font-family: 'Doto';
@@ -476,15 +479,17 @@
 
     <section class="path-editor" aria-label="Gambar jalur animasi">
       <h2>Gambar jalur animasi</h2>
-      <p>Tekan Gambar, lalu tarik jari atau mouse di atas wallpaper. Lepaskan untuk membuat satu jalur; ulangi untuk jalur lain. Tekan Selesai untuk melihat hasilnya.</p>
+      <p>Tekan Gambar lalu tarik jari di wallpaper. Mulai atau akhiri dekat ujung jalur lain agar tersambung menjadi satu. Tekan Selesai untuk melihat animasi.</p>
       <div class="path-editor-actions">
         <button class="primary" id="pathEdit" type="button" disabled>Gambar jalur</button>
+        <button id="pathErase" type="button" disabled aria-pressed="false">Penghapus jalur</button>
         <button id="pathUndo" type="button" disabled>Urungkan</button>
         <button id="pathReset" type="button" disabled>Pulihkan bawaan</button>
         <button id="pathExport" type="button" disabled>Unduh jalur</button>
       </div>
+      <label class="path-editor-size" for="pathWidth">Ketebalan jalur <input type="range" id="pathWidth" min="4" max="60" step="2" value="10" disabled><output id="pathWidthValue" for="pathWidth">10 px</output></label>
       <p id="pathStatus" class="path-editor-status" role="status">Memuat editor…</p>
-      <p>Jalur buatan menggantikan jalur bawaan di preview dan tersimpan di browser ini. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, unduh berkas lalu kirim ke chat.</p>
+      <p>Penghapus menghapus seluruh jalur buatan yang disentuh. Ketebalan berlaku untuk semua jalur buatan (piksel gambar asli). Jalur buatan menggantikan jalur bawaan dan tersimpan di browser ini. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, unduh berkas lalu kirim ke chat.</p>
     </section>
   </div>
 
@@ -651,7 +656,7 @@
     }, 50);
   })();
 </script>
-<script src="circuit-editor.js?v=1"></script>
+<script src="circuit-editor.js?v=2"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
   (function () {
