@@ -20,6 +20,11 @@ final class BatteryBoltView extends View {
         setClickable(false);
     }
 
+    void setColor(int color) {
+        dot.setColor(color);
+        invalidate();
+    }
+
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float cellWidth = getWidth() / 5f, cellHeight = getHeight() / 7f;

@@ -48,6 +48,7 @@ public class MainActivity extends BottomSwipeActivity {
     private HomeClockView clockLed;
     private HomeDateView dateLed;
     private ValueAnimator chargeAnim;
+    private ValueAnimator dateAnim;
     private CircuitGlowView amberGlow;
     private ValueAnimator amberAnim;
     private double amberPhase, amberDurationMs;
@@ -276,6 +277,7 @@ public class MainActivity extends BottomSwipeActivity {
             dateLed.setVisibility(View.VISIBLE);
             dateLed.setAlpha(1f);
             dateLed.bringToFront();
+            startDateAnimation();
         }
         clockHandler.removeCallbacks(clockTick);
         clockHandler.post(clockTick);
@@ -287,6 +289,7 @@ public class MainActivity extends BottomSwipeActivity {
         unregisterReceiver(batteryReceiver);
         unregisterReceiver(powerSaveReceiver);
         stopAmberGlow();
+        stopDateAnimation();
         clockHandler.removeCallbacks(clockTick);
         if (chargeAnim != null) {
             chargeAnim.cancel();
@@ -297,6 +300,27 @@ public class MainActivity extends BottomSwipeActivity {
             batteryBolt.setAlpha(.6f);
             batteryBolt.setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void startDateAnimation() {
+        if (dateLed == null || dateAnim != null || !ValueAnimator.areAnimatorsEnabled()) return;
+        dateAnim = ValueAnimator.ofFloat(.8f, 1f);
+        dateAnim.setDuration(2000);
+        dateAnim.setRepeatMode(ValueAnimator.REVERSE);
+        dateAnim.setRepeatCount(ValueAnimator.INFINITE);
+        dateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+        dateAnim.addUpdateListener(a -> {
+            if (dateLed != null) dateLed.setAlpha((float) a.getAnimatedValue());
+        });
+        dateAnim.start();
+    }
+
+    private void stopDateAnimation() {
+        if (dateAnim != null) {
+            dateAnim.cancel();
+            dateAnim = null;
+        }
+        if (dateLed != null) dateLed.setAlpha(1f);
     }
 
     private boolean isAmberGlowEnabled() {
@@ -357,7 +381,14 @@ public class MainActivity extends BottomSwipeActivity {
     /** Pulse only the battery indicator and its dotted bolt while connected to power. */
     private void updateChargeAnim() {
         if (charging) {
-            if (batteryBolt != null) batteryBolt.setVisibility(View.VISIBLE);
+            if (batteryLed != null) {
+                batteryLed.setTextColor(0xFFFF9D2F);
+                batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFF6919);
+            }
+            if (batteryBolt != null) {
+                batteryBolt.setColor(0xFFFF9D2F);
+                batteryBolt.setVisibility(View.VISIBLE);
+            }
             if (chargeAnim == null) {
                 chargeAnim = ValueAnimator.ofFloat(.21f, .6f);
                 chargeAnim.setDuration(900);
@@ -376,8 +407,13 @@ public class MainActivity extends BottomSwipeActivity {
                 chargeAnim.cancel();
                 chargeAnim = null;
             }
-            if (batteryLed != null) batteryLed.setAlpha(.6f);
+            if (batteryLed != null) {
+                batteryLed.setTextColor(0xFFFFFFFF);
+                batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+                batteryLed.setAlpha(.6f);
+            }
             if (batteryBolt != null) {
+                batteryBolt.setColor(0xFFFFFFFF);
                 batteryBolt.setAlpha(.6f);
                 batteryBolt.setVisibility(View.INVISIBLE);
             }
