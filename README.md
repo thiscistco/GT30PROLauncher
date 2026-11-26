@@ -78,18 +78,23 @@ tema gelap `#0A0C0F` dengan aksen oranye `#F7A23B` (nuansa Dark Flare).
 Ketuk ikon cuaca di homescreen untuk mengaktifkan cuaca. Ikon cuaca di grid
 Super App membuka halaman prakiraan: cuaca dan suhu saat ini, prakiraan 24 jam
 dan 7 hari, peluang hujan, suhu terasa, kelembapan, angin, tekanan udara, serta
-matahari terbit dan terbenam. Tekan **Aktifkan / perbarui cuaca** pada halaman
-untuk meminta izin atau menyegarkan data. Radar, kualitas udara dan notifikasi
+matahari terbit dan terbenam. Halaman berlatar langit; ketuk ikon perbarui di kanan
+judul CUACA untuk meminta izin atau menyegarkan data. Radar, kualitas udara dan notifikasi
 cuaca belum tersedia.
 Jika ikon homescreen sulit terlihat, tekan lama area kosong homescreen lalu
 pilih **Aktifkan / perbarui cuaca**.
 Aplikasi meminta izin **lokasi perkiraan** dan memakai penyedia lokasi jaringan;
 koordinat dibulatkan ke dua desimal dan dikirim via HTTPS ke Open-Meteo untuk
-suhu, kondisi dan prakiraan cuaca. Tidak ada pelacakan latar belakang atau penyimpanan
-koordinat. Selama halaman aktif, data diperiksa paling sering setiap 30 menit;
+suhu, kondisi dan prakiraan cuaca. Setelah persetujuan, Android juga memakai
+layanan geocoding perangkat untuk mencari nama kota/daerah dari koordinat yang
+sama; penyedia layanan tersebut bergantung pada perangkat. Jika tidak disetujui
+atau tidak tersedia, koordinat dua desimal ditampilkan. Browser preview menampilkan
+koordinat perkiraan tanpa mencari nama kota. Nama dan koordinat lokasi tidak
+disimpan, dan tidak ada pelacakan latar belakang. Selama halaman aktif, data diperiksa paling sering setiap 30 menit;
 ketuk ikon untuk memperbarui manual. Cache suhu/kondisi terakhir disimpan lokal,
 tidak dibackup, dan hanya ditampilkan hingga dua jam. Tanpa izin, lokasi, atau
-koneksi, tampilan menunjukkan `--°` (atau data terakhir yang masih berlaku).
+koneksi, tampilan menunjukkan `--°` (atau data terakhir yang masih berlaku,
+yang dapat berasal dari lokasi sebelumnya).
 Izin dapat dicabut melalui setelan Android. Preview browser juga meminta izin
 setelah ikon diketuk, dan memerlukan HTTPS, geolocation dan akses Open-Meteo;
 nilai awal `--°` bukan simulasi suhu nyata. Sebelum data diterima, gambar awan dan matahari adalah ikon umum, bukan kondisi cuaca aktual.

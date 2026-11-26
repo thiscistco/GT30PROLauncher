@@ -6,6 +6,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -20,6 +22,7 @@ import java.net.URL;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Locale;
+import java.util.List;
 import org.json.JSONObject;
 
 /** Opt-in foreground-only approximate location and Open-Meteo current weather. */
@@ -28,8 +31,10 @@ final class WeatherController {
     private static final long INTERVAL = 30 * 60 * 1000L;
     private final Activity activity;
     private final WeatherView view;
-    interface DetailsListener { void onDetails(JSONObject data, String status); }
+    interface DetailsListener { void onDetails(JSONObject data, String status, String location); }
     private DetailsListener detailsListener;
+    private String locationLabel;
+    private String lastDetailsStatus = "Aktifkan lokasi untuk memuat cuaca.";
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final LocationManager manager;
     private boolean active, loading, pendingManual;
@@ -43,6 +48,7 @@ final class WeatherController {
     }
     void setDetailsListener(DetailsListener listener) { detailsListener = listener; }
     private void notifyDetails(String status) {
+        lastDetailsStatus = status;
         if (detailsListener == null) return;
         JSONObject data = null;
         if (permitted()) {
@@ -52,18 +58,23 @@ final class WeatherController {
                 try { data = new JSONObject(p.getString("forecast_v1", "")); } catch (Exception ignored) { }
             }
         }
-        detailsListener.onDetails(data, status);
+        detailsListener.onDetails(data, status, permitted() ? locationLabel : null);
     }
     private boolean permitted() { return activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED; }
     void resume() {
         active = true;
+        locationLabel = null;
         if (!permitted()) { view.setWeather(-1, true, null, "Ketuk untuk mengaktifkan cuaca"); notifyDetails("Izinkan lokasi perkiraan untuk melihat cuaca."); return; }
         showCached();
         boolean manual = pendingManual; pendingManual = false;
         refresh(manual);
+        if (!loading && detailsListener != null && manager != null) {
+            Location last = recentLocation();
+            if (last != null) resolvePlace(last, generation);
+        }
     }
     void pause() {
-        active = false; generation++; loading = false;
+        active = false; generation++; loading = false; locationLabel = null;
         handler.removeCallbacks(scheduled); stopLocation();
     }
     void permissionResult(int request) {
@@ -72,13 +83,25 @@ final class WeatherController {
             if (active) { pendingManual = false; refresh(true); }
             else pendingManual = true;
         }
-        else { pendingManual = false; view.setWeather(-1, true, null, "Izin lokasi ditolak; ketuk untuk mencoba lagi"); notifyDetails("Izin lokasi ditolak. Ketuk Aktifkan / perbarui untuk mencoba lagi."); toast("Izin lokasi diperlukan untuk cuaca."); }
+        else { pendingManual = false; locationLabel = null; view.setWeather(-1, true, null, "Izin lokasi ditolak; ketuk untuk mencoba lagi"); notifyDetails("Izin lokasi ditolak. Ketuk ikon di sebelah judul untuk mencoba lagi."); toast("Izin lokasi diperlukan untuk cuaca."); }
     }
     void requestFromUser() {
-        if (permitted()) { refresh(true); return; }
+        if (permitted()) {
+            if (detailsListener != null && !activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).getBoolean("geocode_consent", false)) {
+                new AlertDialog.Builder(activity).setTitle("Tampilkan nama lokasi?")
+                        .setMessage("Lokasi perkiraan dikirim ke layanan geocoding Android untuk memperoleh nama lokasi. Jika tidak disetujui, koordinat perkiraan tetap ditampilkan.")
+                        .setNegativeButton("Koordinat saja", (d, w) -> refresh(true))
+                        .setPositiveButton("Setuju", (d, w) -> {
+                            activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).edit().putBoolean("geocode_consent", true).apply();
+                            refresh(true);
+                        }).show();
+            } else refresh(true);
+            return;
+        }
         new AlertDialog.Builder(activity).setTitle("Aktifkan cuaca?")
-                .setMessage("Lokasi perkiraan diperlukan. Koordinat perkiraan dikirim ke Open-Meteo untuk mengambil cuaca. Lokasi tidak dipantau di latar belakang.")
+                .setMessage("Lokasi perkiraan diperlukan. Koordinat perkiraan dikirim ke Open-Meteo untuk cuaca dan layanan geocoding Android untuk nama lokasi. Lokasi tidak dipantau di latar belakang.")
                 .setNegativeButton("Batal", null).setPositiveButton("Lanjutkan", (d, w) -> {
+                    activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).edit().putBoolean("geocode_consent", true).apply();
                     if (activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).getBoolean("weather_asked", false)
                             && !activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                         new AlertDialog.Builder(activity).setMessage("Jika izin lokasi diblokir, aktifkan lewat setelan aplikasi.")
@@ -96,10 +119,10 @@ final class WeatherController {
         long age = System.currentTimeMillis() - at;
         if (at > 0 && age >= 0 && age < 2 * 60 * 60 * 1000L) {
             view.setWeather(p.getInt("code", -1), p.getBoolean("day", true), p.getInt("temp", 0), "Data terakhir; ketuk untuk memperbarui");
-            notifyDetails("Data terakhir tersimpan; ketuk untuk memperbarui.");
+            notifyDetails("Data terakhir tersimpan; lokasi mungkin berbeda. Ketuk ikon untuk memperbarui.");
         } else {
             view.setWeather(-1, true, null, "Ketuk untuk memperbarui");
-            notifyDetails("Cuaca belum tersedia; ketuk Aktifkan / perbarui.");
+            notifyDetails("Cuaca belum tersedia; ketuk ikon di sebelah judul.");
         }
     }
     private void refresh(boolean manual) {
@@ -109,7 +132,7 @@ final class WeatherController {
         long age = System.currentTimeMillis() - p.getLong("time", 0);
         if (!manual && age >= 0 && age < INTERVAL && (detailsListener == null || p.contains("forecast_v1"))) { schedule(INTERVAL-age); return; }
         loading = true; final int run = ++generation;
-        notifyDetails("Memperbarui cuaca…");
+        notifyDetails("Memperbarui cuaca… Data terakhir mungkin dari lokasi lain.");
         if (manual) toast("Memperbarui cuaca…");
         try {
             if (manager == null) throw new IllegalStateException();
@@ -141,9 +164,33 @@ final class WeatherController {
         }
         return best;
     }
+    private void resolvePlace(Location loc, int run) {
+        if (detailsListener == null || loc == null) return;
+        final double lat = Math.round(loc.getLatitude()*100d)/100d, lon = Math.round(loc.getLongitude()*100d)/100d;
+        locationLabel = String.format(Locale.US, "%.2f, %.2f · perkiraan", lat, lon);
+        notifyDetails(lastDetailsStatus);
+        if (!activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).getBoolean("geocode_consent", false)) return;
+        new Thread(() -> {
+            try {
+                if (!Geocoder.isPresent()) return;
+                List<Address> matches = new Geocoder(activity.getApplicationContext(), new Locale("id", "ID")).getFromLocation(lat, lon, 1);
+                if (matches == null || matches.isEmpty()) return;
+                Address a = matches.get(0);
+                String label = WeatherLocation.label(a.getLocality(), a.getSubAdminArea(), a.getAdminArea());
+                if (label.isEmpty()) return;
+                handler.post(() -> {
+                    if (active && run == generation && permitted()) {
+                        locationLabel = label + " · perkiraan";
+                        notifyDetails(lastDetailsStatus);
+                    }
+                });
+            } catch (Exception ignored) { /* Coordinates remain visible if geocoding is unavailable. */ }
+        }, "weather-geocode").start();
+    }
     private void fetch(Location loc, int run, boolean manual) {
         // Round before sending; do not persist coordinates.
         final double lat = Math.round(loc.getLatitude()*100d)/100d, lon = Math.round(loc.getLongitude()*100d)/100d;
+        resolvePlace(loc, run);
         new Thread(() -> {
             HttpURLConnection conn = null;
             try {
@@ -169,7 +216,7 @@ final class WeatherController {
     }
     private void fail(int run, boolean manual, String message) {
         if (!active || run != generation) return;
-        stopLocation(); loading = false; showCached(); notifyDetails(message + " Data terakhir ditampilkan bila tersedia."); schedule(INTERVAL);
+        stopLocation(); loading = false; showCached(); notifyDetails(message + " Data terakhir ditampilkan bila tersedia; lokasinya mungkin berbeda."); schedule(INTERVAL);
         if (manual) toast(message);
     }
     private void stopLocation() {

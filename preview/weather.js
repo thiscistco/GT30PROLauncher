@@ -30,7 +30,7 @@
   if (!global.document) return;
   var buttons = [document.getElementById('homeWeather'),document.getElementById('superWeather')];
   if (buttons.some(function (b) { return !b; })) return;
-  var active = false, loading = false, last = null, timer;
+  var active = false, loading = false, last = null, locationLabel = null, timer;
   function draw(code, day, temp, status) {
     buttons.forEach(function (button) {
       var svg = button.querySelector('svg');
@@ -45,13 +45,13 @@
       button.setAttribute('aria-label','Cuaca: '+description(code,day)+', '+(temp == null ? 'suhu belum tersedia' : temp+' derajat Celsius')+'. '+(button === buttons[1] ? 'Ketuk untuk membuka Cuaca' : status));
       button.title = button === buttons[1] ? 'Buka Cuaca' : status;
     });
-    if (global.updateWeatherPage) global.updateWeatherPage(last && last.forecast && code >= 0 && Date.now()-last.time < 2*60*60*1000 ? last.forecast : null, status);
+    if (global.updateWeatherPage) global.updateWeatherPage(last && last.forecast && code >= 0 && Date.now()-last.time < 2*60*60*1000 ? last.forecast : null, status, locationLabel);
   }
   function schedule() { clearTimeout(timer); if (active && !document.hidden) { var age = last ? Date.now()-last.time : 0; timer = setTimeout(function () { refresh(false); }, Math.max(1000, 30*60*1000-age)); } }
   function failure(message, manual) {
     loading = false;
-    if (last && Date.now()-last.time < 2*60*60*1000) draw(last.code,last.day,last.temp,'Data terakhir; ketuk untuk memperbarui');
-    else draw(-1,true,null,'Cuaca belum tersedia; ketuk untuk mencoba lagi');
+    if (last && Date.now()-last.time < 2*60*60*1000) draw(last.code,last.day,last.temp, message + ' Data terakhir ditampilkan; lokasinya mungkin berbeda.');
+    else draw(-1,true,null,message);
     if (manual) global.alert(message);
     schedule();
   }
@@ -59,11 +59,14 @@
     if (loading) return;
     if (!global.navigator.geolocation) { failure('Browser tidak mendukung lokasi.',manual); return; }
     loading = true;
-    if (last) draw(last.code,last.day,last.temp,'Memperbarui cuaca…');
+    if (last) draw(last.code,last.day,last.temp,'Memperbarui cuaca… Data terakhir mungkin dari lokasi lain.');
     else draw(-1,true,null,'Memperbarui cuaca…');
     global.navigator.geolocation.getCurrentPosition(function (pos) {
       if (document.hidden) { loading = false; return; }
       var lat = (Math.round(pos.coords.latitude*100)/100).toFixed(2), lon = (Math.round(pos.coords.longitude*100)/100).toFixed(2);
+      locationLabel = lat + ', ' + lon + ' · perkiraan';
+      if (last) draw(last.code,last.day,last.temp,'Memperbarui cuaca… Data terakhir mungkin dari lokasi lain.');
+      else draw(-1,true,null,'Memperbarui cuaca…');
       var controller = global.AbortController ? new global.AbortController() : null;
       var fetchTimeout = controller ? setTimeout(function () { controller.abort(); }, 15000) : null;
       fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&forecast_days=7&timezone=auto', controller ? {signal:controller.signal} : {}).then(function (r) {
@@ -75,7 +78,7 @@
         last = {temp:Math.round(c.temperature_2m), code:c.weather_code, day:c.is_day === 1, time:Date.now(), forecast:{current:c, hourly:data.hourly || {}, daily:data.daily || {}}};
         loading = false; draw(last.code,last.day,last.temp,'Diperbarui; ketuk untuk memperbarui lagi'); schedule();
       }).catch(function () { if (fetchTimeout) clearTimeout(fetchTimeout); failure('Cuaca tidak tersedia. Periksa koneksi dan coba lagi.',manual); });
-    }, function (error) { if (error && error.code === 1) last = null; failure('Lokasi tidak tersedia atau izin ditolak. Periksa izin lokasi browser.',manual); }, {enableHighAccuracy:false, timeout:20000, maximumAge:600000});
+    }, function (error) { if (error && error.code === 1) { last = null; locationLabel = null; } failure('Lokasi tidak tersedia atau izin ditolak. Periksa izin lokasi browser.',manual); }, {enableHighAccuracy:false, timeout:20000, maximumAge:600000});
   }
   function requestFromUser() {
     if (!active && !global.confirm('Lokasi perkiraan akan dikirim ke Open-Meteo untuk mengambil cuaca. Lanjutkan?')) return;

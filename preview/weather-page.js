@@ -21,9 +21,10 @@
   function item(o,key,i) { return o && Array.isArray(o[key]) ? o[key][i] : null; }
   function time(t) { return typeof t === 'string' && t.length >= 16 ? t.slice(11,16) : '--:--'; }
   function dayName(date,i) { if(i===0)return 'Hari ini'; if(typeof date!=='string'||!/^\d{4}-\d\d-\d\d$/.test(date))return '--'; var p=date.split('-').map(Number);var d=new Date(p[0],p[1]-1,p[2]);return d.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short'}); }
-  global.updateWeatherPage = function (data,status) {
+  global.updateWeatherPage = function (data,status,location) {
     var current=data && data.current, available=!!current;
     el('weatherPageStatus').textContent=status;
+    el('weatherLocation').textContent=location || 'LOKASI SAAT INI · PERKIRAAN';
     el('weatherPageEmpty').hidden=available;el('weatherPageDetails').hidden=!available;
     el('weatherPageTemp').textContent=available?number(current.temperature_2m,'°'):'--°';
     var c=available?current.weather_code:-1, day=!available||current.is_day===1;

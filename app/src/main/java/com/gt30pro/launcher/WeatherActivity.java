@@ -2,11 +2,10 @@ package com.gt30pro.launcher;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -22,7 +21,7 @@ public class WeatherActivity extends SwipeBackActivity {
     private static final int WHITE = 0xFFF5F5F5, MUTED = 0xFFABB3BC, AMBER = 0xFFFFB65C;
     private Typeface doto;
     private LinearLayout page, details;
-    private TextView status, temperature, condition, observed;
+    private TextView status, temperature, condition, observed, location;
     private WeatherView hero;
     private WeatherController weather;
     @Override protected boolean supportsBottomSwipe() { return true; }
@@ -33,14 +32,20 @@ public class WeatherActivity extends SwipeBackActivity {
         doto = Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf");
         ScrollView scroll = new ScrollView(this); scroll.setBackgroundColor(Color.BLACK); scroll.setFillViewport(true);
         page = new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL); page.setPadding(dp(20),dp(16),dp(20),dp(28));
+        page.setBackground(new WeatherSkyDrawable(this));
         scroll.addView(page, new ScrollView.LayoutParams(-1,-2));
         page.setOnApplyWindowInsetsListener((v, insets) -> {
             v.setPadding(dp(20), dp(16)+insets.getSystemWindowInsetTop(), dp(20), dp(28)+insets.getSystemWindowInsetBottom()); return insets;
         });
         setContentView(scroll);
         TextView back = text("←  Kembali", 13, MUTED); back.setPadding(0,dp(8),0,dp(8)); back.setOnClickListener(v -> finish()); page.addView(back);
-        TextView title = text("CUACA", 25, WHITE); add(page,title,0,8,0,0);
-        TextView location = text("LOKASI SAAT INI · PERKIRAAN", 11, MUTED); add(page,location,0,10,0,0);
+        LinearLayout header = new LinearLayout(this); header.setGravity(Gravity.CENTER_VERTICAL); add(page,header,0,8,0,0);
+        TextView title = text("CUACA", 25, WHITE); header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+        ImageButton refresh = new ImageButton(this); refresh.setImageResource(R.drawable.ic_weather_refresh);
+        refresh.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER); refresh.setPadding(dp(12),dp(12),dp(12),dp(12));
+        refresh.setBackgroundColor(Color.TRANSPARENT); refresh.setContentDescription("Aktifkan / perbarui cuaca");
+        refresh.setOnClickListener(v -> weather.requestFromUser()); header.addView(refresh,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        location = text("LOKASI SAAT INI · PERKIRAAN", 11, MUTED); add(page,location,0,4,0,0);
         LinearLayout top = new LinearLayout(this); top.setGravity(Gravity.CENTER_VERTICAL); add(page,top,0,14,0,0);
         LinearLayout summary = new LinearLayout(this); summary.setOrientation(LinearLayout.VERTICAL);
         top.addView(summary,new LinearLayout.LayoutParams(0,-2,1));
@@ -49,19 +54,16 @@ public class WeatherActivity extends SwipeBackActivity {
         observed=text("",10,MUTED); add(summary,observed,0,5,0,0);
         hero=new WeatherView(this,false); top.addView(hero,new LinearLayout.LayoutParams(dp(90),dp(90)));
         status=text("Aktifkan lokasi untuk memuat cuaca.",11,MUTED); add(page,status,0,10,0,0);
-        Button refresh = new Button(this); refresh.setTypeface(doto); refresh.setFontVariationSettings("'wght' 700");
-        refresh.setAllCaps(false); refresh.setText("Aktifkan / perbarui cuaca"); refresh.setTextSize(13); refresh.setTextColor(Color.BLACK);
-        refresh.setGravity(Gravity.CENTER); refresh.setPadding(dp(14),dp(12),dp(14),dp(12));
-        GradientDrawable bg = new GradientDrawable(); bg.setColor(AMBER); bg.setCornerRadius(dp(10)); refresh.setBackground(bg); refresh.setOnClickListener(v -> weather.requestFromUser()); add(page,refresh,0,14,0,0);
         details = new LinearLayout(this); details.setOrientation(LinearLayout.VERTICAL); add(page,details,0,22,0,0);
         weather = new WeatherController(this, hero); weather.setDetailsListener(this::render);
-        render(null, "Aktifkan lokasi untuk memuat cuaca.");
+        render(null, "Ketuk ikon di sebelah judul untuk mengaktifkan lokasi.", null);
     }
     @Override protected void onResume() { super.onResume(); if (weather != null) weather.resume(); }
     @Override protected void onPause() { if (weather != null) weather.pause(); super.onPause(); }
     @Override public void onRequestPermissionsResult(int code, String[] permissions, int[] results) { super.onRequestPermissionsResult(code, permissions, results); if (weather != null) weather.permissionResult(code); }
 
-    private void render(JSONObject data, String message) {
+    private void render(JSONObject data, String message, String place) {
+        location.setText(place == null || place.isEmpty() ? "LOKASI SAAT INI · PERKIRAAN" : place);
         status.setText(message); details.removeAllViews();
         JSONObject current = data == null ? null : data.optJSONObject("current");
         if (current == null) {

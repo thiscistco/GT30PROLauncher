@@ -16,3 +16,15 @@ assert.match(activity,/extends SwipeBackActivity/);assert.match(activity,/suppor
 assert.match(fs.readFileSync('app/src/main/AndroidManifest.xml','utf8'),/android:name="\.WeatherActivity"\s+android:exported="false"/);
 assert.match(fs.readFileSync('app/src/main/java/com/gt30pro/launcher/SuperAppActivity.java','utf8'),/new Intent\(this, WeatherActivity\.class\)/);
 console.log('Weather page: hourly selection, 7-day UI, permissions and Android navigation: OK');
+assert(html.includes('id="weatherLocation"'));
+assert.match(html, /weather-header[\s\S]*?<h2>CUACA<\/h2><button class="weather-refresh-icon"/);
+assert.match(html, /aria-label="Aktifkan \/ perbarui cuaca"/);
+assert(!html.includes('class="weather-action"'));
+assert.match(html, /weather-sky\.jpg/);
+assert.deepEqual(fs.readFileSync('preview/assets/weather-sky.jpg'), fs.readFileSync('app/src/main/assets/weather_sky.jpg'));
+assert.match(activity, /new WeatherSkyDrawable\(this\)/);
+assert.match(activity, /setContentDescription\("Aktifkan \/ perbarui cuaca"\)/);
+assert.match(controller, /geocode_consent/);
+assert.match(controller, /Koordinat saja/);
+assert.match(controller, /new Geocoder\(activity\.getApplicationContext\(\)/);
+assert.match(controller, /WeatherLocation\.label\(a\.getLocality\(\), a\.getSubAdminArea\(\), a\.getAdminArea\(\)\)/);
