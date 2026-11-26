@@ -20,11 +20,11 @@ assert.match(offset, /cssPixel = pixelsPerMm \* 25\.4f \/ 96f/);
 assert.match(offset, /batteryBox\.setTranslationX\(cssPixel\)/);
 assert.match(offset, /batteryBox\.setTranslationY\(cssPixel\)/);
 assert.match(offset, /float left = root\.getWidth\(\) \/ 2f \+ cssPixel - boltWidth \/ 2f/);
-assert.match(offset, /float top = batteryBox\.getBottom\(\) \+ \.25f \* cssPixel/);
+assert.match(offset, /float top = batteryBox\.getBottom\(\) - \.75f \* cssPixel/);
 assert.match(java, /updateBatteryOffset\(homeRoot, batteryLed\)/);
 const boltCss = html.match(/\.battery-bolt\s*\{([^}]*)\}/)[1];
 assert.match(boltCss, /display:\s*none/);
-assert.match(boltCss, /top:\s*calc\(100% - 0\.75px\)/);
+assert.match(boltCss, /top:\s*calc\(100% - 1\.75px\)/);
 assert.match(boltCss, /width:\s*1mm/); assert.match(boltCss, /height:\s*1\.4mm/);
 assert.match(html, /\.battery-led\.charging \.battery-bolt\s*\{\s*display:\s*block/);
 assert.match(boltJava, /WIDTH_MM = 1f/); assert.match(boltJava, /HEIGHT_MM = 1\.4f/);
@@ -42,8 +42,8 @@ for (const width of [269, 720, 1224]) {
   const mm=width/70.9, cssPixel=mm*25.4/96, height=width*2720/1224;
   const room=height*.012-cssPixel; // battery bottom margin
   assert(Math.abs((cssPixel-.5*cssPixel)-.5*cssPixel)<1e-9, 'battery moved right .5 CSS px');
-  assert(Math.abs((1.25*cssPixel-.25*cssPixel)-cssPixel)<1e-9, 'bolt moved up one CSS px');
-  assert(room > -.75*cssPixel + 1.4*mm, 'bolt fits below battery on the target aspect ratio');
+  assert(Math.abs((.25*cssPixel-(-.75*cssPixel))-cssPixel)<1e-9, 'bolt moved up one CSS px');
+  assert(room > -1.75*cssPixel + 1.4*mm, 'bolt fits below battery on the target aspect ratio');
 }
 const charge = java.match(/private void updateChargeAnim\(\) \{[\s\S]*?\n    }/)[0];
 assert.match(charge, /ValueAnimator\.ofFloat\(\.21f, \.6f\)/);

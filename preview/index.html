@@ -181,7 +181,7 @@
     display: none;
     position: absolute;
     left: 50%;
-    top: calc(100% - 0.75px);
+    top: calc(100% - 1.75px);
     transform: translateX(-50%);
     width: 1mm;
     height: 1.4mm;
@@ -278,13 +278,11 @@
   .calendar-event button { flex: none; }
   .super-back { border: 0; background: none; color: #9aa3b0; font: inherit; font-size: 3mm; min-height: 12mm; cursor: pointer; }
   .super-page h2 { margin-top: 2mm; font-size: 6.5mm; color: #eceff4; }
-  .super-page p { margin-top: 1mm; font-size: 2.8mm; color: #9aa3b0; }
-  .super-card { width: 100%; display: flex; align-items: center; gap: 3mm; margin-top: 5mm; padding: 3.5mm;
-    border: 1px solid rgba(255,255,255,.1); border-radius: 5mm; background: #1c2128; color: #eceff4; text-align: left; font: inherit; cursor: pointer; }
-  .super-icon { display: grid; place-items: center; width: 12mm; height: 12mm; border-radius: 4mm; background: rgba(247,162,59,.15); font-size: 5.5mm; }
-  .super-card-text { display: grid; gap: 1mm; }
-  .super-card-text strong { font-size: 3.5mm; }
-  .super-card-text small { color: #9aa3b0; font-size: 2.6mm; }
+  .super-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 5mm; }
+  .super-icon-button { width: 100%; height: 12mm; display: grid; place-items: center;
+    border: 0; border-radius: 3mm; background: transparent; color: #fff; cursor: pointer; }
+  .super-icon-button img { display: block; width: 8mm; height: 8mm; }
+  .super-icon-button:focus-visible { outline: 1px solid #fff; outline-offset: -1px; }
   .clock-led { cursor: pointer; }
   .clock-led::before {
     content: "";
@@ -302,6 +300,13 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 0 0.4mm rgba(255, 105, 25, 0.65));
+  }
+  /* Gunmetal labels only; the numeric date keeps its amber gradient. */
+  #homeDateWeekday, #homeDateMonth {
+    background: none;
+    color: #82929a;
+    -webkit-text-fill-color: #82929a;
+    filter: drop-shadow(0 0 0.4mm rgba(20, 27, 31, 0.85));
   }
   .clock-sep {
     display: block;
@@ -496,15 +501,10 @@
               <section class="super-page" id="superPage" aria-label="Super App" hidden>
                 <button class="super-back" id="superBack" type="button">← Kembali</button>
                 <h2>SUPER APP</h2>
-                <p>Aplikasi di dalam launcher</p>
-                <button class="super-card" id="openClockModule" type="button">
-                  <span class="super-icon" aria-hidden="true">⏱️</span>
-                  <span class="super-card-text"><strong>Jam</strong><small>Alarm, dunia &amp; lainnya</small></span>
-                </button>
-                <button class="super-card" id="openCalendarModule" type="button">
-                  <span class="super-icon" aria-hidden="true">📅</span>
-                  <span class="super-card-text"><strong>Kalender</strong><small>Tanggal &amp; acara lokal</small></span>
-                </button>
+                <div class="super-grid" aria-label="Aplikasi bawaan">
+                  <button class="super-icon-button" id="openClockModule" type="button" aria-label="Jam"><img src="assets/module-clock.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button class="super-icon-button" id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets/module-calendar.svg?v=1" alt="" aria-hidden="true"></button>
+                </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
                 <button class="clock-back" id="clockBack" type="button">← Kembali</button>

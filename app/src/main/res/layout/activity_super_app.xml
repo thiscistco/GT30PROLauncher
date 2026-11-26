@@ -40,21 +40,13 @@
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/super_subtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:text="@string/modules_subtitle"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp" />
-
-            <LinearLayout
+            <GridLayout
                 android:id="@+id/modules_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="vertical" />
+                android:layout_marginTop="31dp"
+                android:columnCount="4"
+                android:alignmentMode="alignMargins" />
 
         </LinearLayout>
     </ScrollView>

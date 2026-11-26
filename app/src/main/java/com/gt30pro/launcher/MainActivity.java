@@ -201,7 +201,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
         int boltHeight = Math.max(1, Math.round(BatteryBoltView.HEIGHT_MM * pixelsPerMm));
         float left = root.getWidth() / 2f + cssPixel - boltWidth / 2f;
-        float top = batteryBox.getBottom() + .25f * cssPixel;
+        float top = batteryBox.getBottom() - .75f * cssPixel;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) batteryBolt.getLayoutParams();
         params.width = boltWidth; params.height = boltHeight;
         params.leftMargin = Math.round(left); params.topMargin = Math.round(top);

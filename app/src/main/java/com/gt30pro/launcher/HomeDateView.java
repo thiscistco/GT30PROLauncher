@@ -50,14 +50,16 @@ final class HomeDateView extends View {
             invalidate();
         }
     }
-    private void drawLine(Canvas canvas, String value, float top, float sizeFactor) {
+    private void drawLine(Canvas canvas, String value, float top, float sizeFactor, boolean gunmetal) {
         float line = TEXT_MM * sizeFactor * pxPerMm, gap = .2f * SIZE_SCALE * sizeFactor * pxPerMm;
         text.setTextSize(2f * SIZE_SCALE * sizeFactor * pxPerMm);
+        text.setColor(gunmetal ? 0xFF82929A : 0xFFFFCD6A);
+        text.setShadowLayer(.4f * pxPerMm, 0f, 0f, gunmetal ? 0xD9141B1F : 0xA6FF6919);
         Paint.FontMetrics metrics = text.getFontMetrics();
         float baseline = top + (line - (metrics.descent - metrics.ascent)) / 2f - metrics.ascent;
         float width = text.measureText(value) + Math.max(0, value.length() - 1) * gap;
         float x = (getWidth() - width) / 2f;
-        text.setShader(new LinearGradient(0, top, 0, top + line, AMBER, STOPS, Shader.TileMode.CLAMP));
+        text.setShader(gunmetal ? null : new LinearGradient(0, top, 0, top + line, AMBER, STOPS, Shader.TileMode.CLAMP));
         for (int i = 0; i < value.length(); i++) {
             canvas.drawText(value, i, i + 1, x, baseline, text);
             x += text.measureText(value, i, i + 1) + gap;
@@ -71,8 +73,8 @@ final class HomeDateView extends View {
         float labelLine = TEXT_MM * LABEL_SCALE * pxPerMm;
         float numberLine = TEXT_MM * pxPerMm;
         float rowGap = CSS_PX_MM * pxPerMm;
-        drawLine(canvas, HomeDateText.weekday(date), top, LABEL_SCALE);
-        drawLine(canvas, HomeDateText.day(date), top + labelLine + rowGap, 1f);
-        drawLine(canvas, HomeDateText.month(date), top + labelLine + numberLine + 2f * rowGap, LABEL_SCALE);
+        drawLine(canvas, HomeDateText.weekday(date), top, LABEL_SCALE, true);
+        drawLine(canvas, HomeDateText.day(date), top + labelLine + rowGap, 1f, false);
+        drawLine(canvas, HomeDateText.month(date), top + labelLine + numberLine + 2f * rowGap, LABEL_SCALE, true);
     }
 }

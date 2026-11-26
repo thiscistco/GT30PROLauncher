@@ -46,9 +46,14 @@ assert.match(view,/setTextSize\(2f \* SIZE_SCALE \* sizeFactor \* pxPerMm\)/);
 assert.match(view,/float labelLine = TEXT_MM \* LABEL_SCALE \* pxPerMm/);
 assert.match(view,/float numberLine = TEXT_MM \* pxPerMm/);
 assert.match(view,/float rowGap = CSS_PX_MM \* pxPerMm/);
-assert.match(view,/drawLine\(canvas, HomeDateText\.weekday\(date\), top, LABEL_SCALE\)/);
-assert.match(view,/drawLine\(canvas, HomeDateText\.day\(date\), top \+ labelLine \+ rowGap, 1f\)/);
-assert.match(view,/drawLine\(canvas, HomeDateText\.month\(date\), top \+ labelLine \+ numberLine \+ 2f \* rowGap, LABEL_SCALE\)/);
+assert.match(view,/drawLine\(canvas, HomeDateText\.weekday\(date\), top, LABEL_SCALE, true\)/);
+assert.match(view,/drawLine\(canvas, HomeDateText\.day\(date\), top \+ labelLine \+ rowGap, 1f, false\)/);
+assert.match(view,/drawLine\(canvas, HomeDateText\.month\(date\), top \+ labelLine \+ numberLine \+ 2f \* rowGap, LABEL_SCALE, true\)/);
+assert.match(view,/text\.setColor\(gunmetal \? 0xFF82929A : 0xFFFFCD6A\)/);
+assert.match(view,/text\.setShader\(gunmetal \? null : new LinearGradient/);
+const gunmetal=html.match(/#homeDateWeekday,\s*#homeDateMonth\s*\{([^}]*)\}/g).at(-1);
+assert.match(gunmetal, /-webkit-text-fill-color:\s*#82929a/);
+assert.match(gunmetal, /background:\s*none/);
 assert(!/separatorAlpha/.test(view),'charging must not affect date');
 for(const w of [269,720,1224]) {
  const mm=w/70.9, cssPixel=mm*25.4/96, clockCenter=w*.357-.5*cssPixel, oldCenter=w*.49+110*cssPixel, dateCenter=w*.49+115*cssPixel;
