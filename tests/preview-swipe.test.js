@@ -13,13 +13,14 @@ class Element {
   fire(type, event = {}) { for (const fn of this.listeners[type] || []) fn.call(this, event); }
   setAttribute(key, value) { this.attrs[key] = value; }
   focus() {}
-  getBoundingClientRect() { return { right: 445, width: 445 }; }
+  getBoundingClientRect() { return { left: 0, top: 0, bottom: 1000, right: 445, width: 445, height: 1000 }; }
 }
 const ids = ['chargeToggle','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
   'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
-  'calendarPage','calendarBack','openCalendarModule'];
+  'calendarPage','calendarBack','openCalendarModule','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.superPage.hidden = true;
+elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
 const screen = new Element(), separator = new Element(), doc = new Element();
 doc.getElementById = id => elements[id];
 doc.querySelector = selector => selector === '.screen' ? screen : separator;
@@ -56,4 +57,32 @@ assert.strictEqual(elements.calendarPage.hidden, true, 'calendar closes on right
 assert.strictEqual(elements.superPage.hidden, false, 'calendar returns to Super App');
 elements.openCalendarModule.fire('click'); elements.calendarBack.fire('click');
 assert.strictEqual(elements.calendarPage.hidden, true, 'calendar back button closes page');
-console.log('Preview swipe back tests passed');
+// Home swipe opens the preview drawer without requiring fling speed.
+elements.tabHome.fire('click');
+swipe(200, 950, 210, 500);
+assert.strictEqual(elements.drawerPage.hidden, false, 'bottom-to-middle opens app drawer');
+assert.strictEqual(elements.superPage.hidden, true);
+swipe(440, 100, 360, 100);
+assert.strictEqual(elements.drawerPage.hidden, true, 'right-edge back closes drawer');
+swipe(200, 750, 200, 450); assert.strictEqual(elements.drawerPage.hidden, true, 'gesture must start near bottom');
+swipe(200, 950, 200, 800); assert.strictEqual(elements.drawerPage.hidden, true, 'short gesture does not open drawer');
+swipe(100, 950, 430, 500); assert.strictEqual(elements.drawerPage.hidden, true, 'diagonal gesture ignored');
+swipe(200, 950, 200, 990); assert.strictEqual(elements.drawerPage.hidden, true, 'downward gesture ignored');
+elements.tabSuper.fire('click'); swipe(200, 950, 210, 500);
+assert.strictEqual(elements.superPage.hidden, true, 'Super App gesture returns to home');
+assert.strictEqual(elements.drawerPage.hidden, true, 'returning home does not open drawer');
+elements.tabSuper.fire('click'); elements.openClockModule.fire('click'); swipe(200, 950, 210, 500);
+assert.strictEqual(elements.clockPage.hidden, true, 'gesture from clock returns directly home');
+assert.strictEqual(elements.superPage.hidden, true);
+elements.tabSuper.fire('click'); elements.openCalendarModule.fire('click'); swipe(440, 950, 420, 500);
+assert.strictEqual(elements.calendarPage.hidden, true, 'bottom gesture works from right corner');
+assert.strictEqual(elements.superPage.hidden, true);
+elements.pathDraw.hidden = false; swipe(200,950,200,500); assert.strictEqual(elements.drawerPage.hidden,true, 'editor gestures remain untouched'); elements.pathDraw.hidden = true;
+screen.fire('pointerdown', {isPrimary:true,button:0,pointerId:9,clientX:200,clientY:950});
+screen.fire('pointerdown', {isPrimary:false,button:0,pointerId:10,clientX:210,clientY:950});
+doc.fire('pointerup',{pointerId:9,clientX:200,clientY:500}); assert.strictEqual(elements.drawerPage.hidden,true,'multi-touch is cancelled');
+screen.fire('pointerdown', {isPrimary:true,button:0,pointerId:11,clientX:200,clientY:950});
+let prevented=false; screen.fire('touchmove',{touches:[{clientX:202,clientY:900}],cancelable:true,preventDefault(){prevented=true;}});
+assert(prevented,'bottom touch drag prevents page scrolling');
+doc.fire('pointercancel',{}); doc.fire('pointerup',{pointerId:11,clientX:200,clientY:500}); assert.strictEqual(elements.drawerPage.hidden,true,'cancelled bottom gesture ignored');
+console.log('Preview back, bottom gestures, editor and touch cancellation tests passed');

@@ -41,6 +41,7 @@ import java.util.TimeZone;
 
 /** Jam bawaan: alarm, waktu dunia, timer dan stopwatch. */
 public class ClockActivity extends SwipeBackActivity {
+    @Override protected boolean supportsBottomSwipe() { return true; }
     private static final int AMBER = 0xFFFFD49D, MUTED = 0xFFE7A579;
     private static final String[] TAB_NAMES = {"Alarm", "Dunia", "Timer", "Stopwatch"};
     private static final int[] TAB_ICONS = {R.drawable.ic_clock_alarm, R.drawable.ic_clock_world,

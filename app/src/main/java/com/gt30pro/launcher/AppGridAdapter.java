@@ -1,6 +1,7 @@
 package com.gt30pro.launcher;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +19,14 @@ import java.util.Locale;
 public class AppGridAdapter extends BaseAdapter implements Filterable {
 
     private final LayoutInflater inflater;
+    private final Typeface doto;
     private final List<AppInfo> all = new ArrayList<>();
     private List<AppInfo> shown = new ArrayList<>();
     private final ItemFilter itemFilter = new ItemFilter();
 
     public AppGridAdapter(Context context) {
         inflater = LayoutInflater.from(context);
+        doto = Typeface.createFromAsset(context.getAssets(), "fonts/Doto.ttf");
     }
 
     public void setApps(List<AppInfo> apps) {
@@ -53,7 +56,9 @@ public class AppGridAdapter extends BaseAdapter implements Filterable {
         View view = convertView != null ? convertView : inflater.inflate(R.layout.item_app, parent, false);
         AppInfo info = shown.get(position);
         ((ImageView) view.findViewById(R.id.icon)).setImageDrawable(info.icon);
-        ((TextView) view.findViewById(R.id.label)).setText(info.label);
+        TextView label = view.findViewById(R.id.label);
+        label.setTypeface(doto);
+        label.setText(info.label);
         return view;
     }
 

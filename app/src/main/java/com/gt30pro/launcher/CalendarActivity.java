@@ -27,6 +27,7 @@ import java.util.UUID;
 
 /** Kalender lokal; data tidak disinkronkan dan tidak menjadwalkan pengingat. */
 public class CalendarActivity extends SwipeBackActivity {
+    @Override protected boolean supportsBottomSwipe() { return true; }
     private static final int AMBER = 0xFFFFD49D, MUTED = 0xFFE7A579, WEEKEND = 0xFFFF6B6B;
     private static final String[] MONTHS = {"Januari", "Februari", "Maret", "April", "Mei", "Juni",
             "Juli", "Agustus", "September", "Oktober", "November", "Desember"};

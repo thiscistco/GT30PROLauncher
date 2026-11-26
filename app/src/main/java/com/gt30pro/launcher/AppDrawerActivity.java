@@ -3,6 +3,7 @@ package com.gt30pro.launcher;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -11,6 +12,7 @@ import android.view.WindowInsets;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -41,6 +43,10 @@ public class AppDrawerActivity extends SwipeBackActivity {
             return insets;
         });
 
+        Typeface doto = Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf");
+        ((TextView) findViewById(R.id.back)).setTypeface(doto);
+        ((TextView) findViewById(R.id.drawer_title)).setTypeface(doto);
+        ((EditText) findViewById(R.id.search)).setTypeface(doto);
         findViewById(R.id.back).setOnClickListener(v -> finish());
 
         GridView grid = findViewById(R.id.grid);

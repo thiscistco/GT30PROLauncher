@@ -1,16 +1,22 @@
 package com.gt30pro.launcher;
 
-import android.app.Activity;
+import android.content.Intent;
 import android.view.MotionEvent;
 
 /** Swipe dari tepi kanan ke kiri untuk kembali pada halaman internal launcher. */
-public abstract class SwipeBackActivity extends Activity {
+public abstract class SwipeBackActivity extends BottomSwipeActivity {
     private static final float EDGE_DP = 32f;
     private static final float DISTANCE_DP = 64f;
     private float downX;
     private float downY;
     private boolean candidate;
     private boolean intercepting;
+
+    @Override protected void onBottomSwipe() {
+        Intent home = new Intent(this, MainActivity.class);
+        home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(home);
+    }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {

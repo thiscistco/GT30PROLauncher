@@ -1,7 +1,6 @@
 package com.gt30pro.launcher;
 
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -37,7 +36,9 @@ import java.util.Locale;
  *   - Double-tap     -> Super App
  *   - Long-press     -> menu pintasan (Super App / Semua Aplikasi / Setelan)
  */
-public class MainActivity extends Activity {
+public class MainActivity extends BottomSwipeActivity {
+    @Override protected boolean supportsBottomSwipe() { return true; }
+    @Override protected void onBottomSwipe() { openDrawer(); }
 
     private GestureDetector detector;
     private TextView batteryLed;

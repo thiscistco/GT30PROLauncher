@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 /** Pusat aplikasi yang dibuat di dalam launcher. */
 public class SuperAppActivity extends SwipeBackActivity {
+    @Override protected boolean supportsBottomSwipe() { return true; }
 
     private static final String[][] MODULES = {
             {"⏱️", "Jam", "Alarm, dunia & lainnya"},
