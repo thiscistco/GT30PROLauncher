@@ -32,7 +32,7 @@ assert.match(java, /clockBox\.setElevation\(4f/);
 assert.match(java, /clockLed\.setVisibility\(View\.VISIBLE\)/);
 assert.match(java, /clockLed\.bringToFront\(\)/);
 assert.match(java, /clockLed\.setTime\(t\.substring\(0, 2\), t\.substring\(3, 5\)\)/);
-assert.match(java, /clockLed\.setSeparatorAlpha\(\(float\) a\.getAnimatedValue\(\)\)/);
+assert(!/setSeparatorAlpha/.test(java), 'charging no longer animates the clock');
 assert.match(java, /width \* \.357f - \.5f \* cssPixel - boxWidth \/ 2f/);
 assert.match(java, /height \* \.06f \+ \.55f \* cssPixel/);
 assert.match(view, /setLayerType\(View\.LAYER_TYPE_SOFTWARE, null\)/);
@@ -40,7 +40,7 @@ assert.match(view, /text\.setTextSize\(2f \* pixelsPerMm\)/);
 assert.match(view, /text\.setFontVariationSettings\("'wght' 800"\)/);
 assert.match(view, /text\.setShadowLayer\(\.4f \* pixelsPerMm/);
 assert.match(view, /for \(int i = 0; i < 5; i\+\+\)/);
-assert.match(view, /dots\.setAlpha\(Math\.round\(separatorAlpha \* 255\)\)/);
+assert(!/separatorAlpha/.test(view), 'separator remains steady while charging');
 assert.match(view, /drawDigits\(canvas, hour/);
 assert.match(view, /drawDigits\(canvas, minute, dotTop \+ \.22f \* pxPerMm \+ \.45f \* pxPerMm, line\)/);
 // Explicit view bounds include glow padding, while the content remains anchored

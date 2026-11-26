@@ -44,6 +44,7 @@ public class MainActivity extends BottomSwipeActivity {
 
     private GestureDetector detector;
     private TextView batteryLed;
+    private BatteryBoltView batteryBolt;
     private HomeClockView clockLed;
     private HomeDateView dateLed;
     private ValueAnimator chargeAnim;
@@ -76,15 +77,16 @@ public class MainActivity extends BottomSwipeActivity {
         public void onReceive(Context context, Intent intent) {
             int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
             int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100);
+            int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+            charging = status == BatteryManager.BATTERY_STATUS_CHARGING
+                    || intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
             if (level >= 0 && scale > 0 && batteryLed != null) {
                 int percent = level * 100 / scale;
                 batteryLed.setText(String.valueOf(percent));
-                batteryLed.setContentDescription("Baterai " + percent + " persen");
-                int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-                charging = status == BatteryManager.BATTERY_STATUS_CHARGING
-                        || intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
-                updateChargeAnim();
+                batteryLed.setContentDescription("Baterai " + percent + " persen"
+                        + (charging ? ", pengisian daya" : ""));
             }
+            updateChargeAnim();
         }
     };
 
@@ -117,8 +119,14 @@ public class MainActivity extends BottomSwipeActivity {
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
         FrameLayout homeRoot = findViewById(R.id.root);
         homeRoot.addView(batteryLed, ledParams);
+        batteryBolt = new BatteryBoltView(this);
+        batteryBolt.setVisibility(View.INVISIBLE);
+        homeRoot.addView(batteryBolt, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
+        batteryLed.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
+            if (l != oldL || t != oldT || r != oldR || b != oldB) updateBatteryOffset(homeRoot, batteryLed);
+        });
         homeRoot.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
-            if (r - l != oldR - oldL) updateBatteryOffset(homeRoot, batteryLed);
+            if (r - l != oldR - oldL || b - t != oldB - oldT) updateBatteryOffset(homeRoot, batteryLed);
         });
         homeRoot.post(() -> updateBatteryOffset(homeRoot, batteryLed));
 
@@ -185,8 +193,21 @@ public class MainActivity extends BottomSwipeActivity {
 
     private void updateBatteryOffset(FrameLayout root, TextView batteryBox) {
         if (root.getWidth() <= 0) return;
-        float cssPixel = (root.getWidth() / 70.9f) * 25.4f / 96f;
+        float pixelsPerMm = root.getWidth() / 70.9f;
+        float cssPixel = pixelsPerMm * 25.4f / 96f;
+        batteryBox.setTranslationX(.5f * cssPixel);
         batteryBox.setTranslationY(cssPixel);
+        if (batteryBolt == null || batteryBox.getBottom() <= 0) return;
+        int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
+        int boltHeight = Math.max(1, Math.round(BatteryBoltView.HEIGHT_MM * pixelsPerMm));
+        float left = root.getWidth() / 2f + .5f * cssPixel - boltWidth / 2f;
+        float top = batteryBox.getBottom() + 1.25f * cssPixel;
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) batteryBolt.getLayoutParams();
+        params.width = boltWidth; params.height = boltHeight;
+        params.leftMargin = Math.round(left); params.topMargin = Math.round(top);
+        batteryBolt.setTranslationX(left - params.leftMargin);
+        batteryBolt.setTranslationY(top - params.topMargin);
+        batteryBolt.setLayoutParams(params);
     }
 
     private void updateClockLayout(FrameLayout root, HomeClockView clockBox) {
@@ -229,7 +250,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxHeight = Math.max(1, Math.round(HomeDateView.HEIGHT_MM * pixelsPerMm));
         // Match the preview offsets (1 CSS px = 25.4/96 mm).
         float left = width * .49f + 115f * cssPixel - boxWidth / 2f;
-        float bottom = height * .06f + 388.55f * cssPixel;
+        float bottom = height * .06f + 386.55f * cssPixel;
         float top = height - bottom - boxHeight + HomeDateView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) dateBox.getLayoutParams();
         params.width = boxWidth; params.height = boxHeight;
@@ -270,6 +291,11 @@ public class MainActivity extends BottomSwipeActivity {
         if (chargeAnim != null) {
             chargeAnim.cancel();
             chargeAnim = null;
+        }
+        if (batteryLed != null) batteryLed.setAlpha(.6f);
+        if (batteryBolt != null) {
+            batteryBolt.setAlpha(.6f);
+            batteryBolt.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -328,22 +354,33 @@ public class MainActivity extends BottomSwipeActivity {
         amberAnim.start();
     }
 
-    /** Denyut glow HANYA pada garis pemisah jam saat perangkat sedang di-charge. */
+    /** Pulse only the battery indicator and its dotted bolt while connected to power. */
     private void updateChargeAnim() {
-        if (charging && chargeAnim == null) {
-            chargeAnim = ValueAnimator.ofFloat(0.15f, 1f);
-            chargeAnim.setDuration(900);
-            chargeAnim.setRepeatMode(ValueAnimator.REVERSE);
-            chargeAnim.setRepeatCount(ValueAnimator.INFINITE);
-            chargeAnim.setInterpolator(new AccelerateDecelerateInterpolator());
-            chargeAnim.addUpdateListener(a -> {
-                if (clockLed != null) clockLed.setSeparatorAlpha((float) a.getAnimatedValue());
-            });
-            chargeAnim.start();
-        } else if (!charging && chargeAnim != null) {
-            chargeAnim.cancel();
-            chargeAnim = null;
-            if (clockLed != null) clockLed.setSeparatorAlpha(1f);
+        if (charging) {
+            if (batteryBolt != null) batteryBolt.setVisibility(View.VISIBLE);
+            if (chargeAnim == null) {
+                chargeAnim = ValueAnimator.ofFloat(.21f, .6f);
+                chargeAnim.setDuration(900);
+                chargeAnim.setRepeatMode(ValueAnimator.REVERSE);
+                chargeAnim.setRepeatCount(ValueAnimator.INFINITE);
+                chargeAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+                chargeAnim.addUpdateListener(a -> {
+                    float alpha = (float) a.getAnimatedValue();
+                    if (batteryLed != null) batteryLed.setAlpha(alpha);
+                    if (batteryBolt != null) batteryBolt.setAlpha(alpha);
+                });
+                chargeAnim.start();
+            }
+        } else {
+            if (chargeAnim != null) {
+                chargeAnim.cancel();
+                chargeAnim = null;
+            }
+            if (batteryLed != null) batteryLed.setAlpha(.6f);
+            if (batteryBolt != null) {
+                batteryBolt.setAlpha(.6f);
+                batteryBolt.setVisibility(View.INVISIBLE);
+            }
         }
     }
 

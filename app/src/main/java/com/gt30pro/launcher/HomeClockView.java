@@ -9,7 +9,7 @@ import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.view.View;
 
-/** Explicitly sized, software-rendered home clock; charging affects only the dots. */
+/** Explicitly sized, software-rendered home clock; the separator stays steady. */
 final class HomeClockView extends View {
     static final float WIDTH_MM = 3.6f;
     static final float CONTENT_HEIGHT_MM = 5.731f;
@@ -22,7 +22,7 @@ final class HomeClockView extends View {
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
     private final Paint dots = new Paint(Paint.ANTI_ALIAS_FLAG);
     private String hour = "00", minute = "00";
-    private float pxPerMm = 1f, separatorAlpha = 1f;
+    private float pxPerMm = 1f;
 
     HomeClockView(Context context) {
         super(context);
@@ -47,11 +47,6 @@ final class HomeClockView extends View {
             minute = minutes;
             invalidate();
         }
-    }
-
-    void setSeparatorAlpha(float alpha) {
-        separatorAlpha = Math.max(0f, Math.min(1f, alpha));
-        invalidate();
     }
 
     private void drawDigits(Canvas canvas, String value, float top, float lineHeight) {
@@ -79,7 +74,6 @@ final class HomeClockView extends View {
         float total = 2.8f * pxPerMm - .76f * cssPx;
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;
-        dots.setAlpha(Math.round(separatorAlpha * 255));
         dots.setShadowLayer(.6f * pxPerMm, 0f, 0f, 0xA6FF6919);
         for (int i = 0; i < 5; i++) {
             float x = start + i * total / 5f;

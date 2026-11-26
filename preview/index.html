@@ -163,7 +163,7 @@
   }
   .battery-led {
     position: absolute;
-    left: 50%;
+    left: calc(50% + 0.5px);
     transform: translateX(-50%);
     bottom: calc(1.2% - 1px);
     font-family: 'Doto', monospace;
@@ -176,6 +176,21 @@
     text-shadow: 0 0 1.2mm rgba(255, 255, 255, 0.55);
     z-index: 6;
   }
+  .battery-led.charging { animation: batteryPulse 0.9s ease-in-out infinite alternate; }
+  .battery-bolt {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 0.25px);
+    transform: translateX(-50%);
+    width: 1mm;
+    height: 1.4mm;
+    fill: currentColor;
+    pointer-events: none;
+  }
+  .battery-led.charging .battery-bolt { display: block; }
+  @keyframes batteryPulse { from { opacity: 0.21; } to { opacity: 0.6; } }
+  @media (prefers-reduced-motion: reduce) { .battery-led.charging { animation: none; } }
   .clock-led {
     position: absolute;
     left: calc(35.7% - 0.5px);
@@ -200,12 +215,12 @@
     position: absolute;
     left: calc(49% + 115px);
     transform: translateX(-50%);
-    bottom: calc(6% + 388.55px);
+    bottom: calc(6% + 386.55px);
     font-family: 'Doto', monospace;
-    font-size: calc(2.64mm + 10px);
+    font-size: calc(2.508mm + 9.5px);
     font-weight: 800;
     font-variation-settings: 'wght' 800;
-    letter-spacing: calc(0.264mm + 1px);
+    letter-spacing: calc(0.2508mm + 0.95px);
     color: #ffcd6a;
     z-index: 6;
     display: flex;
@@ -217,8 +232,8 @@
   }
   /* At Doto's fixed character advance, 65% makes three letters as wide as two digits. */
   #homeDateWeekday, #homeDateMonth {
-    font-size: calc(1.716mm + 6.5px);
-    letter-spacing: calc(0.1716mm + 0.65px);
+    font-size: calc(1.6302mm + 6.175px);
+    letter-spacing: calc(0.16302mm + 0.6175px);
   }
   .phone-row { display: flex; align-items: stretch; }
   .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }
@@ -298,9 +313,6 @@
     filter: drop-shadow(0 0 0.6mm rgba(255, 105, 25, 0.65));
     margin: calc(0.461mm - 1px) 0 0.45mm 0;
   }
-  .clock-sep.charging {
-    animation: sepPulse 0.9s ease-in-out infinite alternate;
-  }
   .clock-page {
     position: absolute; inset: 0; z-index: 10;
     background: #000;
@@ -336,10 +348,6 @@
   .clock-row > * { flex: 1; }
   .clock-entry { color: #ffd49d; font-size: 3mm; line-height: 1.6; }
   .clock-city { display: flex; align-items: center; gap: 2mm; margin: 2mm 0; font-size: 2.8mm; }
-  @keyframes sepPulse {
-    from { opacity: 0.35; filter: drop-shadow(0 0 0.25mm rgba(221, 98, 52, 0.35)); }
-    to   { opacity: 1;    filter: drop-shadow(0 0 0.9mm rgba(221, 98, 52, 0.85)); }
-  }
   .sheen {
     position: absolute;
     inset: 0;
@@ -470,7 +478,15 @@
                 <span id="homeDateNumber">--</span>
                 <span id="homeDateMonth">---</span>
               </div>
-              <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen">85</div>
+              <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen">85<svg class="battery-bolt" viewBox="0 0 5 7" preserveAspectRatio="none" aria-hidden="true">
+                <circle cx="2.5" cy="0.5" r="0.32"/><circle cx="3.5" cy="0.5" r="0.32"/>
+                <circle cx="1.5" cy="1.5" r="0.32"/><circle cx="2.5" cy="1.5" r="0.32"/>
+                <circle cx="1.5" cy="2.5" r="0.32"/><circle cx="2.5" cy="2.5" r="0.32"/>
+                <circle cx="0.5" cy="3.5" r="0.32"/><circle cx="1.5" cy="3.5" r="0.32"/><circle cx="2.5" cy="3.5" r="0.32"/><circle cx="3.5" cy="3.5" r="0.32"/>
+                <circle cx="2.5" cy="4.5" r="0.32"/><circle cx="3.5" cy="4.5" r="0.32"/>
+                <circle cx="1.5" cy="5.5" r="0.32"/><circle cx="2.5" cy="5.5" r="0.32"/>
+                <circle cx="1.5" cy="6.5" r="0.32"/>
+              </svg></div>
               <section class="drawer-page" id="drawerPage" aria-label="Semua Aplikasi" hidden>
                 <button class="super-back" id="drawerBack" type="button">← Kembali</button>
                 <h2>Semua Aplikasi</h2>
@@ -622,13 +638,14 @@
 <script>
   // ===== Jam HH:mm live + animasi label saat charge (pratinjau) =====
   (function () {
-    var sep = document.querySelector('.clock-sep');
+    var battery = document.getElementById('batteryLed');
     var amberGlow = document.getElementById('amberGlow');
     var amberToggle = document.getElementById('amberToggle');
     amberToggle.addEventListener('change', function () { amberGlow.classList.toggle('off', !amberToggle.checked); });
     var toggle = document.getElementById('chargeToggle');
     function sync() {
-      sep.classList.toggle('charging', toggle.checked);
+      battery.classList.toggle('charging', toggle.checked);
+      battery.setAttribute('aria-label', toggle.checked ? 'Baterai 85 persen, pengisian daya' : 'Baterai 85 persen');
     }
     toggle.addEventListener('change', sync);
     sync();
