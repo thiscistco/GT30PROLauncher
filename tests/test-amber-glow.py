@@ -53,19 +53,23 @@ with tempfile.TemporaryDirectory() as temp:
     subprocess.run([sys.executable, 'tools/smooth_circuit_paths.py', 'assets/circuit-paths/Jalur-2.json', str(output)], check=True)
     assert output.read_bytes() == config_data, 'Smooth paths must be reproducible'
 changed = 0
-for before, after in zip(original['paths'], config['paths']):
-    assert all(before[k] == after[k] for k in ('kind', 'width', 'offset'))
-    assert before['points'][0] == after['points'][0] and before['points'][-1] == after['points'][-1]
-    # Current data needs no point removal; each point moves at most one source
-    # pixel per axis, keeping even small turns close to the original trace.
-    assert len(before['points']) == len(after['points'])
-    for old_point, new_point in zip(before['points'], after['points']):
-        assert max(abs(old_point[0] - new_point[0]), abs(old_point[1] - new_point[1])) <= 1
-        changed += old_point != new_point
+assert len(config['paths']) == 21 and all(path.get('width') == 8 for path in config['paths'])
+for index, before in enumerate(original['paths'][::2]):
+    first, middle, opposing = config['paths'][index * 3:index * 3 + 3]
+    assert [first['offset'], middle['offset'], opposing['offset']] == [0, 0.5, 1]
+    assert all(p['points'] == first['points'] and p['kind'] == before['kind'] and p['width'] == before['width'] for p in (first, middle, opposing))
+    assert before['points'][0] == first['points'][0] and before['points'][-1] == first['points'][-1]
+    # Averaging plus simplification must remain near the original route.
+    def distance_to_segment(p, x, y):
+        dx, dy = y[0] - x[0], y[1] - x[1]
+        length2 = dx*dx + dy*dy
+        t = max(0, min(1, ((p[0]-x[0])*dx + (p[1]-x[1])*dy) / length2)) if length2 else 0
+        return math.hypot(p[0]-x[0]-t*dx, p[1]-x[1]-t*dy)
+    segments = list(zip(first['points'], first['points'][1:]))
+    for old_point in before['points']:
+        assert min(distance_to_segment(old_point, x, y) for x, y in segments) <= 4
+    assert len(first['points']) <= len(before['points'])
+    changed += before['points'] != first['points']
 assert changed > 0, 'Smoothing did not change any points'
-assert len(config['paths']) == 14 and all(path.get('width') == 8 for path in config['paths'])
-for i in range(0, len(config['paths']), 2):
-    assert config['paths'][i]['points'] == config['paths'][i + 1]['points']
-    assert (config['paths'][i]['offset'], config['paths'][i + 1]['offset']) == (0, 0.5)
 assert a.getbbox() is not None, 'User paths must have a glow mask'
 print('User paths and glow alignment, shared assets and protected regions: OK')

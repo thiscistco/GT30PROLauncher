@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Gently smooth Jalur-2 without modifying the original or its endpoints.
+"""Smooth Jalur-2 gently and add a third, counter-moving light per route.
 
-Each interior point is averaged with its immediate neighbours, with displacement
-limited to one source pixel per axis. Sharp turns/reversals are preserved. The
-integer output stays compatible with the path editor and asset generators.
+Several averaging passes remove small kinks; corners and endpoints remain fixed.
+Vertices move at most two source pixels per axis, then near-collinear points are
+simplified within one pixel. Coordinates stay integer for the editor and masks.
+The two original light offsets remain unchanged; offset
+1 starts at the opposite end and always moves opposite to offset 0.
 Usage: python tools/smooth_circuit_paths.py INPUT.json OUTPUT.json
 """
 import json
@@ -12,34 +14,78 @@ import sys
 from pathlib import Path
 
 
-def smooth(points):
-    result = [points[0][:]]
-    for previous, point, following in zip(points, points[1:], points[2:]):
-        incoming = [point[i] - previous[i] for i in (0, 1)]
-        outgoing = [following[i] - point[i] for i in (0, 1)]
-        # Keep deliberately sharp corners and turnarounds in place.
+def simplify(points, tolerance=1.0):
+    # Preserve sharp corners and reversals while removing near-collinear noise.
+    anchors = [0]
+    for i in range(1, len(points) - 1):
+        incoming = [points[i][k] - points[i-1][k] for k in (0, 1)]
+        outgoing = [points[i+1][k] - points[i][k] for k in (0, 1)]
         if sum(a*b for a, b in zip(incoming, outgoing)) <= 0:
-            candidate = point[:]
-        else:
-            candidate = []
-            for axis in (0, 1):
-                delta = (previous[axis] + following[axis] - 2 * point[axis]) / 4
-                delta = max(-1, min(1, delta))
-                candidate.append(math.floor(point[axis] + delta + 0.5))
+            anchors.append(i)
+    anchors.append(len(points) - 1)
+    keep = set(anchors)
+    stack = list(zip(anchors, anchors[1:]))
+    while stack:
+        start, end = stack.pop()
+        a, b = points[start], points[end]
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        length2 = dx*dx + dy*dy
+        farthest, distance = None, tolerance
+        for i in range(start + 1, end):
+            p = points[i]
+            t = max(0, min(1, ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / length2)) if length2 else 0
+            d = math.hypot(p[0]-a[0]-t*dx, p[1]-a[1]-t*dy)
+            if d > distance:
+                farthest, distance = i, d
+        if farthest is not None:
+            keep.add(farthest)
+            stack.extend([(start, farthest), (farthest, end)])
+    return [points[i] for i in sorted(keep)]
+
+
+def smooth(points):
+    fixed = {0, len(points) - 1}
+    for i in range(1, len(points) - 1):
+        incoming = [points[i][k] - points[i-1][k] for k in (0, 1)]
+        outgoing = [points[i+1][k] - points[i][k] for k in (0, 1)]
+        if sum(a*b for a, b in zip(incoming, outgoing)) <= 0:
+            fixed.add(i)
+    current = [list(map(float, p)) for p in points]
+    for _ in range(4):
+        updated = [p[:] for p in current]
+        for i in range(1, len(points) - 1):
+            if i in fixed:
+                continue
+            for k in (0, 1):
+                value = (current[i-1][k] + 2 * current[i][k] + current[i+1][k]) / 4
+                updated[i][k] = max(points[i][k] - 2, min(points[i][k] + 2, value))
+        current = updated
+    result = [points[0][:]]
+    for point in current[1:-1]:
+        candidate = [math.floor(v + 0.5) for v in point]
         if candidate != result[-1]:
             result.append(candidate)
-    # Retain the exact endpoint, even if smoothing produced the same point.
     if result[-1] != points[-1]:
         result.append(points[-1][:])
-    return result
+    return simplify(result)
 
 
 def main():
     if len(sys.argv) != 3:
         raise SystemExit(__doc__)
     data = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
-    for path in data['paths']:
-        path['points'] = smooth(path['points'])
+    paths = data['paths']
+    if len(paths) % 2:
+        raise SystemExit('Expected pairs of user paths with offsets 0 and 0.5.')
+    result = []
+    for first, second in zip(paths[::2], paths[1::2]):
+        if (first['offset'], second['offset']) != (0, 0.5) or any(
+                first.get(key) != second.get(key) for key in ('kind', 'width', 'points')):
+            raise SystemExit('Each route must contain matching offsets 0 and 0.5.')
+        points = smooth(first['points'])
+        for offset in (0, 0.5, 1):
+            result.append({**first, 'offset': offset, 'points': points})
+    data['paths'] = result
     Path(sys.argv[2]).write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
 
 

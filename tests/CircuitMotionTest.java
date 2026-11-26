@@ -14,6 +14,11 @@ public class CircuitMotionTest {
         check(1f, 1f); check(1.01f, .99f); check(1.5f, .5f);
         check(2f, 0f); check(2.01f, .01f); check(2.5f, .5f);
         check(-.5f, .5f);
+        // Offset 1 always mirrors offset 0, including both reversals.
+        for (int i = 0; i <= 400; i++) {
+            float phase = i / 100f;
+            checkDouble("opposing lights", CircuitMotion.pingPong(phase) + CircuitMotion.pingPong(phase + 1f), 1);
+        }
         checkDouble("RAM 0%", CircuitMotion.usedRamFraction(1000, 1000), 0);
         checkDouble("RAM 50%", CircuitMotion.usedRamFraction(1000, 500), 0.5);
         checkDouble("RAM 100%", CircuitMotion.usedRamFraction(1000, 0), 1);

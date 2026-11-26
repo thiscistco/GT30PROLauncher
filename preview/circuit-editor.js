@@ -19,8 +19,8 @@
     var codeText = document.getElementById('pathCodeText'), codeCopy = document.getElementById('pathCodeCopy');
     var codeStatus = document.getElementById('pathCodeStatus');
     if (!ctx) { status.textContent = 'Editor tidak didukung browser ini.'; return; }
-    // The supplied configuration has two light offsets per drawn path. Keep
-    // one editable polyline for each unique path, in its original order.
+    // Each drawn path has three light offsets. Keep one editable polyline
+    // for each unique path, in its original order.
     var defaultPaths = [], seen = Object.create(null), defaultWidth = 10;
     cfg.paths.forEach(function (path) {
       if (path.kind !== 'copper' || !Array.isArray(path.points)) return;
@@ -57,6 +57,8 @@
       paths.forEach(function (points) {
         result.push({ offset: 0, kind: 'copper', width: width, points: points });
         result.push({ offset: 0.5, kind: 'copper', width: width, points: points });
+        // Offset 1 starts from the other end and opposes the offset 0 light.
+        result.push({ offset: 1, kind: 'copper', width: width, points: points });
       });
       return result;
     }

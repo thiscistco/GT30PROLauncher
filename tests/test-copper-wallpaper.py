@@ -42,7 +42,7 @@ with tempfile.TemporaryDirectory() as temp:
     # antialias margin. It must never affect battery, flex cables or chip text.
     trace_diff = ImageChops.difference(intermediate, after).convert('L')
     assert trace_diff.getbbox(), 'No changes were made along the user paths'
-    paths = json.loads(Path('preview/assets/circuit-paths.json').read_text())['paths']
+    paths = json.loads(Path('assets/circuit-paths/Jalur-2.json').read_text())['paths']
     allowed_trace = Image.new('L', after.size, 0)
     draw = ImageDraw.Draw(allowed_trace)
     for path in paths:
