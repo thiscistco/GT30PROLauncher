@@ -7,7 +7,8 @@ function element() {
   return { listeners: {}, disabled: false, hidden: false, attrs: {}, style: {},
     addEventListener(type, cb) { this.listeners[type] = cb; },
     setAttribute(k, v) { this.attrs[k] = v; },
-    click() { if (this.listeners.click && !this.disabled) this.listeners.click({}); }, remove() {} };
+    click() { if (this.listeners.click && !this.disabled) this.listeners.click({}); },
+    focus() { this.focused = true; }, select() { this.selected = true; }, remove() {} };
 }
 function context() {
   return { cleared: [], lines: [], beginPath() {}, moveTo() {}, lineTo(x, y) { this.lines.push([x, y]); }, stroke() {}, arc() {}, fill() {},
@@ -15,7 +16,8 @@ function context() {
 }
 function initialize() {
   const ids = {};
-  for (const id of ['pathDraw','pathEdit','pathErase','pathUndo','pathReset','pathExport','pathStatus','pathWidth','pathWidthValue','pathPalm','tabHome','tabSuper']) ids[id] = element();
+  for (const id of ['pathDraw','pathEdit','pathErase','pathUndo','pathReset','pathExport','pathStatus','pathWidth','pathWidthValue','pathPalm','pathCodeToggle','pathCodePanel','pathCodeText','pathCodeCopy','pathCodeStatus','tabHome','tabSuper']) ids[id] = element();
+  ids.pathCodePanel.hidden = true;
   const guide = context(); ids.pathDraw.getContext = () => guide;
   ids.pathDraw.getBoundingClientRect = () => ({left: 50, top: 100, width: 300, height: 600});
   ids.pathDraw.setPointerCapture = () => {};
@@ -32,6 +34,7 @@ function initialize() {
   const URL = {createObjectURL: () => 'blob:test', revokeObjectURL: () => { revoked = true; }};
   vm.runInNewContext(source, {window: win, document: doc, localStorage: storage, Blob: BlobMock, URL, setTimeout: fn => fn(), Math, Number, JSON});
   win.setupCircuitEditor(cfg, (paths, mask) => { applied = {paths, mask}; });
+  ids.window = win;
   return ids;
 }
 function pointer(el, type, x, y, pointerId=1, pointerType='mouse', isPrimary=true) {
@@ -40,6 +43,9 @@ function pointer(el, type, x, y, pointerId=1, pointerType='mouse', isPrimary=tru
 function stroke(ids, a, b) { pointer(ids.pathDraw, 'pointerdown', ...a); pointer(ids.pathDraw, 'pointerup', ...b); }
 let ids = initialize();
 assert.equal(applied.paths, null); assert.equal(ids.pathEdit.disabled, false);
+assert.equal(ids.pathCodeToggle.disabled, false); ids.pathCodeToggle.click();
+assert.equal(ids.pathCodePanel.hidden, false); assert.equal(ids.pathCodeToggle.attrs['aria-expanded'], 'true');
+assert.equal(JSON.parse(ids.pathCodeText.value).paths.length, 0, 'empty configuration can be viewed');
 ids.pathEdit.click(); assert.equal(ids.pathDraw.hidden, false);
 stroke(ids, [80,200], [120,250]);
 assert.equal(applied.paths.length, 2); assert.equal(applied.paths[0].offset, 0); assert.equal(applied.paths[1].offset, .5);
@@ -61,10 +67,14 @@ ids.pathWidth.value = '36'; ids.pathWidth.listeners.input();
 assert.equal(applied.paths[0].width, 36); assert.equal(applied.mask.ctx.lineWidth, 36); assert.equal(ids.pathWidthValue.textContent, '36 px');
 ids.pathExport.click(); assert.equal(downloaded, 'jalur-animasi-gt30.json'); assert(revoked);
 const exported = JSON.parse(downloadBlob.data.join('')); assert.equal(exported.paths.length, 4); assert.equal(exported.paths[0].width, 36); assert.equal(exported.width, cfg.width);
+assert.equal(ids.pathCodeText.value, downloadBlob.data.join(''), 'shown code and downloaded JSON match exactly');
+ids.pathCodeCopy.click(); assert.equal(ids.pathCodeText.selected, true); assert.match(ids.pathCodeStatus.textContent, /manual/);
 ids.pathErase.click(); assert.equal(ids.pathErase.attrs['aria-pressed'], 'true');
 pointer(ids.pathDraw,'pointerdown',110,238); pointer(ids.pathDraw,'pointerup',110,238);
 assert.equal(applied.paths.length, 6, 'partial erase splits one route into two and preserves the other');
+assert.equal(JSON.parse(ids.pathCodeText.value).paths.length, 6, 'visible code updates after erasing');
 ids.pathUndo.click(); assert.equal(applied.paths.length, 4, 'undo restores the uncut route');
+assert.equal(JSON.parse(ids.pathCodeText.value).paths.length, 4, 'visible code updates after undo');
 ids.pathEdit.click(); assert.equal(ids.pathDraw.hidden, true);
 ids = initialize(); assert.equal(applied.paths.length, 4, 'restore stored drawing after reload'); assert.equal(ids.pathWidth.value, '36');
 ids.pathEdit.click(); pointer(ids.pathDraw,'pointerdown',90,210); pointer(ids.pathDraw,'pointermove',120,250); pointer(ids.pathDraw,'pointercancel',120,250);
@@ -152,4 +162,16 @@ store.clear(); ids = initialize(); ids.pathEdit.click();
 pointer(ids.pathDraw,'pointerdown',80,200,77,'touch'); pointer(ids.pathDraw,'pointermove',110,230,77,'touch');
 ids.pathPalm.checked = true; ids.pathPalm.listeners.change();
 pointer(ids.pathDraw,'pointerup',150,240,77,'touch'); assert.equal(applied.paths, null);
-console.log('Preview palm rejection, stylus and touch, partial eraser, smoothing, joins and storage: OK');
+// Clipboard success and permission denial both leave a usable code panel.
+(async () => {
+  store.clear(); const ui = initialize(); ui.pathCodeToggle.click();
+  let copied = null;
+  ui.window.navigator = {clipboard:{writeText: text => { copied = text; return Promise.resolve(); }}};
+  ui.pathCodeCopy.click(); await Promise.resolve();
+  assert.equal(copied, ui.pathCodeText.value); assert.match(ui.pathCodeStatus.textContent, /disalin/);
+  ui.window.navigator.clipboard.writeText = () => Promise.reject(new Error('denied'));
+  ui.pathCodeCopy.click(); await Promise.resolve();
+  assert.equal(ui.pathCodeText.selected, true); assert.match(ui.pathCodeStatus.textContent, /manual/);
+  ui.pathCodeToggle.click(); assert.equal(ui.pathCodePanel.hidden, true); assert.equal(ui.pathCodeToggle.attrs['aria-expanded'], 'false');
+  console.log('Preview code, clipboard fallback, palm rejection, erasing, smoothing, joins and storage: OK');
+})().catch(error => { console.error(error); process.exitCode = 1; });

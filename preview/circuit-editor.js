@@ -14,6 +14,9 @@
     var exportButton = document.getElementById('pathExport'), status = document.getElementById('pathStatus');
     var widthInput = document.getElementById('pathWidth'), widthValue = document.getElementById('pathWidthValue');
     var palmInput = document.getElementById('pathPalm');
+    var codeToggle = document.getElementById('pathCodeToggle'), codePanel = document.getElementById('pathCodePanel');
+    var codeText = document.getElementById('pathCodeText'), codeCopy = document.getElementById('pathCodeCopy');
+    var codeStatus = document.getElementById('pathCodeStatus');
     if (!ctx) { status.textContent = 'Editor tidak didukung browser ini.'; return; }
     var paths = [], width = 10, drawing = null, erasing = null, mode = 'view', history = [], storageAvailable = true;
 
@@ -45,6 +48,16 @@
         result.push({ offset: 0.5, kind: 'copper', width: width, points: points });
       });
       return result;
+    }
+    function pathCode() {
+      return JSON.stringify({ width: cfg.width, height: cfg.height, durationMs: cfg.durationMs,
+        radius: cfg.radius, paths: pathSpecs() }, null, 2) + '\n';
+    }
+    function syncCode() {
+      if (!codePanel.hidden) {
+        var value = pathCode();
+        if (codeText.value !== value) { codeText.value = value; codeStatus.textContent = ''; }
+      }
     }
     function line(context, points) {
       context.beginPath(); context.moveTo(points[0][0], points[0][1]);
@@ -107,6 +120,7 @@
       undo.disabled = !history.length; reset.disabled = !paths.length;
       exportButton.disabled = !paths.length; erase.disabled = !paths.length && mode !== 'erase';
       widthInput.value = String(width); widthValue.textContent = width + ' px';
+      syncCode();
       status.textContent = (paths.length ? paths.length + ' jalur buatan aktif.' : 'Belum ada jalur. Silakan gambar dari awal.') +
         (mode === 'draw' ? ' Tarik dari atau ke titik ujung untuk menyambung.' :
           mode === 'erase' ? ' Usap bagian garis yang ingin dihapus.' : '') +
@@ -232,7 +246,26 @@
       if (!erasing.changed) { snapshot(); erasing.changed = true; }
       paths = pieces; persist(); refresh();
     }
-    edit.disabled = false; widthInput.disabled = false; palmInput.disabled = false;
+    edit.disabled = false; widthInput.disabled = false; palmInput.disabled = false; codeToggle.disabled = false;
+    codeToggle.addEventListener('click', function () {
+      codePanel.hidden = !codePanel.hidden;
+      codeToggle.setAttribute('aria-expanded', String(!codePanel.hidden));
+      codeToggle.textContent = codePanel.hidden ? 'Tampilkan kode jalur' : 'Sembunyikan kode jalur';
+      if (!codePanel.hidden) syncCode();
+    });
+    codeCopy.addEventListener('click', function () {
+      syncCode();
+      function selectManually() {
+        codeText.focus(); codeText.select();
+        codeStatus.textContent = 'Penyalinan otomatis tidak tersedia. Salin teks yang dipilih secara manual.';
+      }
+      try {
+        if (!window.navigator || !window.navigator.clipboard || !window.navigator.clipboard.writeText) { selectManually(); return; }
+        window.navigator.clipboard.writeText(codeText.value).then(function () {
+          codeStatus.textContent = 'Kode disalin. Tempelkan ke chat.';
+        }, selectManually);
+      } catch (error) { selectManually(); }
+    });
     palmInput.addEventListener('change', function () {
       // If enabled mid-gesture, discard an unfinished non-pen stroke; already
       // applied eraser changes remain undoable as a single operation.
@@ -266,8 +299,7 @@
     });
     exportButton.addEventListener('click', function () {
       if (!paths.length) return;
-      var data = { width: cfg.width, height: cfg.height, durationMs: cfg.durationMs, radius: cfg.radius, paths: pathSpecs() };
-      var url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2) + '\n'], { type: 'application/json' }));
+      var url = URL.createObjectURL(new Blob([pathCode()], { type: 'application/json' }));
       var link = document.createElement('a'); link.href = url; link.download = 'jalur-animasi-gt30.json';
       document.body.appendChild(link); link.click(); link.remove();
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
