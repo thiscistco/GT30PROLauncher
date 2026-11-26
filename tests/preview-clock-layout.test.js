@@ -13,7 +13,15 @@ assert.match(clock, /font-variation-settings:\s*'wght'\s*800/);
 assert.match(clock, /letter-spacing:\s*0\.2mm/);
 assert.match(sep, /height:\s*0\.22mm/);
 const digits = html.match(/\.clock-led > span:not\(\.clock-sep\),\s*\.date-led > span\s*\{([^}]*)\}/)[1];
-assert.match(digits, /drop-shadow\(0 0 0\.4mm rgba\(221, 98, 52, 0\.65\)\)/);
+// Both home overlays use the circuit animation's orange halo and golden core.
+assert.match(digits, /#ff6919 0%, #ff9d2f 24%, #ffcd6a 50%, #ff9d2f 76%, #ff6919 100%/);
+assert.match(digits, /drop-shadow\(0 0 0\.4mm rgba\(255, 105, 25, 0\.65\)\)/);
+assert.match(sep, /#ffcd6a 0%, #ff9d2f 55%, #ff6919 90%/);
+const dateView = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeDateView.java', 'utf8');
+for (const source of [view, dateView]) {
+  assert.match(source, /0xFFFF6919, 0xFFFF9D2F, 0xFFFFCD6A, 0xFFFF9D2F, 0xFFFF6919/);
+  assert.match(source, /0xA6FF6919/);
+}
 assert.match(java, /new HomeClockView\(this\)/);
 assert.match(java, /new FrameLayout\.LayoutParams\(1, 1, Gravity\.TOP \| Gravity\.LEFT\)/);
 assert.match(java, /params\.width = boxWidth/);

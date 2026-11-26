@@ -186,7 +186,7 @@
     font-weight: 800;
     font-variation-settings: 'wght' 800;
     letter-spacing: 0.2mm;
-    color: #ffc477;
+    color: #ffcd6a;
     opacity: 1;
     z-index: 6;
     display: flex;
@@ -200,11 +200,11 @@
     transform: translateX(-50%);
     bottom: calc(6% + 391.55px);
     font-family: 'Doto', monospace;
-    font-size: 2.64mm;
+    font-size: calc(2.64mm + 10px);
     font-weight: 800;
     font-variation-settings: 'wght' 800;
-    letter-spacing: 0.264mm;
-    color: #ffc477;
+    letter-spacing: calc(0.264mm + 1px);
+    color: #ffcd6a;
     z-index: 6;
     display: flex;
     flex-direction: column;
@@ -274,11 +274,11 @@
   }
   .clock-led:focus-visible { outline: 1px solid #ffc477; outline-offset: 3px; }
   .clock-led > span:not(.clock-sep), .date-led > span {
-    background: linear-gradient(to bottom, #cb633e 0%, #ffb568 24%, #ffe5b1 50%, #ffb568 76%, #cb633e 100%);
+    background: linear-gradient(to bottom, #ff6919 0%, #ff9d2f 24%, #ffcd6a 50%, #ff9d2f 76%, #ff6919 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 0.4mm rgba(221, 98, 52, 0.65));
+    filter: drop-shadow(0 0 0.4mm rgba(255, 105, 25, 0.65));
   }
   .clock-sep {
     display: block;
@@ -286,8 +286,8 @@
     left: -0.63px;
     width: calc(100% - 0.76px);
     height: 0.22mm;
-    background: radial-gradient(circle 0.11mm at center, #ffe5b1 0%, #ffb568 55%, #cb633e 90%, transparent 100%) 50% 50% / 20% 100% repeat-x;
-    filter: drop-shadow(0 0 0.6mm rgba(221, 98, 52, 0.65));
+    background: radial-gradient(circle 0.11mm at center, #ffcd6a 0%, #ff9d2f 55%, #ff6919 90%, transparent 100%) 50% 50% / 20% 100% repeat-x;
+    filter: drop-shadow(0 0 0.6mm rgba(255, 105, 25, 0.65));
     margin: calc(0.461mm - 1px) 0 calc(0.45mm + 1px) 0;
   }
   .clock-sep.charging {

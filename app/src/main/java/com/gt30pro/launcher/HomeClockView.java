@@ -16,7 +16,7 @@ final class HomeClockView extends View {
     static final float GLOW_PAD_MM = 0.4f;
     static final float HEIGHT_MM = CONTENT_HEIGHT_MM + 2f * GLOW_PAD_MM;
     private static final int[] AMBER = {
-        0xFFCB633E, 0xFFFFB568, 0xFFFFE5B1, 0xFFFFB568, 0xFFCB633E
+        0xFFFF6919, 0xFFFF9D2F, 0xFFFFCD6A, 0xFFFF9D2F, 0xFFFF6919
     };
     private static final float[] STOPS = {0f, .24f, .5f, .76f, 1f};
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
@@ -31,13 +31,13 @@ final class HomeClockView extends View {
         setWillNotDraw(false);
         text.setTypeface(Typeface.createFromAsset(context.getAssets(), "fonts/Doto.ttf"));
         text.setFontVariationSettings("'wght' 800");
-        text.setColor(0xFFFFC477);
+        text.setColor(0xFFFFCD6A);
     }
 
     void setScale(float pixelsPerMm) {
         pxPerMm = pixelsPerMm;
         text.setTextSize(2f * pixelsPerMm);
-        text.setShadowLayer(.4f * pixelsPerMm, 0, 0, 0xA6DD6234);
+        text.setShadowLayer(.4f * pixelsPerMm, 0, 0, 0xA6FF6919);
         invalidate();
     }
 
@@ -80,12 +80,12 @@ final class HomeClockView extends View {
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;
         dots.setAlpha(Math.round(separatorAlpha * 255));
-        dots.setShadowLayer(.6f * pxPerMm, 0f, 0f, 0xA6DD6234);
+        dots.setShadowLayer(.6f * pxPerMm, 0f, 0f, 0xA6FF6919);
         for (int i = 0; i < 5; i++) {
             float x = start + i * total / 5f;
             float y = dotTop + r;
             dots.setShader(new RadialGradient(x, y, r,
-                new int[]{0xFFFFE5B1, 0xFFFFB568, 0xFFCB633E},
+                new int[]{0xFFFFCD6A, 0xFFFF9D2F, 0xFFFF6919},
                 new float[]{0f, .55f, 1f}, Shader.TileMode.CLAMP));
             canvas.drawCircle(x, y, r, dots);
         }
