@@ -15,6 +15,7 @@ public class SuperAppActivity extends SwipeBackActivity {
 
     private static final String[][] MODULES = {
             {"⏱️", "Jam", "Alarm, dunia & lainnya"},
+            {"📅", "Kalender", "Tanggal & acara lokal"},
     };
 
     @Override
@@ -42,29 +43,12 @@ public class SuperAppActivity extends SwipeBackActivity {
         findViewById(R.id.back).setOnClickListener(v -> finish());
 
         LinearLayout container = findViewById(R.id.modules_container);
-        LinearLayout row = null;
         for (int i = 0; i < MODULES.length; i++) {
-            if (i % 2 == 0) {
-                row = new LinearLayout(this);
-                row.setOrientation(LinearLayout.HORIZONTAL);
-                LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                if (i > 0) {
-                    rowParams.topMargin = dp(12);
-                }
-                container.addView(row, rowParams);
-            }
-            row.addView(buildCard(MODULES[i][0], MODULES[i][1], MODULES[i][2]), cardParams(i % 2));
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            if (i > 0) params.topMargin = dp(12);
+            container.addView(buildCard(MODULES[i][0], MODULES[i][1], MODULES[i][2]), params);
         }
-    }
-
-    private LinearLayout.LayoutParams cardParams(int column) {
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        if (column == 1) {
-            params.leftMargin = dp(12);
-        }
-        return params;
     }
 
     private View buildCard(String emoji, String title, String subtitle) {
@@ -90,8 +74,7 @@ public class SuperAppActivity extends SwipeBackActivity {
         TextView titleView = new TextView(this);
         titleView.setText(title);
         titleView.setTextSize(15);
-        titleView.setTypeface("Jam".equals(title)
-                ? Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf") : Typeface.DEFAULT_BOLD);
+        titleView.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         titleView.setTextColor(getResources().getColor(R.color.text_primary));
         texts.addView(titleView);
 
@@ -109,6 +92,8 @@ public class SuperAppActivity extends SwipeBackActivity {
         card.setOnClickListener(v -> {
             if ("Jam".equals(title)) {
                 startActivity(new Intent(this, ClockActivity.class));
+            } else if ("Kalender".equals(title)) {
+                startActivity(new Intent(this, CalendarActivity.class));
             } else {
                 Toast.makeText(this, getString(R.string.coming_soon, title), Toast.LENGTH_SHORT).show();
             }

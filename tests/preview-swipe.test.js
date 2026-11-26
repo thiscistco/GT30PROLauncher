@@ -16,9 +16,10 @@ class Element {
   getBoundingClientRect() { return { right: 445, width: 445 }; }
 }
 const ids = ['chargeToggle','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
-  'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate'];
+  'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
+  'calendarPage','calendarBack','openCalendarModule'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
-elements.clockPage.hidden = true; elements.superPage.hidden = true;
+elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.superPage.hidden = true;
 const screen = new Element(), separator = new Element(), doc = new Element();
 doc.getElementById = id => elements[id];
 doc.querySelector = selector => selector === '.screen' ? screen : separator;
@@ -47,4 +48,12 @@ screen.fire('pointerdown', {isPrimary:true,button:0,pointerId:2,clientX:440,clie
 doc.fire('pointercancel', {});
 doc.fire('pointerup', {pointerId:2,clientX:350,clientY:100});
 assert.strictEqual(elements.clockPage.hidden, false, 'cancelled swipe ignored');
+elements.clockBack.fire('click');
+elements.openCalendarModule.fire('click');
+assert.strictEqual(elements.calendarPage.hidden, false, 'calendar opens');
+swipe(440, 100, 360, 100);
+assert.strictEqual(elements.calendarPage.hidden, true, 'calendar closes on right-edge swipe');
+assert.strictEqual(elements.superPage.hidden, false, 'calendar returns to Super App');
+elements.openCalendarModule.fire('click'); elements.calendarBack.fire('click');
+assert.strictEqual(elements.calendarPage.hidden, true, 'calendar back button closes page');
 console.log('Preview swipe back tests passed');

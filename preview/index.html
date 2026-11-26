@@ -206,6 +206,18 @@
     font-family: 'Doto', monospace; font-weight: 700; }
   .super-page[hidden] { display: none; }
   .super-page, .clock-page { touch-action: pan-y; }
+  .calendar-nav { display: flex; align-items: center; gap: 2mm; margin: 4mm 0 3mm; }
+  .calendar-nav strong { flex: 1; text-align: center; font-size: 3.5mm; }
+  .calendar-nav button { flex: 0 0 10mm; padding: 1mm; }
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1mm 0; }
+  .calendar-weekday { text-align: center; color: #e7a579; font-size: 2.2mm; padding: 2mm 0; }
+  .calendar-day { color: #ffd49d; background: transparent; border: 1px solid transparent; border-radius: 2mm; height: 9mm; font: 700 2.8mm 'Doto', monospace; cursor: pointer; }
+  .calendar-day.today { background: #211a17; border-color: #8d604c; }
+  .calendar-day.selected { background: #61402c; border-color: #8d604c; }
+  .calendar-day:focus-visible { outline: 2px solid #ffd49d; outline-offset: -2px; }
+  .calendar-event { display: flex; align-items: center; gap: 2mm; }
+  .calendar-event span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .calendar-event button { flex: none; }
   .super-back { border: 0; background: none; color: #9aa3b0; font: inherit; font-size: 3mm; min-height: 12mm; cursor: pointer; }
   .super-page h2 { margin-top: 2mm; font-size: 6.5mm; color: #eceff4; }
   .super-page p { margin-top: 1mm; font-size: 2.8mm; color: #9aa3b0; }
@@ -419,6 +431,10 @@
                   <span class="super-icon" aria-hidden="true">⏱️</span>
                   <span class="super-card-text"><strong>Jam</strong><small>Alarm, dunia &amp; lainnya</small></span>
                 </button>
+                <button class="super-card" id="openCalendarModule" type="button">
+                  <span class="super-icon" aria-hidden="true">📅</span>
+                  <span class="super-card-text"><strong>Kalender</strong><small>Tanggal &amp; acara lokal</small></span>
+                </button>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
                 <button class="clock-back" id="clockBack" type="button">← Kembali</button>
@@ -461,6 +477,30 @@
                   <button class="clock-action clock-wide" id="previewStopwatchStart" type="button">Mulai</button>
                   <div class="clock-row"><button class="clock-action" id="previewLap" type="button">Lap</button><button class="clock-action" id="previewReset" type="button">Reset</button></div>
                   <div id="previewLaps"></div>
+                </div>
+              </section>
+              <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>
+                <button class="clock-back" id="calendarBack" type="button">← Kembali</button>
+                <div class="clock-kicker">SUPER APP</div>
+                <div class="clock-title">KALENDER</div>
+                <div class="calendar-nav">
+                  <button class="clock-action" id="calendarPrev" type="button" aria-label="Bulan sebelumnya">&lt;</button>
+                  <strong id="calendarMonth" aria-live="polite"></strong>
+                  <button class="clock-action" id="calendarNext" type="button" aria-label="Bulan berikutnya">&gt;</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid" aria-label="Tanggal bulan ini"></div>
+                <button class="clock-action clock-wide" id="calendarToday" type="button">Hari ini</button>
+                <div class="clock-section">
+                  <h3 id="calendarSelected"></h3>
+                  <button class="clock-action clock-wide" id="calendarAdd" type="button">+ Tambah acara</button>
+                  <form class="alarm-form" id="calendarForm" hidden>
+                    <label>Nama acara <input id="calendarTitle" type="text" maxlength="80" required></label>
+                    <label>Waktu (opsional) <input id="calendarTime" type="time"></label>
+                    <p class="clock-muted" id="calendarError" role="alert" hidden></p>
+                    <div class="clock-row"><button class="clock-action" id="calendarCancel" type="button">Batal</button><button class="clock-action" type="submit">Simpan</button></div>
+                  </form>
+                  <div id="calendarEvents"></div>
+                  <p class="clock-muted" id="calendarStorageNote">Acara disimpan di browser ini; tidak ada sinkronisasi atau pengingat.</p>
                 </div>
               </section>
               <div class="punch-hole"></div>
@@ -538,12 +578,16 @@
     var clockLed = document.getElementById('clockLed');
     var page = document.getElementById('clockPage');
     var back = document.getElementById('clockBack');
+    var calendarPage = document.getElementById('calendarPage');
+    var calendarBack = document.getElementById('calendarBack');
+    var calendarOrigin = document.getElementById('openCalendarModule');
     var superPage = document.getElementById('superPage');
     var homeTab = document.getElementById('tabHome');
     var superTab = document.getElementById('tabSuper');
     var clockOrigin = clockLed;
     function setTab(superActive) {
       page.hidden = true;
+      calendarPage.hidden = true;
       superPage.hidden = !superActive;
       homeTab.classList.toggle('active', !superActive);
       superTab.classList.toggle('active', superActive);
@@ -555,15 +599,18 @@
     document.getElementById('superBack').addEventListener('click', function () { setTab(false); homeTab.focus(); });
     function openClock(origin) { clockOrigin = origin; page.hidden = false; back.focus(); }
     document.getElementById('openClockModule').addEventListener('click', function () { openClock(this); });
+    calendarOrigin.addEventListener('click', function () { calendarPage.hidden = false; calendarBack.focus(); });
     clockLed.addEventListener('click', function () { openClock(clockLed); });
     clockLed.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(clockLed); }
     });
     function goBack() {
+      if (!calendarPage.hidden) { calendarPage.hidden = true; calendarOrigin.focus(); return; }
       if (!page.hidden) { page.hidden = true; clockOrigin.focus(); return; }
       if (!superPage.hidden) { setTab(false); homeTab.focus(); }
     }
     back.addEventListener('click', goBack);
+    calendarBack.addEventListener('click', goBack);
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') goBack();
     });
@@ -574,7 +621,7 @@
     var suppressClick = false;
     screen.addEventListener('pointerdown', function (event) {
       if (event.isPrimary === false) { swipe = null; return; }
-      if (event.button !== 0 || (page.hidden && superPage.hidden)) return;
+      if (event.button !== 0 || (page.hidden && calendarPage.hidden && superPage.hidden)) return;
       var rect = screen.getBoundingClientRect();
       if (event.clientX >= rect.right - rect.width * (32 / 445)) {
         swipe = { id: event.pointerId, x: event.clientX, y: event.clientY, width: rect.width };
@@ -685,6 +732,7 @@
     }, 50);
   })();
 </script>
+<script src="calendar.js?v=1"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
@@ -763,7 +811,8 @@
       function frame(now) {
         window.requestAnimationFrame(frame);
         if (!toggle.checked || reduced.matches || document.hidden ||
-            !document.getElementById('superPage').hidden || !document.getElementById('clockPage').hidden) { lastFrame = null; return; }
+            !document.getElementById('superPage').hidden || !document.getElementById('clockPage').hidden ||
+            (document.getElementById('calendarPage') && !document.getElementById('calendarPage').hidden)) { lastFrame = null; return; }
         var box = canvas.getBoundingClientRect();
         if (!box.width || !box.height) { lastFrame = null; return; }
         if (lastFrame !== null) phase = (phase + Math.max(0, now - lastFrame) / oneWayDuration()) % 2;
