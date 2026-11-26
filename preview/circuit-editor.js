@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var KEY = 'gt30-circuit-user-paths-v1';
-  var MAX_PATHS = 25, MAX_STROKE_POINTS = 600, MAX_PATH_POINTS = 6000;
+  var MAX_PATHS = 100, MAX_STROKE_POINTS = 600, MAX_PATH_POINTS = 6000;
   var protectedBoxes = [[30,1060,1195,2300], [35,925,330,1060],
     [900,875,1120,1080], [900,40,1080,200]];
 
@@ -83,7 +83,13 @@
       ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.lineWidth = width;
       ctx.strokeStyle = '#fff1cd'; ctx.shadowColor = '#ff8c18'; ctx.shadowBlur = 15;
       paths.forEach(function (path) { line(ctx, path); });
-      if (drawing && drawing.points.length > 1) line(ctx, drawing.points);
+      if (drawing && drawing.points.length > 1) line(ctx, smoothStroke(drawing.points));
+      // Predictions are a temporary visual tail, never saved or exported.
+      if (drawing && drawing.predicted.length) {
+        ctx.globalAlpha = 0.45;
+        line(ctx, [drawing.points[drawing.points.length - 1]].concat(drawing.predicted));
+        ctx.globalAlpha = 1;
+      }
       ctx.shadowBlur = 0; ctx.fillStyle = '#ffb63e';
       paths.forEach(function (path) {
         [path[0], path[path.length - 1]].forEach(function (p) {
@@ -98,7 +104,7 @@
       widthInput.value = String(width); widthValue.textContent = width + ' px';
       status.textContent = (paths.length ? paths.length + ' jalur buatan aktif.' : 'Jalur bawaan aktif.') +
         (mode === 'draw' ? ' Tarik dari atau ke titik ujung untuk menyambung.' :
-          mode === 'erase' ? ' Sentuh jalur untuk menghapus seluruh jalur.' : '') +
+          mode === 'erase' ? ' Usap bagian garis yang ingin dihapus.' : '') +
         (storageAvailable ? '' : ' Penyimpanan browser tidak tersedia; unduh sebelum menutup halaman.');
       drawGuides();
     }
@@ -107,7 +113,7 @@
       edit.textContent = value === 'view' ? 'Gambar jalur' : 'Selesai mengedit';
       edit.setAttribute('aria-pressed', String(value !== 'view'));
       erase.setAttribute('aria-pressed', String(value === 'erase'));
-      canvas.style.cursor = value === 'erase' ? 'not-allowed' : 'crosshair';
+      canvas.style.cursor = 'crosshair';
       refresh();
     }
     function toPoint(event) {
@@ -119,6 +125,23 @@
     function addPoint(event, force) {
       var point = toPoint(event), last = drawing.points[drawing.points.length - 1], d = distance(point, last);
       if (d > 0 && (force || d >= 5) && drawing.points.length < MAX_STROKE_POINTS) drawing.points.push(point);
+    }
+    function smoothStroke(points) {
+      if (points.length < 3) return points.slice();
+      var result = [points[0]];
+      function add(p) {
+        p = [Math.round(p[0]), Math.round(p[1])];
+        if (distance(p, result[result.length - 1]) > 0) result.push(p);
+      }
+      // One conservative corner-cutting pass rounds jitter without overshooting,
+      // and preserves both endpoints for joining and precise finishing.
+      for (var i = 1; i < points.length - 1; i++) {
+        var prev = points[i-1], p = points[i], next = points[i+1];
+        add([p[0] * 0.8 + prev[0] * 0.2, p[1] * 0.8 + prev[1] * 0.2]);
+        add([p[0] * 0.8 + next[0] * 0.2, p[1] * 0.8 + next[1] * 0.2]);
+      }
+      add(points[points.length - 1]);
+      return result;
     }
     function combineStroke(stroke) {
       var remaining = paths.slice(), result = stroke.slice(), threshold = 12 / geometry().scale;
@@ -150,22 +173,58 @@
       remaining.push(result);
       return remaining;
     }
-    function segmentDistance(p, a, b) {
-      var dx = b[0] - a[0], dy = b[1] - a[1], len2 = dx*dx + dy*dy;
-      var t = len2 ? Math.max(0, Math.min(1, ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / len2)) : 0;
-      return Math.hypot(p[0] - a[0] - t*dx, p[1] - a[1] - t*dy);
+    // Compute the interval of a line segment covered by a swept round eraser.
+    // The capsule is the union of two circles and the strip between them.
+    function erasedInterval(p, q, a, b, radius) {
+      var vx = q[0]-p[0], vy = q[1]-p[1], vv = vx*vx + vy*vy, intervals = [];
+      function circle(c) {
+        var x = p[0]-c[0], y = p[1]-c[1];
+        var qb = 2*(x*vx+y*vy), qc = x*x+y*y-radius*radius;
+        var disc = qb*qb - 4*vv*qc;
+        if (disc < 0 || !vv) return;
+        var root = Math.sqrt(disc), lo = Math.max(0, (-qb-root)/(2*vv)), hi = Math.min(1, (-qb+root)/(2*vv));
+        if (lo <= hi) intervals.push([lo, hi]);
+      }
+      function clip(range, start, delta, low, high) {
+        if (Math.abs(delta) < 1e-9) return start >= low && start <= high ? range : null;
+        var x = (low-start)/delta, y = (high-start)/delta;
+        range = [Math.max(range[0], Math.min(x,y)), Math.min(range[1], Math.max(x,y))];
+        return range[0] <= range[1] ? range : null;
+      }
+      circle(a); circle(b);
+      var dx = b[0]-a[0], dy = b[1]-a[1], len2 = dx*dx+dy*dy;
+      if (len2) {
+        var x = p[0]-a[0], y = p[1]-a[1];
+        var range = clip([0,1], x*dx+y*dy, vx*dx+vy*dy, 0, len2);
+        if (range) range = clip(range, x*dy-y*dx, vx*dy-vy*dx, -radius*Math.sqrt(len2), radius*Math.sqrt(len2));
+        if (range) intervals.push(range);
+      }
+      if (!intervals.length) return null;
+      var lo = Math.min.apply(null, intervals.map(function (i) { return i[0]; }));
+      var hi = Math.max.apply(null, intervals.map(function (i) { return i[1]; }));
+      return hi - lo > 1e-8 ? [lo, hi] : null;
     }
-    function eraseAt(event) {
-      var p = toPoint(event), threshold = width / 2 + 12 / geometry().scale, best = -1, bestDistance = threshold;
-      paths.forEach(function (path, index) {
+    function eraseSweep(a, b) {
+      var radius = width / 2 + 8 / geometry().scale, pieces = [], changed = false;
+      function at(p, q, t) { return [Math.round(p[0]+(q[0]-p[0])*t), Math.round(p[1]+(q[1]-p[1])*t)]; }
+      function append(part, p) { if (!part.length || distance(part[part.length-1], p) > 0) part.push(p); }
+      function finish(part) { if (part.length >= 2) pieces.push(part); }
+      paths.forEach(function (path) {
+        var part = [path[0]];
         for (var i = 1; i < path.length; i++) {
-          var d = segmentDistance(p, path[i-1], path[i]);
-          if (d <= bestDistance) { bestDistance = d; best = index; }
+          var p = path[i-1], q = path[i], cut = erasedInterval(p, q, a, b, radius);
+          if (!cut) { append(part, p); append(part, q); continue; }
+          changed = true;
+          if (cut[0] > 1e-8) { append(part, p); append(part, at(p,q,cut[0])); }
+          finish(part); part = [];
+          if (cut[1] < 1-1e-8) { append(part, at(p,q,cut[1])); append(part, q); }
         }
+        finish(part);
       });
-      if (best < 0) return;
+      if (!changed) return;
+      if (!valid(pieces)) { status.textContent = 'Terlalu banyak potongan garis. Urungkan atau hapus lebih banyak bagian sekaligus.'; return; }
       if (!erasing.changed) { snapshot(); erasing.changed = true; }
-      paths.splice(best, 1); persist(); refresh();
+      paths = pieces; persist(); refresh();
     }
     edit.disabled = false; widthInput.disabled = false;
     edit.setAttribute('aria-pressed', 'false');
@@ -201,25 +260,38 @@
       if (mode === 'view' || event.isPrimary === false || event.button !== 0 || drawing || erasing) return;
       event.preventDefault();
       if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
-      if (mode === 'erase') { erasing = { id: event.pointerId, changed: false, last: toPoint(event) }; eraseAt(event); }
-      else drawing = { id: event.pointerId, points: [toPoint(event)] };
+      if (mode === 'erase') {
+        erasing = { id: event.pointerId, changed: false, last: toPoint(event) };
+        eraseSweep(erasing.last, erasing.last);
+      } else drawing = { id: event.pointerId, points: [toPoint(event)], predicted: [] };
     });
     canvas.addEventListener('pointermove', function (event) {
       if (erasing && erasing.id === event.pointerId) {
         event.preventDefault();
         var p = toPoint(event);
-        if (distance(p, erasing.last) >= 4 / geometry().scale) { erasing.last = p; eraseAt(event); }
+        if (distance(p, erasing.last) > 0) { eraseSweep(erasing.last, p); erasing.last = p; }
         return;
       }
       if (!drawing || drawing.id !== event.pointerId) return;
-      event.preventDefault(); addPoint(event, false); drawGuides();
+      event.preventDefault();
+      var samples = event.getCoalescedEvents ? event.getCoalescedEvents() : [];
+      samples.forEach(function (sample) { addPoint(sample, false); });
+      addPoint(event, false);
+      var predictions = event.getPredictedEvents ? event.getPredictedEvents() : [];
+      drawing.predicted = Array.prototype.slice.call(predictions, 0, 8).map(toPoint);
+      drawGuides();
     });
     canvas.addEventListener('pointerup', function (event) {
-      if (erasing && erasing.id === event.pointerId) { event.preventDefault(); erasing = null; return; }
+      if (erasing && erasing.id === event.pointerId) {
+        event.preventDefault();
+        var p = toPoint(event);
+        if (distance(p, erasing.last) > 0) eraseSweep(erasing.last, p);
+        erasing = null; return;
+      }
       if (!drawing || drawing.id !== event.pointerId) return;
       event.preventDefault(); addPoint(event, true);
       if (drawing.points.length > 1) {
-        var combined = combineStroke(drawing.points);
+        var combined = combineStroke(smoothStroke(drawing.points));
         if (combined) { snapshot(); paths = combined; persist(); }
         else { drawing = null; refresh(); status.textContent = 'Jalur terlalu panjang atau jumlah jalur penuh. Urungkan atau hapus sebagian.'; return; }
       }

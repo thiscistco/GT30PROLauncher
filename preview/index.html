@@ -482,14 +482,15 @@
       <p>Tekan Gambar lalu tarik jari di wallpaper. Mulai atau akhiri dekat ujung jalur lain agar tersambung menjadi satu. Tekan Selesai untuk melihat animasi.</p>
       <div class="path-editor-actions">
         <button class="primary" id="pathEdit" type="button" disabled>Gambar jalur</button>
-        <button id="pathErase" type="button" disabled aria-pressed="false">Penghapus jalur</button>
+        <button id="pathErase" type="button" disabled aria-pressed="false">Penghapus garis</button>
         <button id="pathUndo" type="button" disabled>Urungkan</button>
         <button id="pathReset" type="button" disabled>Pulihkan bawaan</button>
         <button id="pathExport" type="button" disabled>Unduh jalur</button>
       </div>
       <label class="path-editor-size" for="pathWidth">Ketebalan jalur <input type="range" id="pathWidth" min="4" max="60" step="2" value="10" disabled><output id="pathWidthValue" for="pathWidth">10 px</output></label>
       <p id="pathStatus" class="path-editor-status" role="status">Memuat editor…</p>
-      <p>Penghapus menghapus seluruh jalur buatan yang disentuh. Ketebalan berlaku untuk semua jalur buatan (piksel gambar asli). Jalur buatan menggantikan jalur bawaan dan tersimpan di browser ini. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, unduh berkas lalu kirim ke chat.</p>
+      <p>Penghapus hanya menghilangkan bagian garis buatan yang disentuh. Garis yang terputus menjadi jalur terpisah; gunakan Urungkan untuk mengembalikan. Goresan dihaluskan otomatis; prediksi sentuhan dipakai jika browser mendukungnya. Ketebalan berlaku untuk semua jalur buatan (piksel gambar asli).</p>
+      <p>Jalur buatan menggantikan jalur bawaan dan tersimpan di browser ini. Baterai dan kabel tetap terlindungi; gambar di area motherboard. Untuk APK, unduh berkas lalu kirim ke chat.</p>
     </section>
   </div>
 
@@ -656,7 +657,7 @@
     }, 50);
   })();
 </script>
-<script src="circuit-editor.js?v=2"></script>
+<script src="circuit-editor.js?v=3"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
   (function () {
