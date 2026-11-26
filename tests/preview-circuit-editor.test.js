@@ -57,7 +57,9 @@ assert.equal(applied.paths[0].points[0][1], Math.round((200 - 100 - dy) / scale)
 assert.equal(applied.mask.ctx.cleared.length, 4, 'mask protects battery and flex cables');
 stroke(ids, [122,251], [160,280]);
 assert.equal(applied.paths.length, 3, 'nearby endpoints form one route, with three lights');
-assert.equal(applied.paths[0].points.length, 3, 'connected endpoint is snapped, without a gap');
+assert(applied.paths[0].points.length > 3, 'connected route contains rounded join samples');
+for (let i = 1; i < applied.paths[0].points.length; i++)
+  assert.notDeepEqual(applied.paths[0].points[i], applied.paths[0].points[i-1], 'rounded join stays continuous without duplicate points');
 stroke(ids, [235,320], [200,300]);
 assert.equal(applied.paths.length, 6, 'disconnected stroke is a second route');
 stroke(ids, [160,280], [200,300]);
@@ -91,7 +93,7 @@ for (const [a, b] of [[[99,200],[80,240]], [[80,240],[99,200]], [[151,200],[175,
   store.clear(); ids = initialize(); ids.pathEdit.click();
   stroke(ids, [100,200], [150,200]); stroke(ids, a, b);
   assert.equal(applied.paths.length, 3, 'all endpoint orientations must join');
-  assert.equal(applied.paths[0].points.length, 3);
+  assert(applied.paths[0].points.length >= 3, 'joined route retains rounded connection');
 }
 // A single eraser tap cuts only a middle section of a long line.
 store.clear(); ids = initialize(); ids.pathEdit.click(); stroke(ids, [80,220], [280,220]); ids.pathErase.click();

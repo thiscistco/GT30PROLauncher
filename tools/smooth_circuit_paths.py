@@ -4,8 +4,9 @@
 Several averaging passes remove small kinks; corners and endpoints remain fixed.
 Vertices move at most two source pixels per axis, then near-collinear points are
 simplified within one pixel. Coordinates stay integer for the editor and masks.
-The two original light offsets remain unchanged; offset
-1 starts at the opposite end and always moves opposite to offset 0.
+Interior corners are rounded locally with quadratic curves while keeping each
+independent route and both endpoints intact. The two original light offsets
+remain unchanged; offset 1 starts at the opposite end.
 Usage: python tools/smooth_circuit_paths.py INPUT.json OUTPUT.json
 """
 import json
@@ -43,6 +44,31 @@ def simplify(points, tolerance=1.0):
     return [points[i] for i in sorted(keep)]
 
 
+def round_joins(points, radius=2.5):
+    # Cut only a short part of each adjoining segment, never connect distinct
+    # routes or move their endpoints. Shared endpoints remain exactly shared.
+    result = [points[0][:]]
+    def add(point):
+        point = [math.floor(v + 0.5) for v in point]
+        if point != result[-1]:
+            result.append(point)
+    for previous, corner, following in zip(points, points[1:], points[2:]):
+        before = math.dist(previous, corner)
+        after = math.dist(corner, following)
+        if not before or not after:
+            add(corner)
+            continue
+        cut = min(radius, before / 3, after / 3)
+        start = [corner[k] + (previous[k] - corner[k]) * cut / before for k in (0, 1)]
+        end = [corner[k] + (following[k] - corner[k]) * cut / after for k in (0, 1)]
+        add(start)
+        for t in (0.25, 0.5, 0.75):
+            add([(1-t)**2 * start[k] + 2*(1-t)*t*corner[k] + t*t*end[k] for k in (0, 1)])
+        add(end)
+    add(points[-1])
+    return result
+
+
 def smooth(points):
     fixed = {0, len(points) - 1}
     for i in range(1, len(points) - 1):
@@ -67,7 +93,7 @@ def smooth(points):
             result.append(candidate)
     if result[-1] != points[-1]:
         result.append(points[-1][:])
-    return simplify(result)
+    return round_joins(simplify(result))
 
 
 def main():

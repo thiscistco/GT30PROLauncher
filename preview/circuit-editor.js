@@ -184,6 +184,26 @@
       add(points[points.length - 1]);
       return result;
     }
+    function roundJoin(left, right) {
+      var prev = left[left.length - 2], corner = right[0], next = right[1];
+      var before = distance(prev, corner), after = distance(corner, next);
+      if (!before || !after) return left.slice(0, -1).concat(right);
+      var cut = Math.min(2.5, before / 3, after / 3);
+      var start = [0, 1].map(function (k) { return corner[k] + (prev[k] - corner[k]) * cut / before; });
+      var end = [0, 1].map(function (k) { return corner[k] + (next[k] - corner[k]) * cut / after; });
+      var result = left.slice(0, -1);
+      function add(p) {
+        p = [Math.round(p[0]), Math.round(p[1])];
+        if (!result.length || distance(p, result[result.length - 1]) > 0) result.push(p);
+      }
+      add(start);
+      [0.25, 0.5, 0.75].forEach(function (t) {
+        add([0, 1].map(function (k) { return (1-t)*(1-t)*start[k] + 2*(1-t)*t*corner[k] + t*t*end[k]; }));
+      });
+      add(end);
+      right.slice(1).forEach(add);
+      return result;
+    }
     function combineStroke(stroke) {
       var remaining = paths.slice(), result = stroke.slice(), threshold = 12 / geometry().scale;
       // Join the closest available endpoints. Reversing either polyline allows all
@@ -201,11 +221,11 @@
         });
         if (!best) break;
         var other = remaining[best.index];
-        if (result.length + other.length - 1 > MAX_PATH_POINTS) return null;
+        if (result.length + other.length + 4 > MAX_PATH_POINTS) return null;
         if (!best.ourEnd) result.reverse();
         if (best.theirEnd) other = other.slice().reverse();
         result[result.length - 1] = other[0]; // snap to the existing endpoint
-        result = result.concat(other.slice(1));
+        result = roundJoin(result, other);
         // Snapping can coincide with the penultimate point; never export zero-length segments.
         result = result.filter(function (p, i) { return !i || distance(p, result[i-1]) > 0; });
         remaining.splice(best.index, 1);

@@ -201,7 +201,15 @@ public class MainActivity extends Activity {
         clockParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.143f);
         clockParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.0646f);
         FrameLayout homeRoot = findViewById(R.id.root);
+        // Keep the live clock above the full-screen animated overlay and allow
+        // the small text glow to extend beyond child bounds on Android devices.
+        homeRoot.setClipChildren(false);
+        clockBox.setClipChildren(false);
+        clockBox.setClipToPadding(false);
+        clockBox.setVisibility(View.VISIBLE);
+        clockBox.setElevation(4f * density);
         homeRoot.addView(clockBox, clockParams);
+        clockBox.bringToFront();
         clockBox.setContentDescription("Buka Jam di Super App");
         clockBox.setOnClickListener(v -> startActivity(new Intent(this, ClockActivity.class)));
         // Ukuran dan posisi mengacu pada area wallpaper yang benar-benar terukur,
@@ -292,6 +300,11 @@ public class MainActivity extends Activity {
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         registerReceiver(powerSaveReceiver, new IntentFilter(android.os.PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
         updateAmberGlow();
+        if (clockLed != null) {
+            clockLed.setVisibility(View.VISIBLE);
+            clockLed.setAlpha(1f);
+            clockLed.bringToFront();
+        }
         clockHandler.removeCallbacks(clockTick);
         clockHandler.post(clockTick);
     }
