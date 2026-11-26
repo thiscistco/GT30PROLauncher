@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 /** Pusat aplikasi bawaan: ikon putih dalam grid, tanpa label visual. */
 public class SuperAppActivity extends SwipeBackActivity {
+    private WeatherController weather;
     @Override protected boolean supportsBottomSwipe() { return true; }
 
     @Override protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +37,22 @@ public class SuperAppActivity extends SwipeBackActivity {
         GridLayout container = findViewById(R.id.modules_container);
         addModule(container, R.drawable.ic_module_clock, "Jam", ClockActivity.class);
         addModule(container, R.drawable.ic_module_calendar, "Kalender", CalendarActivity.class);
+        WeatherView weatherView = new WeatherView(this, false);
+        GridLayout.LayoutParams weatherParams = new GridLayout.LayoutParams();
+        weatherParams.width = 1; weatherParams.height = dp(76);
+        container.addView(weatherView, weatherParams);
+        weather = new WeatherController(this, weatherView);
         container.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
             if (r - l != oldR - oldL) sizeGridCells(container);
         });
         container.post(() -> sizeGridCells(container));
+    }
+
+    @Override protected void onResume() { super.onResume(); if (weather != null) weather.resume(); }
+    @Override protected void onPause() { if (weather != null) weather.pause(); super.onPause(); }
+    @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (weather != null) weather.permissionResult(requestCode);
     }
 
     private void addModule(GridLayout grid, int icon, String name, Class<?> activity) {

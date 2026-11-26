@@ -47,6 +47,7 @@ public class MainActivity extends BottomSwipeActivity {
     private BatteryBoltView batteryBolt;
     private HomeClockView clockLed;
     private HomeDateView dateLed;
+    private WeatherController weather;
     private ValueAnimator chargeAnim;
     private ValueAnimator dateAnim;
     private CircuitGlowView amberGlow;
@@ -160,6 +161,15 @@ public class MainActivity extends BottomSwipeActivity {
         });
         homeRoot.post(() -> updateDateLayout(homeRoot, dateBox));
 
+        WeatherView weatherBox = new WeatherView(this, true);
+        weatherBox.setElevation(4f * getResources().getDisplayMetrics().density);
+        homeRoot.addView(weatherBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
+        weather = new WeatherController(this, weatherBox);
+        homeRoot.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
+            if (r - l != oldR - oldL || b - t != oldB - oldT) updateWeatherLayout(homeRoot, weatherBox);
+        });
+        homeRoot.post(() -> updateWeatherLayout(homeRoot, weatherBox));
+
         View root = findViewById(R.id.root);
         detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -262,12 +272,32 @@ public class MainActivity extends BottomSwipeActivity {
         dateBox.setLayoutParams(params);
     }
 
+    private void updateWeatherLayout(FrameLayout root, WeatherView box) {
+        int width = root.getWidth(), height = root.getHeight();
+        if (width <= 0 || height <= 0) return;
+        float ppm = width / 70.9f, cssPixel = ppm * 25.4f / 96f;
+        int w = Math.max(1, Math.round(11f * ppm));
+        int h = Math.max(1, Math.round(13.75f * ppm));
+        float left = width * .49f + 115f * cssPixel - w / 2f;
+        float top = height - (height * .06f + 320f * cssPixel) - h;
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) box.getLayoutParams();
+        params.width = w; params.height = h; params.leftMargin = Math.round(left); params.topMargin = Math.round(top);
+        box.setTranslationX(left - params.leftMargin); box.setTranslationY(top - params.topMargin);
+        box.setLayoutParams(params);
+    }
+
+    @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (weather != null) weather.permissionResult(requestCode);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         registerReceiver(powerSaveReceiver, new IntentFilter(android.os.PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
         updateAmberGlow();
+        if (weather != null) weather.resume();
         if (clockLed != null) {
             clockLed.setVisibility(View.VISIBLE);
             clockLed.setAlpha(1f);
@@ -289,6 +319,7 @@ public class MainActivity extends BottomSwipeActivity {
         unregisterReceiver(batteryReceiver);
         unregisterReceiver(powerSaveReceiver);
         stopAmberGlow();
+        if (weather != null) weather.pause();
         stopDateAnimation();
         clockHandler.removeCallbacks(clockTick);
         if (chargeAnim != null) {

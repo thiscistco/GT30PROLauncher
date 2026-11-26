@@ -14,14 +14,12 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 
 ## Fitur v0.1
 
-- **Homescreen minimalis** — hanya wallpaper render GT 30 Pro, **tanpa ikon,
-  dock, atau widget** (persis seperti preview di `preview/index.html`).
+- **Homescreen minimalis** — wallpaper render GT 30 Pro dengan jam, tanggal,
+  baterai, animasi jalur dan ikon cuaca dengan suhu (sesuai preview).
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
   long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).
 - **App Drawer** — daftar semua aplikasi terpasang + pencarian real-time.
-- **Super App** — pusat modul layanan (Pembayaran, Belanja, Games, Musik, Video,
-  Travel, Kuliner, Utilitas, Chat, Berita). Masih placeholder "segera hadir"
-  sampai konsep layanan final disepakati.
+- **Super App** — grid ikon untuk Jam, Kalender dan indikator cuaca.
 - **Launcher penuh** — muncul di pemilih Home (tombol Home membuka launcher ini).
 
 ## Struktur proyek
@@ -74,3 +72,17 @@ Kotlin + Jetpack Compose saat pengembangan penuh.
 
 Mengikuti mockup `preview/index.html` (proporsi 1:1 perangkat nyata):
 tema gelap `#0A0C0F` dengan aksen oranye `#F7A23B` (nuansa Dark Flare).
+
+## Cuaca berbasis lokasi
+
+Ketuk ikon cuaca di homescreen atau grid Super App untuk mengaktifkan cuaca.
+Aplikasi meminta izin **lokasi perkiraan** dan memakai penyedia lokasi jaringan;
+koordinat dibulatkan ke dua desimal dan dikirim via HTTPS ke Open-Meteo untuk
+suhu dan kode cuaca saat ini. Tidak ada pelacakan latar belakang atau penyimpanan
+koordinat. Selama halaman aktif, data diperiksa paling sering setiap 30 menit;
+ketuk ikon untuk memperbarui manual. Cache suhu/kondisi terakhir disimpan lokal,
+tidak dibackup, dan hanya ditampilkan hingga dua jam. Tanpa izin, lokasi, atau
+koneksi, tampilan menunjukkan `--°` (atau data terakhir yang masih berlaku).
+Izin dapat dicabut melalui setelan Android. Preview browser juga meminta izin
+setelah ikon diketuk, dan memerlukan HTTPS, geolocation dan akses Open-Meteo;
+nilai awal `--°` bukan simulasi suhu nyata.
