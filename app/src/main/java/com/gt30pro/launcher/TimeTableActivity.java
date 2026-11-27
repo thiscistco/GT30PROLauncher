@@ -69,17 +69,20 @@ public class TimeTableActivity extends SwipeBackActivity {
     private TextView box(String label,int size,int color,int bg) {
         TextView t=text(label,size,color); t.setGravity(Gravity.CENTER); t.setPadding(dp(2),dp(1),dp(2),dp(1)); t.setBackground(ui.surface(this,bg)); return t;
     }
+    private void emphasizeHeader(TextView view) {
+        view.setTypeface(font,Typeface.BOLD); view.setFontVariationSettings("'wght' 900");
+    }
     private void render() {
         table.removeAllViews(); LinearLayout head=row();
-        TextView headTime=box("JAM",10,ui.ink,ui.canvas); headTime.setBackgroundColor(android.graphics.Color.TRANSPARENT); addBox(head,headTime,62,dp(32));
-        for(int d=0;d<DAYS.length;d++) { TextView name=box(SHORT_DAYS[d],10,ui.ink,ui.canvas); name.setBackgroundColor(android.graphics.Color.TRANSPARENT); name.setContentDescription(DAYS[d]); addBox(head,name,0,dp(32)); }
+        TextView headTime=box("JAM",12,ui.ink,ui.canvas); emphasizeHeader(headTime); headTime.setBackgroundColor(android.graphics.Color.TRANSPARENT); addBox(head,headTime,62,dp(32));
+        for(int d=0;d<DAYS.length;d++) { TextView name=box(SHORT_DAYS[d],12,ui.ink,ui.canvas); emphasizeHeader(name); name.setBackgroundColor(android.graphics.Color.TRANSPARENT); name.setContentDescription(DAYS[d]); addBox(head,name,0,dp(32)); }
         table.addView(head);
         int rowHeight=Math.max(dp(38),rows.length()==0?dp(38):(viewportHeight-dp(34)-dp(2)*rows.length())/rows.length());
         for(int i=0;i<rows.length();i++) {
             final int index=i; JSONObject data=rows.optJSONObject(i); if(data==null) continue;
             String start=data.optString("start"), end=data.optString("end"), label=data.optString("label","");
-            LinearLayout line=row(); TextView time=box(start+"\n"+end,10,ui.ink,ui.control);
-            time.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            LinearLayout line=row(); TextView time=box(start+"\n"+end,12,ui.ink,ui.control);
+            emphasizeHeader(time); time.setBackgroundColor(android.graphics.Color.TRANSPARENT);
             time.setContentDescription("Ubah jam " + start + " sampai " + end); time.setOnClickListener(v->editTime(index)); addBox(line,time,62,rowHeight);
             if(!label.isEmpty()) {
                 TextView breakLabel=box(label,11,ui.ink,ui.event); breakLabel.setSingleLine(true); breakLabel.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -151,7 +154,7 @@ public class TimeTableActivity extends SwipeBackActivity {
         TextView heading=text(DAYS[day]+" · "+row.optString("start")+"–"+row.optString("end"),15,ui.ink); form.addView(heading);
         EditText classroom=field("Kelas / catatan",old==null?"":old.optString("class","")); EditText subject=field("Pelajaran / kegiatan",old==null?"":old.optString("subject",""));
         form.addView(classroom); form.addView(subject);
-        TextView colorTitle=text("Warna label",12,ui.ink); colorTitle.setPadding(0,dp(12),0,dp(6)); form.addView(colorTitle);
+        TextView colorTitle=text("Warna background",12,ui.ink); colorTitle.setPadding(0,dp(12),0,dp(6)); form.addView(colorTitle);
         HorizontalScrollView paletteScroll=new HorizontalScrollView(this); paletteScroll.setHorizontalScrollBarEnabled(false); LinearLayout palette=new LinearLayout(this); palette.setOrientation(LinearLayout.HORIZONTAL); paletteScroll.addView(palette); form.addView(paletteScroll);
         final String[] choice={old==null?"auto":old.optString("color","auto")};
         boolean valid="auto".equals(choice[0]); for(String key:TimeTableData.COLOR_KEYS) if(key.equals(choice[0])) valid=true; if(!valid)choice[0]="auto";
@@ -160,7 +163,7 @@ public class TimeTableActivity extends SwipeBackActivity {
             for(int i=0;i<swatches.length;i++) {
                 String key=i==0?"auto":TimeTableData.COLOR_KEYS[i-1]; boolean selected=key.equals(choice[0]);
                 int color=i==0?ui.control:TimeTableData.COLORS[i-1]; GradientDrawable bg=ui.surface(this,color); bg.setStroke(dp(selected?3:1),selected?ui.ink:ui.border); swatches[i].setBackground(bg);
-                swatches[i].setContentDescription((i==0?"Warna otomatis":"Warna "+key)+(selected?", dipilih":"")); swatches[i].setSelected(selected);
+                swatches[i].setContentDescription((i==0?"Warna background otomatis":"Warna background "+key)+(selected?", dipilih":"")); swatches[i].setSelected(selected);
             }
         };
         for(int i=0;i<swatches.length;i++) {

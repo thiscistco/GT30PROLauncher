@@ -90,7 +90,7 @@
     function renderColors() {
       var container=byId('ttColors');container.textContent='';
       ['auto'].concat(colorKeys).forEach(function(key,i){
-        var button=doc.createElement('button');button.type='button';button.setAttribute('role','radio');button.setAttribute('aria-checked',String(key===selectedColor));button.setAttribute('aria-label',key==='auto'?'Warna otomatis':'Warna '+key);button.title=key==='auto'?'Otomatis':key;button.textContent=key==='auto'?'A':'';if(i)button.style.backgroundColor=colors[i-1];button.addEventListener('click',function(){selectedColor=key;renderColors();container.querySelector('[aria-checked="true"]').focus();});container.appendChild(button);
+        var button=doc.createElement('button');button.type='button';button.setAttribute('role','radio');button.setAttribute('aria-checked',String(key===selectedColor));button.setAttribute('aria-label',key==='auto'?'Warna background otomatis':'Warna background '+key);button.title=key==='auto'?'Otomatis':key;button.textContent=key==='auto'?'A':'';if(i)button.style.backgroundColor=colors[i-1];button.addEventListener('click',function(){selectedColor=key;renderColors();container.querySelector('[aria-checked="true"]').focus();});container.appendChild(button);
       });
     }
     function close() { if(editor.hidden)return false;editor.hidden=true;byId('ttError').textContent='';if(returnFocus && returnFocus.isConnected) returnFocus.focus();else byId('timetableBack').focus();return true; }

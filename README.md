@@ -169,7 +169,7 @@ Ketuk jam untuk mengubah atau menghapus baris; menghapus baris juga menghapus
 semua jadwal di dalamnya. Jam harus berakhir pada hari yang sama dan tidak boleh
 bertumpang tindih; urutan otomatis menurut jam mulai. Ketuk sel untuk memasukkan
 kelas/catatan dan pelajaran/kegiatan; gunakan ikon tempat sampah untuk menghapus isi.
-Warna dapat dipilih per jadwal. Warna otomatis sama untuk pasangan kelas dan
+Warna background dapat dipilih per jadwal. Warna otomatis sama untuk pasangan kelas dan
 pelajaran yang sama; warna manual pertama untuk pasangan tersebut dalam urutan
 tabel menjadi acuannya. Warna manual lain tetap dapat berbeda.
 Tabel menyesuaikan layar agar 12 baris dan lima hari terlihat bersamaan; layar
