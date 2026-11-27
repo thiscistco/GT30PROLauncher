@@ -135,16 +135,16 @@ public class ClockActivity extends SwipeBackActivity {
             ImageButton item = new ImageButton(this);
             item.setImageResource(TAB_ICONS[i]);
             item.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            item.setPadding(dp(13), dp(13), dp(13), dp(13));
+            item.setPadding(dp(12), dp(12), dp(12), dp(12));
             item.setBackground(bg(i == selected ? ui.selected : ui.control));
             item.setColorFilter(i == selected ? ui.selectedText : ui.ink);
             item.setContentDescription(TAB_NAMES[i]);
             item.setTooltipText(TAB_NAMES[i]);
             item.setSelected(i == selected);
             item.setOnClickListener(v -> showTab(tab == index ? -1 : index));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(52), 1);
-            if (i > 0) p.leftMargin = dp(6);
-            tabs.addView(item, p);
+            FrameLayout cell = new FrameLayout(this);
+            cell.addView(item, new FrameLayout.LayoutParams(dp(48), dp(48), Gravity.CENTER));
+            tabs.addView(cell, new LinearLayout.LayoutParams(0, dp(48), 1));
         }
         hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE);
         panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE);
@@ -283,7 +283,7 @@ public class ClockActivity extends SwipeBackActivity {
     private long numberValue(EditText e) { try { return Long.parseLong(e.getText().toString()); } catch(Exception ignored) { return 0; } }
     private void showTimer() {
         content.addView(text("TIMER",19,AMBER)); addSpace(content,14);
-        timerDisplay=text("00:00:00",32,AMBER); timerDisplay.setGravity(Gravity.CENTER); content.addView(timerDisplay); addSpace(content,12);
+        timerDisplay=text("00:00:00",32,AMBER); timerDisplay.setGravity(Gravity.CENTER); timerDisplay.setBackground(bg(ui.card)); timerDisplay.setPadding(dp(8),dp(12),dp(8),dp(12)); content.addView(timerDisplay); addSpace(content,12);
         LinearLayout fields=new LinearLayout(this); EditText h=number("Jam"),m=number("Menit"),s=number("Detik");
         timerHours=h; timerMinutes=m; timerSeconds=s; h.setText(timerDraft[0]); m.setText(timerDraft[1]); s.setText(timerDraft[2]);
         fields.addView(h,new LinearLayout.LayoutParams(0,-2,1));fields.addView(m,new LinearLayout.LayoutParams(0,-2,1));fields.addView(s,new LinearLayout.LayoutParams(0,-2,1));content.addView(fields);addSpace(content,12);
@@ -301,7 +301,7 @@ public class ClockActivity extends SwipeBackActivity {
     private String formatElapsed(long ms) { return String.format(Locale.US,"%02d:%02d:%02d.%03d",ms/3600000,(ms/60000)%60,(ms/1000)%60,ms%1000); }
     private void showStopwatch() {
         content.addView(text("STOPWATCH",19,AMBER));addSpace(content,14);
-        stopwatchDisplay=text(formatElapsed(elapsed()),27,AMBER);stopwatchDisplay.setGravity(Gravity.CENTER);content.addView(stopwatchDisplay);addSpace(content,12);
+        stopwatchDisplay=text(formatElapsed(elapsed()),27,AMBER);stopwatchDisplay.setGravity(Gravity.CENTER);stopwatchDisplay.setBackground(bg(ui.card));stopwatchDisplay.setPadding(dp(8),dp(12),dp(8),dp(12));content.addView(stopwatchDisplay);addSpace(content,12);
         content.addView(button(swRunning ? "Jeda" : "Mulai",()->{
             if(swRunning){swAccumulated=elapsed();swRunning=false;}else{swStarted=SystemClock.elapsedRealtime();swRunning=true;} saveStopwatch();showTab(3);
         }));addSpace(content,8);

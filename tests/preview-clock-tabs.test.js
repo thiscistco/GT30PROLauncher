@@ -11,7 +11,7 @@ for (let i=0; i<4; i++) {
   assert(attrs.includes(`aria-label="${labels[i]}"`));
   assert(attrs.includes(`title="${labels[i]}"`));
   assert(attrs.includes('aria-pressed="false"'));
-  assert(content.includes(`src="assets/clock-${name}.svg?v=1"`));
+  assert(content.includes(`src="assets/clock-${name}.svg?v=2"`));
   assert.match(content, /alt="" aria-hidden="true"/);
   assert.equal(content.replace(/<[^>]+>/g, '').trim(), '', 'tabs display icons only');
 }
@@ -24,8 +24,8 @@ assert.match(java, /item\.setContentDescription\(TAB_NAMES\[i\]\)/);
 assert.match(java, /item\.setTooltipText\(TAB_NAMES\[i\]\)/);
 assert.match(java, /item\.setSelected\(i == selected\)/);
 assert.match(java, /item\.setOnClickListener\(v -> showTab\(tab == index \? -1 : index\)\)/);
-assert.match(java, /new LinearLayout\.LayoutParams\(0, dp\(52\), 1\)/);
-assert.match(java, /item\.setPadding\(dp\(13\), dp\(13\), dp\(13\), dp\(13\)\)/);
+assert.match(java, /new FrameLayout\.LayoutParams\(dp\(48\), dp\(48\), Gravity\.CENTER\)/);
+assert.match(java, /item\.setPadding\(dp\(12\), dp\(12\), dp\(12\), dp\(12\)\)/);
 assert(java.indexOf('page.addView(stage') < java.indexOf('page.addView(tabs'));
 const buttons = names.map(name => ({
   name, attrs:{'aria-pressed':'false'}, active:false,

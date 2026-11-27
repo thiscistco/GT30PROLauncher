@@ -18,7 +18,15 @@ assert 'handler.removeCallbacks(tick)' in clock and 'lastHudSecond=-1' in clock
 assert 'Calendar.HOUR_OF_DAY' in hud and 'Calendar.MINUTE' in hud and 'Calendar.SECOND' in hud
 assert 'String.format(Locale.US,"%02d:%02d:%02d",h,m,s)' in hud
 assert 'i<60' in hud and 'i%5==0' in hud and 'second/60' in hud
-assert 'ui.ink' in hud and 'ui.card' in hud and 'ui.border' in hud
+assert 'ui.ink' in hud and 'ui.card' in hud and 'ui.border' in hud and 'ui.control' in hud
+assert 'canvas.drawRoundRect(frame,corner,corner,paint)' in hud and 'Math.min(12f*density' in hud
+assert 'frame.width()*.72f' in hud and 'frame.height()*.48f' in hud and '230f*density' in hud
+assert 'setTextSize(size*.11f)' in hud and 'canvas.drawRoundRect(label,labelCorner,labelCorner,paint)' in hud
+assert 'class="clock-hud-label"' in html and 'border-radius:3mm' in html
+assert 'height:min(48%, 36.5mm)' in html and 'font:800 26.4px' in html
+assert 'width:7.62mm; min-width:0; height:7.62mm' in html
+assert 'new FrameLayout.LayoutParams(dp(48), dp(48), Gravity.CENTER)' in clock
+assert 'timerDisplay.setBackground(bg(ui.card))' in clock and 'stopwatchDisplay.setBackground(bg(ui.card))' in clock
 assert 'setContentDescription("Jam " + value)' in hud
 assert 'ClockAlarms.schedule' in clock and 'timer_draft' in clock and 'saveStopwatch()' in clock
 hud_markup=html.split('<div class="clock-hud"',1)[1].split('</svg>',1)[0]
