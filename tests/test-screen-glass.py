@@ -20,7 +20,7 @@ for dark, suffix in [(False, ''), (True, '_dark')]:
     for a,b in zip(actual.split(),expected.split()):
         assert ImageChops.difference(a,b).getbbox() is None, 'Glass asset does not match generator'
     alpha = actual.getchannel('A')
-    assert alpha.getextrema() == (64, 64), 'Glass must be 75% transparent (25% opaque)'
+    assert alpha.getextrema() == (191, 191), 'Glass must be 25% transparent (75% opaque)'
     for channel in actual.split()[:3]:
         assert channel.getextrema() == ((0, 0) if dark else (255, 255)), 'Glass must be pure black or white'
     brightness.append(ImageStat.Stat(Image.alpha_composite(wall,actual).convert('L')).mean[0])
@@ -55,7 +55,7 @@ assert 'pointer-events:none' in html.split('.home-screen-glass {',1)[1].split('}
 assert '.home-screen-glass.dark { display:none; }' in html
 media=html.split('@media (prefers-color-scheme: dark)',1)[1].split('  }',1)[0]
 assert '.home-screen-glass.light { display:none; }' in media and '.home-screen-glass.dark { display:block; }' in media
-for name in ['home-screen-glass.png?v=4','home-screen-glass-dark.png?v=3']:
+for name in ['home-screen-glass.png?v=5','home-screen-glass-dark.png?v=4']:
     assert f'src="assets/{name}" alt="" aria-hidden="true" draggable="false"' in html
 assert '@media (prefers-color-scheme: light)' in html
 for selector in ('.clock-led > span:not(.clock-sep)', '.date-led #homeDateWeekday', '.home-weather', '.battery-led'):
