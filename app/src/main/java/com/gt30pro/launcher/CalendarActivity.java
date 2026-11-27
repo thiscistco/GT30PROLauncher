@@ -108,6 +108,17 @@ public class CalendarActivity extends SwipeBackActivity {
         });
         setContentView(scroll);
         render();
+        String action=getIntent().getStringExtra("voice_action");
+        if ("add_event".equals(action)) { getIntent().removeExtra("voice_action"); addEvent(); }
+    }
+    @Override protected boolean handleVoiceAction(String action) {
+        if ("add_event".equals(action)) { addEvent(); return true; }
+        if ("today".equals(action)) { selected=LocalDate.now(); render(); return true; }
+        if ("next_period".equals(action) || "previous_period".equals(action)) {
+            int direction="next_period".equals(action) ? 1 : -1;
+            selected=expanded ? selected.plusMonths(direction) : selected.plusWeeks(direction); render(); return true;
+        }
+        return false;
     }
 
     @Override protected void onResume() {
@@ -229,7 +240,7 @@ public class CalendarActivity extends SwipeBackActivity {
             }
         });
     }
-    private void showDialog(AlertDialog popup) { popup.setOnShowListener(d -> styleDialog(popup)); popup.show(); }
+    private void showDialog(AlertDialog popup) { popup.setOnShowListener(d -> styleDialog(popup)); popup.show(); VoiceController.watchDialog(this,popup); }
     private String themeLabel() { return "dark".equals(themeChoice) ? "Gelap" : "light".equals(themeChoice) ? "Terang" : "Sistem"; }
     private int themeIcon(String value) {
         return "dark".equals(value) ? R.drawable.ic_calendar_theme_dark : "light".equals(value) ? R.drawable.ic_calendar_theme_light : R.drawable.ic_calendar_theme_system;
@@ -433,6 +444,7 @@ public class CalendarActivity extends SwipeBackActivity {
         TextView year = text("Kalender " + selected.getYear(), 20, ink);
         year.setContentDescription("Kalender, tahun " + selected.getYear()); top.addView(year);
         top.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
+        top.addView(VoiceController.button(this,ink),new LinearLayout.LayoutParams(dp(48),dp(48)));
         ImageButton theme = themeButton(themeChoice, false);
         theme.setBackgroundColor(Color.TRANSPARENT);
         theme.setContentDescription("Tema: " + themeLabel() + ". Pilih tema aplikasi");
@@ -717,7 +729,7 @@ public class CalendarActivity extends SwipeBackActivity {
                 } catch (JSONException ex) { title.setError("Acara tidak dapat disimpan"); }
             });
         });
-        dialog.show();
+        dialog.show(); VoiceController.watchDialog(this,dialog);
     }
 
     private void confirmDelete(String id, String title) {

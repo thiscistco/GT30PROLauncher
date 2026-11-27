@@ -2,11 +2,29 @@ package com.gt30pro.launcher;
 
 import android.app.Activity;
 import android.view.MotionEvent;
+import android.view.KeyEvent;
 
 /** Intercepts only an upward drag starting near the bottom, before child scrolling or clicks. */
 public abstract class BottomSwipeActivity extends Activity {
     private float startX, startY, startHeight;
     private boolean candidate, intercepting;
+
+    private final VoiceVolumeShortcut volumeShortcut=new VoiceVolumeShortcut();
+    @Override protected void onResume() { super.onResume(); VoiceController.resume(this); }
+    @Override protected void onPause() { VoiceController.pause(this); super.onPause(); }
+    @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(request,permissions,results); VoiceController.permissionResult(this,request);
+    }
+    boolean handleVoiceVolumeKey(KeyEvent event) {
+        int key=event.getKeyCode();
+        if ((key!=KeyEvent.KEYCODE_VOLUME_UP && key!=KeyEvent.KEYCODE_VOLUME_DOWN) || event.getAction()!=KeyEvent.ACTION_DOWN || event.getRepeatCount()!=0) return false;
+        if (volumeShortcut.press(key,event.getEventTime())) {
+            VoiceController.toggle(this,key==KeyEvent.KEYCODE_VOLUME_UP ? VoiceCommands.COMMAND : VoiceCommands.TYPING); return true;
+        }
+        return false;
+    }
+    @Override public boolean dispatchKeyEvent(KeyEvent event) { return handleVoiceVolumeKey(event) || super.dispatchKeyEvent(event); }
+    protected boolean handleVoiceAction(String action) { return false; }
 
     protected boolean supportsBottomSwipe() { return false; }
     protected void onBottomSwipe() { }

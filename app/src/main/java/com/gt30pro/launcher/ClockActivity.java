@@ -123,6 +123,24 @@ public class ClockActivity extends SwipeBackActivity {
         stage.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,oright,ob) -> positionTabs());
         setContentView(root);
         showTab(tab);
+        String action=getIntent().getStringExtra("voice_action");
+        if (action!=null) { getIntent().removeExtra("voice_action"); handleVoiceAction(action); }
+    }
+    @Override protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent); setIntent(intent);
+        String action=intent.getStringExtra("voice_action");
+        if(action!=null) { intent.removeExtra("voice_action"); handleVoiceAction(action); }
+    }
+    @Override protected boolean handleVoiceAction(String action) {
+        if ("alarm".equals(action)) { showTab(0); return true; }
+        if ("world".equals(action)) { showTab(1); return true; }
+        if ("timer".equals(action)) { showTab(2); return true; }
+        if ("stopwatch".equals(action)) { showTab(3); return true; }
+        if ("add_alarm".equals(action)) { showTab(0); editAlarm(null); return true; }
+        if ("start_stopwatch".equals(action)) { if(!swRunning){swStarted=SystemClock.elapsedRealtime();swRunning=true;saveStopwatch();} showTab(3); return true; }
+        if ("pause_stopwatch".equals(action)) { if(swRunning){swAccumulated=elapsed();swRunning=false;saveStopwatch();} showTab(3); return true; }
+        if ("lap".equals(action)) { if(swRunning){laps.put(elapsed());saveStopwatch();} showTab(3); return true; }
+        return false;
     }
     private void positionTabs() {
         if (stage.getHeight() <= 0) return;

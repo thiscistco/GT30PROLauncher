@@ -57,7 +57,9 @@ final class AppUi {
                     android.widget.ListView list=dialog.getListView();
                     if (list != null) list.post(() -> { for (int i=0;i<list.getChildCount();i++) { View row=list.getChildAt(i); if (row instanceof TextView) ((TextView)row).setTypeface(font); } });
                 });
-                dialog.show(); return dialog;
+                dialog.show();
+                if (a instanceof BottomSwipeActivity) VoiceController.watchDialog((BottomSwipeActivity)a, dialog);
+                return dialog;
             }
         };
     }
@@ -79,6 +81,7 @@ final class AppUi {
         TextView label=new TextView(a); label.setText(title); label.setTextSize(20); label.setTextColor(ink);
         label.setTypeface(font); label.setFontVariationSettings("'wght' 800"); label.setSingleLine(true); label.setEllipsize(android.text.TextUtils.TruncateAt.END);
         row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
+        if (a instanceof BottomSwipeActivity) row.addView(VoiceController.button((BottomSwipeActivity)a,ink),new LinearLayout.LayoutParams(dp(a,48),dp(a,48)));
         ImageButton theme=icon(a,themeIcon(choice),"Tema aplikasi: " + ("dark".equals(choice) ? "Gelap" : "light".equals(choice) ? "Terang" : "Ikuti perangkat"));
         row.addView(theme,new LinearLayout.LayoutParams(dp(a,48),dp(a,48)));
         theme.setOnClickListener(v -> {
