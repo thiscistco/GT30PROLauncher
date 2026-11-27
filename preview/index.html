@@ -189,7 +189,7 @@
     z-index: 6;
   }
   /* Only the number moves; its sibling charging bolt stays in the original place. */
-  .battery-value { display:block; width:100%; text-align:right; white-space:nowrap; transform:translate(calc(var(--battery-right, 0px) - .75ch - .15mm), calc(0px - var(--battery-shift, 0px))) scale(1.5); }
+  .battery-value { display:block; width:100%; text-align:right; white-space:nowrap; transform-origin:right center; transform:translate(var(--battery-right, 0px), calc(0px - var(--battery-shift, 0px))) scale(1.35); }
   .battery-led.charging {
     color: #ffcd6a;
     filter: none;
@@ -1408,7 +1408,7 @@
     }, 50);
   })();
 </script>
-<script src="glass-preview.js?v=10"></script>
+<script src="glass-preview.js?v=11"></script>
 <script src="home-date.js?v=2"></script>
 <script src="weather-page.js?v=2"></script>
 <script src="weather.js?v=6"></script>

@@ -119,8 +119,8 @@ public class MainActivity extends BottomSwipeActivity {
         batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         batteryLed.setTextColor(0xFFAABAC5);
         batteryLed.setAlpha(1f);
-        batteryLed.setScaleX(1.5f);
-        batteryLed.setScaleY(1.5f);
+        batteryLed.setScaleX(1.35f);
+        batteryLed.setScaleY(1.35f);
         batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CAABAC5);
         batteryLed.setLetterSpacing(0.06f);
         batteryLed.setFontVariationSettings("'wght' 700");
@@ -246,10 +246,9 @@ public class MainActivity extends BottomSwipeActivity {
         if (root.getWidth() <= 0) return;
         float pixelsPerMm = root.getWidth() / 70.9f;
         float cssPixel = pixelsPerMm * 25.4f / 96f;
-        // Preserve the former two-digit right edge after reserving a third digit.
-        float digitAdvance = batteryBox.getPaint().measureText("0")
-                + batteryBox.getLetterSpacing() * batteryBox.getTextSize();
-        batteryBox.setTranslationX(cssPixel + 495f * wallpaperScale(root) - .75f * digitAdvance);
+        // Scale from the right edge so resizing never moves the aligned edge.
+        batteryBox.setPivotX(batteryBox.getWidth());
+        batteryBox.setTranslationX(cssPixel + 495f * wallpaperScale(root));
         batteryBox.setTranslationY(cssPixel - 1470f * wallpaperScale(root));
         if (batteryBolt == null || batteryBox.getBottom() <= 0) return;
         int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
@@ -275,7 +274,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxHeight = Math.max(1, Math.round(HomeClockView.HEIGHT_MM * pixelsPerMm));
         // Keep the content (not its glow padding) anchored to the preview position.
         float left = width * .357f - .5f * cssPixel - boxWidth / 2f
-                + 600f * wallpaperScale(root);
+                + 650f * wallpaperScale(root);
         float bottom = height * .06f + .55f * cssPixel;
         float top = height - bottom - boxHeight + HomeClockView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) clockBox.getLayoutParams();
