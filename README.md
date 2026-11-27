@@ -26,11 +26,14 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
   Terang (matahari), atau Gelap (lingkaran). Ketuk tanggal untuk melihat detail
   libur dan memilih tanggal acara baru; tombol tambah di kanan bulan membuat acara.
   Agenda mingguan menampilkan seluruh acara dan libur/peringatan Senin–Minggu
-  yang terlihat, termasuk yang sudah lewat. Acara urut tanggal dan waktu (acara tanpa waktu terakhir pada hari itu). Agenda bulanan
-  hanya menampilkan acara hari ini, walaupun bulan atau tanggal lain dipilih. Kalender
+  yang terlihat, termasuk yang sudah lewat. Libur/peringatan berada di atas acara;
+  acara pribadi diurutkan menurut tanggal dan waktu. Ketuk acara untuk rincian
+  lengkap. Agenda bulanan hanya menampilkan acara serta libur/peringatan hari ini,
+  walaupun bulan lain dipilih; detail libur tanggal terpilih tetap terlihat. Kalender
   terbuka satu minggu, panah bawah membuka tampilan bulan; swipe pada kisi
   berpindah minggu atau bulan sesuai tampilan. Ketuk nama bulan untuk navigasi
-  tanpa gestur. Tanggal berbentuk squircle: garis merah menandai libur nasional,
+  tanpa gestur. Ikon kalender di sebelah bulan kembali ke hari ini.
+  Tanggal berbentuk squircle: garis merah menandai libur nasional,
   amber peringatan, biru acara; beberapa garis berarti beberapa penanda. Akhir
   pekan dan libur nasional tetap merah. Tahun berada di sebelah tombol kembali;
   informasi tambahan tersedia lewat ikon **Info kalender**.

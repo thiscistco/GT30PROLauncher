@@ -115,9 +115,9 @@
     });
     return result;
   }
+  function holidayKind(entry) { return entry.type === 'libur' ? 'Libur nasional' : entry.type === 'cuti' ? 'Cuti bersama' : 'Peringatan'; }
   function holidayText(entry) {
-    var kind = entry.type === 'libur' ? 'Libur nasional' : entry.type === 'cuti' ? 'Cuti bersama' : 'Peringatan (bukan libur nasional)';
-    return kind + ' · ' + entry.name;
+    return holidayKind(entry) + ' · ' + entry.name;
   }
   function mount(win) {
     var doc = win.document, byId = function (id) { return doc.getElementById(id); };
@@ -184,6 +184,20 @@
       catch (e) { writable = false; showStorageNote(); }
     }
     function discardForm() { form.hidden = true; form.reset(); error.hidden = true; }
+    function makeEntry(kind, name, info, holidayType) {
+      var row=doc.createElement('div'); row.className='clock-entry calendar-event' + (holidayType ? ' calendar-holiday-entry' : '') + (holidayType==='libur' ? ' holiday' : '');
+      var main=doc.createElement('button'); main.type='button'; main.className='calendar-entry-main';
+      var first=doc.createElement('span'); first.className='calendar-entry-kind'; first.textContent=kind;
+      var second=doc.createElement('span'); second.className='calendar-entry-name'; second.textContent=name;
+      main.appendChild(first); main.appendChild(second);
+      main.setAttribute('aria-label', kind + ', ' + name + '. Lihat rincian');
+      main.addEventListener('click',function () { win.alert(name + '\n' + info); });
+      row.appendChild(main); return row;
+    }
+    function holidayRow(item) {
+      var kind=holidayKind(item.entry), date=label(item.date);
+      return makeEntry(kind + ' · ' + date, item.entry.name, kind + '\n' + date, item.entry.type);
+    }
     function render() {
       var selectedKey = dateKey(selected), todayKey = dateKey(today());
       byId('calendarMonth').textContent = months[selected.month-1];
@@ -193,19 +207,15 @@
       byId('calendarSelected').textContent = label(selected);
       var dayLabel = byId('calendarDayLabel'); if (dayLabel) dayLabel.textContent = selectedKey === todayKey ? 'HARI INI' : 'TANGGAL DIPILIH';
       var holidayDetails = byId('calendarHolidayDetails'); holidayDetails.replaceChildren();
-      var holidayItems = expanded ? holidaysFor(selectedKey).map(function (entry) { return {date:selected,entry:entry}; }) : weekHolidayEntries(selected);
-      if (!expanded && holidayItems.length) {
-        var heading=doc.createElement('p'); heading.className='calendar-kicker'; heading.textContent='LIBUR & PERINGATAN MINGGU TERPILIH'; holidayDetails.appendChild(heading);
-      }
-      holidayItems.forEach(function (item) {
-        var line = doc.createElement('p'); line.className = 'calendar-holiday-detail' + (item.entry.type === 'libur' ? ' holiday' : '');
-        line.textContent = (expanded ? '' : label(item.date) + ' · ') + holidayText(item.entry); holidayDetails.appendChild(line);
+      // A selected date in month view retains its own holiday detail; the agenda below remains today-only.
+      if (expanded && selectedKey !== todayKey) holidaysFor(selectedKey).forEach(function (entry) {
+        holidayDetails.appendChild(holidayRow({date:selected,entry:entry}));
       });
       var supported = holidayData && holidayData.years.indexOf(selected.year) !== -1;
       var availableYears = holidayData && holidayData.years ? holidayData.years.join(', ') : 'tidak tersedia';
       var checked = updateInfo.checkedAt ? ' Terakhir diperiksa: ' + new Date(updateInfo.checkedAt).toLocaleString('id-ID') + '.' : '';
       byId('calendarHolidayStatus').textContent = (supported ? 'Data libur tersedia: ' + availableYears + '. ' : 'Data libur belum tersedia untuk tahun ini; tersedia: ' + availableYears + '. ') +
-        updateInfo.message + checked + ' Sumber GitHub dikelola manual; jadwal bisa berubah. Peringatan bukan libur nasional, dan cuti mengikuti aturan instansi.';
+        updateInfo.message + checked + ' Sumber GitHub dikelola manual; jadwal bisa berubah. Cuti mengikuti aturan instansi.';
       byId('calendarRefresh').disabled = updateInfo.pending || !updater;
       var warning = byId('calendarWarning');
       if (warning) {
@@ -261,15 +271,14 @@
         grid.appendChild(button);
       });
       var list = byId('calendarEvents'); list.replaceChildren();
+      var holidayItems = expanded ? holidaysFor(todayKey).map(function (entry) { return {date:fromKey(todayKey),entry:entry}; }) : weekHolidayEntries(selected);
       var forDay = agendaOccurrences(records, selected, today(), expanded);
-      byId('calendarAgendaHeading').textContent = expanded ? 'ACARA HARI INI' : 'ACARA MINGGU TERPILIH';
-      if (!forDay.length) {
-        var emptyText = doc.createElement('p'); emptyText.className = 'clock-muted'; emptyText.textContent = expanded ? 'Belum ada acara hari ini.' : 'Belum ada acara minggu ini.'; list.appendChild(emptyText);
-      }
+      var todayAgendaLabel=byId('calendarTodayAgendaLabel');
+      todayAgendaLabel.hidden=!(expanded && selectedKey !== todayKey && (holidayItems.length || forDay.length));
+      todayAgendaLabel.textContent=todayAgendaLabel.hidden ? '' : 'HARI INI · ' + label(fromKey(todayKey));
+      holidayItems.forEach(function (item) { list.appendChild(holidayRow(item)); });
       forDay.forEach(function (occurrence) {
         var event=occurrence.event;
-        var row = doc.createElement('div'); row.className = 'clock-entry calendar-event';
-        var name = doc.createElement('span');
         var d=occurrence.date, end=occurrence.endDate;
         var when = Number(d.slice(8)) + ' ' + months[Number(d.slice(5,7))-1].slice(0,3) + ' ' + d.slice(0,4) + (event.time ? ' · ' + event.time : '');
         if (event.endDate) when += ' – ' + Number(end.slice(8)) + ' ' + months[Number(end.slice(5,7))-1].slice(0,3) + ' ' + end.slice(0,4) + ' · ' + event.endTime;
@@ -278,14 +287,15 @@
           if (event.repeat !== 'none') details='\nSetiap ' + event.interval + ' ' + {day:'hari',week:'minggu',month:'bulan',year:'tahun'}[event.repeat];
           if (event.reminder >= 0) details += (details ? ' · ' : '\n') + reminderLabel(event.reminder);
         }
-        name.textContent = when + '\n' + event.title + (event.type ? ' · ' + event.type : '') + details;
+        var kind=event.type || 'Acara';
+        var row = makeEntry(kind + ' · ' + when, event.title, kind + '\n' + when + details, null);
         var remove = doc.createElement('button'); remove.type = 'button'; remove.className = 'clock-action'; remove.textContent = 'Hapus';
         remove.setAttribute('aria-label', 'Hapus acara ' + event.title);
         remove.addEventListener('click', function () {
           if (!win.confirm('Hapus acara "' + event.title + '"? Semua pengulangan juga akan dihapus.')) return;
           records = records.filter(function (item) { return item.id !== event.id; }); persist(); render();
         });
-        row.appendChild(name); row.appendChild(remove); list.appendChild(row);
+        row.appendChild(remove); list.appendChild(row);
       });
     }
     function changePeriod(delta) { selected = expanded ? shiftMonth(selected, delta) : shiftWeek(selected, delta); discardForm(); render(); }

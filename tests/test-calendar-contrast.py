@@ -17,7 +17,7 @@ def contrast(a,b):
     a,b = sorted((lum(a),lum(b)))
     return (b+.05)/(a+.05)
 for p in (palette(r'\.calendar-page'), palette(r'\.calendar-page\[data-theme="dark"\]')):
-    for fg,bgs in {'cal-text':['cal-bg','cal-card','cal-control','cal-day','cal-event'], 'cal-muted':['cal-bg','cal-card','cal-event'], 'cal-weekend':['cal-card','cal-day'], 'cal-selected-text':['cal-select'], 'cal-selected-weekend':['cal-select'], 'cal-observe':['cal-bg','cal-card']}.items():
+    for fg,bgs in {'cal-text':['cal-bg','cal-card','cal-control','cal-day','cal-event'], 'cal-muted':['cal-bg','cal-card','cal-event'], 'cal-weekend':['cal-card','cal-day','cal-event'], 'cal-selected-text':['cal-select'], 'cal-selected-weekend':['cal-select'], 'cal-observe':['cal-bg','cal-card','cal-event']}.items():
         for bg in bgs:
             ratio=contrast(p[fg],p[bg]); assert ratio >= 4.5, (fg,bg,ratio)
 assert '.calendar-day { color:var(--cal-text); }' in html

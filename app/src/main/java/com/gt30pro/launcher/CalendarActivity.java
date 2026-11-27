@@ -183,7 +183,7 @@ public class CalendarActivity extends SwipeBackActivity {
         else for (int i = 0; i < years.length(); i++) { if (i > 0) result.append(", "); result.append(years.optInt(i)); }
         result.append(". ").append(holidayMessage);
         if (holidaysCheckedAt > 0) result.append(" Terakhir diperiksa: ").append(new SimpleDateFormat("dd MMM yyyy HH:mm", new Locale("id", "ID")).format(new Date(holidaysCheckedAt))).append(".");
-        return result.append(" Sumber GitHub dikelola manual; jadwal bisa berubah. Peringatan bukan libur nasional, dan cuti mengikuti aturan instansi.").toString();
+        return result.append(" Sumber GitHub dikelola manual; jadwal bisa berubah. Cuti mengikuti aturan instansi.").toString();
     }
 
     @Override protected void onSaveInstanceState(Bundle state) {
@@ -359,11 +359,11 @@ public class CalendarActivity extends SwipeBackActivity {
         JSONArray found = entries == null ? null : entries.optJSONArray(date.toString());
         return found == null ? new JSONArray() : found;
     }
-    private String holidayText(JSONObject event) {
-        String type = event.optString("type");
-        String label = "libur".equals(type) ? "Libur nasional" : "cuti".equals(type) ? "Cuti bersama" : "Peringatan (bukan libur nasional)";
-        return label + " · " + event.optString("name");
+    private String holidayKind(JSONObject event) {
+        String type=event.optString("type");
+        return "libur".equals(type) ? "Libur nasional" : "cuti".equals(type) ? "Cuti bersama" : "Peringatan";
     }
+    private String holidayText(JSONObject event) { return holidayKind(event) + " · " + event.optString("name"); }
     private boolean hasHolidayType(JSONArray events, String type) {
         for (int i = 0; i < events.length(); i++) {
             JSONObject event = events.optJSONObject(i);
@@ -393,14 +393,24 @@ public class CalendarActivity extends SwipeBackActivity {
         action.setBackgroundColor(Color.TRANSPARENT); action.setContentDescription(description); action.setTooltipText(description);
         action.setOnClickListener(v -> click.run()); return action;
     }
-    private void addHolidayEntries(LocalDate date, boolean showDate) {
-        JSONArray events = holidaysFor(date);
-        for (int i = 0; i < events.length(); i++) {
-            JSONObject event = events.optJSONObject(i);
-            if (event == null) continue;
-            String prefix = showDate ? dateLabel(date) + " · " : "";
-            page.addView(text(prefix + holidayText(event), 13, "libur".equals(event.optString("type")) ? weekend : observance));
-            space(5);
+    private TextView singleLine(String value, int size, int color, boolean bold) {
+        TextView view=text(value,size,color); view.setSingleLine(true);
+        view.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        if (bold) view.setFontVariationSettings("'wght' 900");
+        return view;
+    }
+    private void addHolidayEntries(LocalDate date) {
+        JSONArray entries = holidaysFor(date);
+        for (int i=0; i<entries.length(); i++) {
+            JSONObject entry=entries.optJSONObject(i); if(entry==null) continue;
+            String kind=holidayKind(entry), name=entry.optString("name");
+            LinearLayout row=new LinearLayout(this); row.setOrientation(LinearLayout.VERTICAL);
+            row.setPadding(dp(12),dp(8),dp(12),dp(8)); row.setBackground(bg(eventColor));
+            row.addView(singleLine(kind + " · " + dateLabel(date),12,"libur".equals(entry.optString("type")) ? weekend : observance,false));
+            row.addView(singleLine(name,17,ink,true));
+            row.setContentDescription(kind + ", " + dateLabel(date) + ", " + name + ". Lihat rincian");
+            row.setFocusable(true); row.setOnClickListener(v -> showDialog(dialog().setTitle(name).setMessage(kind + "\n" + dateLabel(date)).setNegativeButton("Tutup",null).create()));
+            page.addView(row); space(8);
         }
     }
     private boolean hasEvents(JSONArray events, LocalDate date) {
@@ -430,6 +440,8 @@ public class CalendarActivity extends SwipeBackActivity {
         month.setContentDescription("Pilih bulan. " + MONTHS[selected.getMonthValue()-1] + " " + selected.getYear());
         LinearLayout nav = new LinearLayout(this); nav.setGravity(Gravity.CENTER_VERTICAL);
         nav.addView(month,new LinearLayout.LayoutParams(-2,dp(48)));
+        ImageButton todayButton=actionIcon(R.drawable.ic_calendar_today,"Hari ini",() -> { selected=LocalDate.now(); render(); });
+        nav.addView(todayButton,new LinearLayout.LayoutParams(dp(48),dp(48)));
         nav.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
         ImageButton add = actionIcon(R.drawable.ic_calendar_add,"Tambah acara",this::addEvent);
         add.setBackground(bg(controlColor)); nav.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
@@ -489,25 +501,18 @@ public class CalendarActivity extends SwipeBackActivity {
         agendaTitle.addView(text(selected.equals(actualToday) ? "HARI INI" : "TANGGAL DIPILIH", 11, muted));
         agendaTitle.addView(text(dateLabel(selected), 19, ink));
         agenda.addView(agendaTitle, new LinearLayout.LayoutParams(0,-2,1));
-        agenda.addView(button("Hari ini", () -> { selected = LocalDate.now(); render(); }));
         page.addView(agenda); space(10);
-        if (expanded) addHolidayEntries(selected, false);
-        else {
-            LocalDate first=CalendarDates.weekStart(selected);
-            boolean headingAdded=false;
-            for (int day=0;day<7;day++) {
-                LocalDate date=first.plusDays(day);
-                if (!CalendarDates.inRange(date) || holidaysFor(date).length()==0) continue;
-                if (!headingAdded) { page.addView(text("LIBUR & PERINGATAN MINGGU TERPILIH",12,muted)); space(4); headingAdded=true; }
-                addHolidayEntries(date,true);
-            }
-        }
-        space(4);
-        TextView agendaHeading = text(expanded ? "ACARA HARI INI" : "ACARA MINGGU TERPILIH", 12, muted);
-        page.addView(agendaHeading); space(8);
+        // Selected-date holiday details remain available in month view, separate from today's agenda.
+        if (expanded && !selected.equals(actualToday)) addHolidayEntries(selected);
         LocalDate agendaStart = expanded ? actualToday : CalendarDates.weekStart(selected);
         LocalDate agendaEnd = expanded ? actualToday : agendaStart.plusDays(6);
         ArrayList<CalendarEventLogic.Occurrence> visibleEvents = CalendarEventLogic.inRange(events, agendaStart, agendaEnd);
+        if (expanded && !selected.equals(actualToday) && (holidaysFor(actualToday).length()>0 || !visibleEvents.isEmpty())) {
+            page.addView(text("HARI INI · " + dateLabel(actualToday),12,muted)); space(5);
+        }
+        // Holidays and observances always precede personal events, including past dates in the visible week.
+        for (LocalDate day=agendaStart; !day.isAfter(agendaEnd); day=day.plusDays(1))
+            if (CalendarDates.inRange(day)) addHolidayEntries(day);
         for (CalendarEventLogic.Occurrence occurrence : visibleEvents) {
             JSONObject e=occurrence.event;
             String id = e.optString("id"), title = e.optString("title"), time = e.optString("time");
@@ -532,13 +537,19 @@ public class CalendarActivity extends SwipeBackActivity {
                 int reminder=e.optInt("reminder",-1);
                 if (reminder>=0) details += (details.isEmpty()?"\n":" · ") + CalendarEventLogic.reminderLabel(reminder);
             }
-            TextView label = text(when + "\n" + title + (type.isEmpty()?"":" · " + type) + details, 14, ink);
+            String kind=type.isEmpty()?"Acara":type;
+            LinearLayout label = new LinearLayout(this); label.setOrientation(LinearLayout.VERTICAL);
+            label.addView(singleLine(kind + " · " + when,12,muted,false));
+            label.addView(singleLine(title,17,ink,true));
+            final String eventInfo=kind + "\n" + when + details;
+            final String fullDetails=kind + "\n" + title + "\n" + when + details;
+            label.setContentDescription(fullDetails + ". Lihat rincian acara"); label.setFocusable(true);
+            label.setOnClickListener(v -> showDialog(dialog().setTitle(title).setMessage(eventInfo).setNegativeButton("Tutup",null).create()));
             row.addView(label, new LinearLayout.LayoutParams(0, -2, 1));
             TextView remove = button("Hapus", () -> confirmDelete(id, title));
             remove.setContentDescription("Hapus " + title + ("none".equals(e.optString("repeat","none")) ? "" : ", semua pengulangan"));
             row.addView(remove, new LinearLayout.LayoutParams(-2, -2)); page.addView(row); space(8);
         }
-        if (visibleEvents.isEmpty()) page.addView(text(expanded ? "Belum ada acara hari ini." : "Belum ada acara minggu ini.", 13, muted));
         if (!holidaysAvailable(selected.getYear())) { space(8); page.addView(text("Data libur belum tersedia untuk tahun ini.", 12, muted)); }
         if (holidayMessage.startsWith("Pembaruan gagal")) { space(8); page.addView(text("Data libur offline; memakai data tersimpan atau bawaan.", 12, muted)); }
         if (!storageWritable) { space(8); page.addView(text("Penyimpanan kalender bermasalah; perubahan tidak dapat disimpan.", 12, weekend)); }

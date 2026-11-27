@@ -427,7 +427,8 @@
   .calendar-card { background:var(--cal-card); }
   .calendar-page .clock-action { color:var(--cal-text); background:var(--cal-control); border-color:var(--cal-border); }
   .calendar-nav { justify-content:flex-start; }
-  .calendar-nav .calendar-month { flex:0 1 auto; text-align:left; padding:2mm 3mm; border-radius:2.5mm; }
+  .calendar-nav .calendar-month { flex:0 1 auto; text-align:left; padding:0 3mm; border-radius:2.5mm; box-sizing:border-box; height:7.62mm; min-height:7.62mm; }
+  .calendar-nav #calendarToday { margin-right:auto; }
   .calendar-month-menu { display:flex; gap:1mm; margin:1mm 0 2mm; }
   .calendar-month-menu[hidden] { display:none; }
   .calendar-month-menu .clock-action { white-space:normal; font-size:2.3mm; flex:1; }
@@ -449,8 +450,14 @@
   .calendar-info summary { cursor:pointer; display:grid; place-items:center; width:7.62mm; height:7.62mm; min-height:7.62mm; border-radius:2mm; color:var(--cal-text); list-style:none; }
   .calendar-info summary::-webkit-details-marker { display:none; }
   .calendar-info summary:focus-visible { outline:1px solid var(--cal-text); outline-offset:-1px; }
-  .calendar-page .clock-section h3.calendar-agenda-label { font-size:2.4mm; color:var(--cal-muted); margin:3mm 0 1mm; }
-  .calendar-event span { white-space:pre-line; }
+  .calendar-event .calendar-entry-main { flex:1; min-width:0; text-align:left; border:0; padding:0; background:transparent; color:var(--cal-text); cursor:pointer; font-family:inherit; }
+  .calendar-entry-kind, .calendar-entry-name { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .calendar-entry-kind { color:var(--cal-muted); font-size:2.4mm; }
+  .calendar-entry-name { color:var(--cal-text); font-size:3.4mm; font-weight:900; font-variation-settings:'wght' 900; }
+  .calendar-holiday-entry .calendar-entry-kind { color:var(--cal-observe); }
+  .calendar-holiday-entry.holiday .calendar-entry-kind { color:var(--cal-weekend); }
+  .calendar-page .calendar-event button.calendar-entry-main { background:transparent; }
+  .calendar-entry-main:focus-visible { outline:1px solid var(--cal-text); outline-offset:2px; }
   .calendar-warning[hidden] { display:none; }
   .calendar-page .calendar-icon-button { display:grid; place-items:center; flex:none; width:7.62mm; height:7.62mm; min-height:7.62mm; padding:0; border:0; border-radius:2mm; background:transparent; color:var(--cal-text); cursor:pointer; }
   .calendar-page .calendar-icon-button:focus-visible { outline:1px solid var(--cal-text); outline-offset:-1px; }
@@ -466,6 +473,7 @@
   .calendar-form-actions > .calendar-icon-button { flex:0 0 7.62mm; background:var(--cal-control); border:1px solid var(--cal-border); }
   .calendar-cancel-icon { mask-image:url('assets/calendar-cancel.svg?v=1'); -webkit-mask-image:url('assets/calendar-cancel.svg?v=1'); }
   .calendar-save-icon { mask-image:url('assets/calendar-save.svg?v=1'); -webkit-mask-image:url('assets/calendar-save.svg?v=1'); }
+  .calendar-today-icon { mask-image:url('assets/calendar-today.svg?v=1'); -webkit-mask-image:url('assets/calendar-today.svg?v=1'); }
   .calendar-back-icon { mask-image:url('assets/calendar-back.svg?v=1'); -webkit-mask-image:url('assets/calendar-back.svg?v=1'); }
   .calendar-add-icon { mask-image:url('assets/calendar-add.svg?v=1'); -webkit-mask-image:url('assets/calendar-add.svg?v=1'); }
   .calendar-expand-icon { mask-image:url('assets/calendar-expand.svg?v=1'); -webkit-mask-image:url('assets/calendar-expand.svg?v=1'); }
@@ -706,6 +714,7 @@
                 <div class="calendar-card">
                 <div class="calendar-nav">
                   <button class="clock-action calendar-month" id="calendarMonth" type="button" aria-label="Pilih bulan" aria-expanded="false"></button>
+                  <button class="calendar-icon-button" id="calendarToday" type="button" aria-label="Hari ini" title="Hari ini"><span class="calendar-action-icon calendar-today-icon" aria-hidden="true"></span></button>
                   <button class="calendar-icon-button" id="calendarAdd" type="button" aria-label="Tambah acara" title="Tambah acara"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button>
                 </div>
                 <div id="calendarMonthMenu" class="calendar-month-menu" hidden>
@@ -716,7 +725,7 @@
                 <div class="calendar-expand-row"><button class="calendar-icon-button" id="calendarExpand" type="button" aria-label="Tampilkan satu bulan" aria-expanded="false" aria-controls="calendarGrid" title="Tampilkan satu bulan"><span class="calendar-action-icon calendar-expand-icon" aria-hidden="true"></span></button></div>
                 </div>
                 <div class="clock-section calendar-agenda">
-                  <div class="calendar-agenda-head"><div><span class="calendar-kicker" id="calendarDayLabel">TANGGAL DIPILIH</span><h3 id="calendarSelected"></h3></div><button class="clock-action" id="calendarToday" type="button">Hari ini</button></div>
+                  <div class="calendar-agenda-head"><div><span class="calendar-kicker" id="calendarDayLabel">TANGGAL DIPILIH</span><h3 id="calendarSelected"></h3></div></div>
                   <div id="calendarHolidayDetails" aria-live="polite"></div>
                   <form class="alarm-form" id="calendarForm" hidden>
                     <div class="calendar-form-grid">
@@ -733,7 +742,7 @@
                     <p class="clock-muted" id="calendarError" role="alert" hidden></p>
                     <div class="clock-row calendar-form-actions"><button class="calendar-icon-button" id="calendarCancel" type="button" aria-label="Batal" title="Batal"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button><button class="calendar-icon-button" id="calendarSave" type="submit" aria-label="Simpan" title="Simpan"><span class="calendar-action-icon calendar-save-icon" aria-hidden="true"></span></button></div>
                   </form>
-                  <h3 class="calendar-agenda-label" id="calendarAgendaHeading">ACARA MINGGU TERPILIH</h3>
+                  <div id="calendarTodayAgendaLabel" class="calendar-kicker" hidden></div>
                   <div id="calendarEvents"></div>
                   <p class="clock-muted calendar-warning" id="calendarWarning" role="status" hidden></p>
                   <details class="calendar-info"><summary aria-label="Info kalender" title="Info kalender"><span class="calendar-action-icon calendar-info-icon" aria-hidden="true"></span></summary>
@@ -1032,7 +1041,7 @@
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=12"></script>
+<script src="calendar.js?v=13"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
