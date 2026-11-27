@@ -6,7 +6,7 @@ manifest=ET.parse(root/'app/src/main/AndroidManifest.xml').getroot()
 assert 'android.permission.EXPAND_STATUS_BAR' in {p.get(a+'name') for p in manifest.findall('uses-permission')}
 java=root/'app/src/main/java/com/gt30pro/launcher'
 main=(java/'MainActivity.java').read_text(); panels=(java/'SystemPanels.java').read_text(); html=(root/'preview/index.html').read_text()
-assert 'HomeGesture.SUPER) openSuperApp()' in main
+assert 'HomeGesture.SUPER) openSuperAppFromSwipe()' in main
 assert 'HomeGesture.NOTIFICATIONS) SystemPanels.open(this,false)' in main
 assert 'HomeGesture.CONTROLS) SystemPanels.open(this,true)' in main
 assert 'MotionEvent.ACTION_CANCEL' in main and 'MotionEvent.ACTION_POINTER_DOWN' in main and 'homeCancelled ? HomeGesture.NONE' in main

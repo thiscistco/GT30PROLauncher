@@ -11,7 +11,10 @@ assert 'new ClockHudView(this,ui,doto)' in clock
 assert 'page.addView(stage,new LinearLayout.LayoutParams(-1,0,1))' in clock
 assert clock.index('page.addView(stage') < clock.index('stage.addView(tabsScroll')
 assert 'panelParams.bottomMargin=dp(16)' in clock and 'stage.addOnLayoutChangeListener' in clock
-assert 'ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,(tab >= 1 ||'   in clock
+assert 'ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,(tab >= 0)'   in clock
+assert 'hud.setEditorOpen(selected >= 0)' in clock
+assert 'hud.setEditorOpen(tab >= 0)' in clock
+assert '.clock-stage:has([data-clock-panel="alarm"]:not([hidden]))' in html
 assert 'panelParams.topMargin=panelTop' in clock and 'top+dp(64)' in clock
 assert 'hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE)' not in clock
 assert 'panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE)' in clock

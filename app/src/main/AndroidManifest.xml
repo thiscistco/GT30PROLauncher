@@ -72,6 +72,11 @@
 
         <service android:name=".VoiceService" android:exported="false" android:foregroundServiceType="microphone" />
 
+        <receiver android:name=".ScreenLockAdmin" android:permission="android.permission.BIND_DEVICE_ADMIN" android:exported="true" android:label="@string/app_name" android:description="@string/screen_lock_admin_description">
+            <meta-data android:name="android.app.device_admin" android:resource="@xml/screen_lock_admin" />
+            <intent-filter><action android:name="android.app.action.DEVICE_ADMIN_ENABLED" /></intent-filter>
+        </receiver>
+
         <receiver android:name=".CalendarReminderReceiver" android:exported="false" />
         <receiver android:name=".ClockAlertReceiver" android:exported="false" />
         <receiver android:name=".ClockRestoreReceiver" android:exported="false">

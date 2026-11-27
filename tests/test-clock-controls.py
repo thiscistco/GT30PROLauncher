@@ -23,7 +23,7 @@ assert 'id="previewCitiesButton" type="button" aria-label="Pilih kota"' in html
 assert "cityBox.querySelectorAll('input:checked').length>5" in html
 assert 'world-city-time { flex:none; text-align:right' in html
 assert '.clock-stage:has([data-clock-panel="world"]:not([hidden]))' in html
-assert 'hud.setEditorOpen(selected >= 1)' in java
+assert 'hud.setEditorOpen(selected >= 0)' in java
 # At the target phone size, the pinned title and five rows fit without scrolling.
 width,height=405,854; gap=8; dial=min(width-2*gap,height-2*gap-480)
 panel=height-(gap+dial+4+64)-16

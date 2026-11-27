@@ -26,7 +26,11 @@ assert.match(java, /addModule\(container, R\.drawable\.ic_module_clock, "Jam", C
 assert.match(java, /addModule\(container, R\.drawable\.ic_module_calendar, "Kalender", CalendarActivity\.class\)/);
 assert.match(java, /button\.setContentDescription\(name\)/);
 assert.match(java, /button\.setOnClickListener\(v -> startActivity\(new Intent\(this, activity\)\)\)/);
-assert.match(java, /params\.height = dp\(76\)/);
+assert.match(java, /params\.height = cellWidth/);
+assert.match(java, /startDragAndDrop/);
+assert.match(java, /putString\("order"/);
+assert.match(html, /#superGrid > \* \{ aspect-ratio:1; height:auto; \}/);
+assert.match(fs.readFileSync('preview/super-reorder.js','utf8'),/localStorage\.setItem/);
 assert.match(java, /int cellWidth = Math\.max\(1, width \/ 4\)/);
 assert.match(java, /params\.width = cellWidth/);
 assert.match(java, /sizeGridCells\(container\)/);

@@ -100,17 +100,17 @@ final class HomeClockView extends View {
         // CSS: 0.461 mm - 1 px above and 0.45 mm below.
         float cssPx = pxPerMm * 25.4f / 96f;
         float dotTop = top + line + .461f * pxPerMm - cssPx;
-        float r = .11f * pxPerMm;
+        float r = .14f * pxPerMm;
         float total = 2.8f * pxPerMm - .76f * cssPx;
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;
-        dots.setColor(0xFF3E5058);
+        dots.setColor(lightGlass ? 0xFF425860 : 0xFFADC3CA);
         dots.setShadowLayer(.35f * pxPerMm, 0f, 0f, lightGlass ? 0x33403B45 : 0x668BA6B0);
         for (int i = 0; i < 5; i++) {
             float x = start + i * total / 5f;
             float y = dotTop + r;
             float pulse = HomeClockPulse.intensity(separatorPhase, i);
-            dots.setAlpha(Math.round(102f + 153f * pulse));
+            dots.setAlpha(Math.round(190f + 65f * pulse));
             canvas.drawCircle(x, y, r, dots);
         }
         dots.setAlpha(255);

@@ -294,8 +294,8 @@
   @keyframes voice-wave-demo { from { transform:scaleY(.55); } to { transform:scaleY(1); } }
   @media (prefers-reduced-motion: reduce) { .home-voice.voice-demo .home-voice-bar { animation:none; } }
   .voice-preview-note { max-width:70.9mm; color:#c3cad4; font:600 11px/1.4 'Doto',monospace; text-align:center; }
-  .super-weather { width: 100%; height: 12mm; }
-  .super-weather svg { width: 8mm; height: 8mm; top: 2mm; left: calc(50% - 4mm); }
+  .super-weather { width: 100%; height: auto; }
+  .super-weather svg { width: 8mm; height: 8mm; top: 50%; transform:translateY(-50%); left: calc(50% - 4mm); }
   .weather-widget:focus-visible { outline: 1px solid currentColor; outline-offset: 2px; }
   .weather-refresh { border: 1px solid #856a48; border-radius: 8px; background: #34302b; color: #f5e1c4; font: 700 12px Doto, monospace; padding: 9px 11px; cursor: pointer; }
   .phone-row { display: flex; align-items: stretch; }
@@ -341,7 +341,10 @@
   .preview-settings h3 { margin:4mm 0 1mm; }
   .preview-settings p { margin:1mm 0 2mm; }
   .super-grid[hidden] { display:none; }
-  .super-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 5mm; }
+  .super-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; margin-top: 5mm; }
+  #superGrid > * { aspect-ratio:1; height:auto; }
+  .super-grid .dragging { opacity:.45; }
+  .super-page:not(:has(#previewSettings:not([hidden]))) { touch-action:none; }
   .super-icon-button { width: 100%; height: 12mm; display: grid; place-items: center;
     border: 0; border-radius: 3mm; background: transparent; color: #fff; cursor: pointer; }
   .super-icon-button img { display: block; width: 8mm; height: 8mm; }
@@ -376,15 +379,15 @@
     display:flex; justify-content:space-around; align-items:center;
     position:relative; left:-0.63px; width:calc(100% - 0.76px); height:0.22mm;
     margin:calc(0.461mm - 1px) 0 0.45mm 0;
-    color:#3e5058;
+    color:#adc3ca;
   }
-  .clock-sep i { display:block; width:0.22mm; height:0.22mm; border-radius:50%; background:currentColor;
-    opacity:.4; box-shadow:0 0 .35mm rgba(139,166,176,.4); animation:clockDotPulse 5s linear infinite; }
+  .clock-sep i { display:block; width:0.28mm; height:0.28mm; flex:none; border-radius:50%; background:currentColor;
+    opacity:.745; box-shadow:0 0 .35mm rgba(139,166,176,.4); animation:clockDotPulse 5s linear infinite; }
   .clock-sep i:nth-child(2) { animation-delay:1s; }
   .clock-sep i:nth-child(3) { animation-delay:2s; }
   .clock-sep i:nth-child(4) { animation-delay:3s; }
   .clock-sep i:nth-child(5) { animation-delay:4s; }
-  @keyframes clockDotPulse { 0%,20%,100% { opacity:.4; } 10% { opacity:1; } }
+  @keyframes clockDotPulse { 0%,20%,100% { opacity:.745; } 10% { opacity:1; } }
   @media (prefers-reduced-motion:reduce) { .clock-sep i { animation:none; opacity:1; } }
   /* Gunmetal keeps its system-dependent contrast; amber matches the circuit light. */
   @media (prefers-color-scheme: light) {
@@ -397,6 +400,7 @@
       background:none; color:#263840; -webkit-text-fill-color:#263840;
       filter:drop-shadow(0 0 .4mm rgba(40,59,69,.2)) brightness(.55);
     }
+    .clock-sep { color:#425860; }
     .home-weather { color:#ffcd6a; filter:drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
     .battery-led { color:#263840; filter:brightness(.55); text-shadow:0 0 1.2mm rgba(38,56,64,.27); }
     .battery-led.charging { color:#ffcd6a; filter:none; text-shadow:0 0 1.2mm rgba(255,105,25,.55); }
@@ -656,7 +660,7 @@
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; padding:2.54mm 3.175mm; }
   #clockPage .app-top { flex:none; }
   .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
-  .clock-stage:has([data-clock-panel="alarm"]:not([hidden]) #previewAlarmForm:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])), .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
+  .clock-stage:has([data-clock-panel="alarm"]:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])), .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
   .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
@@ -897,7 +901,7 @@
               <section class="system-panel-preview" id="systemPanelPreview" aria-label="Simulasi panel Android" hidden>
                 <button id="systemPanelBack" type="button">Kembali</button>
                 <h2 id="systemPanelTitle"></h2>
-                <p>Ini hanya simulasi preview. Browser tidak dapat membuka panel sistem perangkat; panel asli tersedia di Android jika perangkat mendukung.</p>
+                <p id="systemPanelNote">Ini hanya simulasi preview. Browser tidak dapat membuka panel sistem perangkat; panel asli tersedia di Android jika perangkat mendukung.</p>
               </section>
               <section class="drawer-page" id="drawerPage" aria-label="Semua Aplikasi" hidden>
                 <div class="app-top"><button class="app-back" id="drawerBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Semua Aplikasi</span><div class="app-theme"><button class="app-theme-button" id="drawerTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="drawerThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="drawerThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="drawerThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="drawerThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="drawerThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="drawerThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
@@ -914,11 +918,12 @@
                   <button class="super-icon-button" id="openSettingsModule" type="button" aria-label="Setelan"><img src="assets/module-settings.svg?v=1" alt="" aria-hidden="true"></button>
                 </div>
                 <div class="preview-settings" id="previewSettings" hidden>
-                  <h3>Setelan · preview</h3>
-                  <p>Di Android tersedia pilihan launcher, lampu jalur, izin aplikasi, voice command, voice typing dan setelan text-to-speech. Preview tidak mengubah setelan perangkat atau mengaktifkan mikrofon.</p>
-                  <h3>Voice command dan typing</h3><p>Ucapkan yo buka super app untuk membuka daftar aplikasi bawaan; yo selesai menghentikan voice command. Pengenalan khusus suara pemilik belum tersedia; suara orang lain juga dapat memicu perintah.</p>
-                  <h3>Output suara</h3><p>Jawaban suara tersedia untuk acara kalender minggu ini dengan suara Indonesia offline di Android; belum untuk semua perintah.</p>
-                  <h3>Bantuan AI lokal</h3><p>AI lokal belum terintegrasi. Belum ada model yang dapat diunduh melalui launcher ini.</p>
+                  <h3>Launcher · preview</h3>
+                  <label><input type="checkbox" id="settingsGlow" checked> Animasi lampu jalur</label>
+                  <p>Tema aplikasi</p><button type="button" id="settingsThemeSystem">Ikuti perangkat</button> <button type="button" id="settingsThemeLight">Terang</button> <button type="button" id="settingsThemeDark">Gelap</button>
+                  <h3>Izin dan penguncian</h3><p>Hanya APK Android dapat mengelola izin dan mengunci layar; double tap memerlukan persetujuan admin perangkat.</p>
+                  <h3>Voice command dan typing</h3><p>Di Android, gunakan tombol mulai dan hentikan di Setelan. Pengenalan khusus suara pemilik belum tersedia.</p>
+                  <h3>Model AI lokal</h3><p>Di Android tersedia pengunduhan model resmi Qwen 639 MB dengan verifikasi. Runtime AI belum tersedia, jadi model belum dapat dipakai. Preview tidak mengunduh model.</p>
                 </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
@@ -1157,6 +1162,7 @@
     var systemPanel = document.getElementById('systemPanelPreview');
     var systemPanelBack = document.getElementById('systemPanelBack');
     var systemPanelTitle = document.getElementById('systemPanelTitle');
+    var systemPanelNote = document.getElementById('systemPanelNote');
     var superPage = document.getElementById('superPage');
     var previewSettings = document.getElementById('previewSettings');
     var settingsOrigin = document.getElementById('openSettingsModule');
@@ -1166,8 +1172,10 @@
     var drawerBack = document.getElementById('drawerBack');
     var homeTab = document.getElementById('tabHome');
     var superTab = document.getElementById('tabSuper');
+    var lastHomeSwipe = 0;
     var clockOrigin = clockLed;
     function setTab(superActive) {
+      if (!superActive) lastHomeSwipe = 0;
       systemPanel.hidden = true;
       previewSettings.hidden = true; superGrid.hidden = false;
       page.hidden = true;
@@ -1185,7 +1193,9 @@
     homeTab.addEventListener('click', function () { setTab(false); });
     superTab.addEventListener('click', function () { setTab(true); });
     document.getElementById('superBack').addEventListener('click', function () { if (!previewSettings.hidden) closeSettings(); else { setTab(false); homeTab.focus(); } });
-    settingsOrigin.addEventListener('click', function () { superGrid.hidden=true; previewSettings.hidden=false; document.getElementById('superBack').focus(); });
+    settingsOrigin.addEventListener('click', function () { superGrid.hidden=true; previewSettings.hidden=false; document.getElementById('settingsGlow').checked=amberToggle.checked; document.getElementById('superBack').focus(); });
+    document.getElementById('settingsGlow').addEventListener('change', function () { amberToggle.checked=this.checked; amberToggle.dispatchEvent(new Event('change')); });
+    ['System','Light','Dark'].forEach(function (choice) { document.getElementById('settingsTheme'+choice).addEventListener('click', function () { document.getElementById('superTheme'+choice).click(); }); });
     function openClock(origin) { clockOrigin = origin; page.hidden = false; if (window.clockShowHud) window.clockShowHud(); back.focus(); }
     document.getElementById('openClockModule').addEventListener('click', function () { openClock(this); });
     function openCalendar(origin) { calendarReturn = origin; calendarPage.hidden = false; calendarBack.focus(); if (window.calendarOnOpen) window.calendarOnOpen(); }
@@ -1230,17 +1240,19 @@
     screen.addEventListener('pointerdown', function (event) {
       if (event.isPrimary === false) { swipe = null; return; }
       var drawing = document.getElementById('pathDraw');
+      if (window.superDragActive) return;
       if (event.button !== 0 || (drawing && !drawing.hidden)) return;
       var rect = screen.getBoundingClientRect();
       var internal = !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !timetablePage.hidden || !superPage.hidden || !drawerPage.hidden || !systemPanel.hidden;
       var bottom = drawerPage.hidden && event.clientY >= rect.top + rect.height * .80 && event.clientY <= rect.bottom;
       var right = internal && event.clientX >= rect.right - rect.width * (32 / 445);
-      if (!internal || bottom || right) swipe = { id: event.pointerId, x: event.clientX, y: event.clientY,
-        width: rect.width, height: rect.height, top: rect.top, left: rect.left, bottom: bottom, right: right, internal: internal };
+      var second = internal && !superPage.hidden && page.hidden && calendarPage.hidden && weatherPage.hidden && timetablePage.hidden && drawerPage.hidden && systemPanel.hidden && lastHomeSwipe>0 && Date.now()-lastHomeSwipe<=2000;
+      if (!internal || bottom || right || second) swipe = { id: event.pointerId, x: event.clientX, y: event.clientY,
+        width: rect.width, height: rect.height, top: rect.top, left: rect.left, bottom: bottom, right: right, internal: internal, second: second };
     });
     // Prevent browser scrolling only after an upward drag from the bottom edge begins.
     screen.addEventListener('touchmove', function (event) {
-      if (!swipe || (swipe.internal && !swipe.bottom)) return;
+      if (!swipe || (swipe.internal && !swipe.bottom && !swipe.second)) return;
       if (event.touches.length !== 1) { swipe = null; return; }
       var point = event.touches[0], up = swipe.y - point.clientY;
       if ((swipe.internal ? up : Math.abs(up)) >= swipe.width * (12 / 445) && Math.abs(up) > Math.abs(point.clientX - swipe.x) * 1.5 && event.cancelable) event.preventDefault();
@@ -1251,18 +1263,27 @@
       var homeGesture = swipe.internal && swipe.bottom && event.clientY <= swipe.top + swipe.height * .62 &&
         up >= swipe.height * .28 && up > Math.abs(dx) * 1.5;
       var homeVertical = !swipe.internal && Math.abs(up) >= swipe.width * (48 / 445) && Math.abs(up) > Math.abs(dx) * 1.5;
+      var secondGesture = swipe.second && Date.now()-lastHomeSwipe<=2000 && up >= swipe.width*(48/445) && up > Math.abs(dx)*1.5;
       var backGesture = swipe.right && dx >= swipe.width * (64 / 445) && dx > Math.abs(up) * 1.5;
-      if (homeGesture || homeVertical || backGesture) {
+      if (secondGesture || homeGesture || homeVertical || backGesture) {
         suppressClick = true;
-        if (homeGesture) { setTab(false); homeTab.focus(); }
-        else if (homeVertical && up > 0) { setTab(true); document.getElementById('superBack').focus(); }
-        else if (homeVertical) { systemPanelTitle.textContent=swipe.x < swipe.left + swipe.width/2 ? 'Panel notifikasi · simulasi' : 'Panel kontrol · simulasi'; systemPanel.hidden=false; systemPanelBack.focus(); }
+        if (secondGesture) { openDrawer(); }
+        else if (homeGesture) { setTab(false); homeTab.focus(); }
+        else if (homeVertical && up > 0) { setTab(true); lastHomeSwipe=Date.now(); document.getElementById('superBack').focus(); }
+        else if (homeVertical) { systemPanelTitle.textContent=swipe.x < swipe.left + swipe.width/2 ? 'Panel notifikasi · simulasi' : 'Panel kontrol · simulasi'; systemPanelNote.textContent='Ini hanya simulasi preview. Browser tidak dapat membuka panel sistem perangkat; panel asli tersedia di Android jika perangkat mendukung.'; systemPanel.hidden=false; systemPanelBack.focus(); }
         else goBack();
         setTimeout(function () { suppressClick = false; }, 0);
       }
       swipe = null;
     });
     document.addEventListener('pointercancel', function () { swipe = null; });
+    screen.addEventListener('dblclick', function (event) {
+      if (!superPage.hidden || !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !timetablePage.hidden || !drawerPage.hidden || !systemPanel.hidden || !document.getElementById('pathDraw').hidden) return;
+      if (event.target.closest('button, [role="button"]')) return;
+      systemPanelTitle.textContent='Layar terkunci · simulasi';
+      systemPanelNote.textContent='Preview tidak dapat mengunci perangkat. Di Android, double tap memerlukan izin admin perangkat yang dapat dicabut.';
+      systemPanel.hidden=false; systemPanelBack.focus();
+    });
     screen.addEventListener('click', function (event) {
       if (suppressClick) { event.preventDefault(); event.stopPropagation(); suppressClick = false; }
     }, true);
@@ -1487,6 +1508,7 @@
     }, 50);
   })();
 </script>
+<script src="super-reorder.js?v=1"></script>
 <script src="home-position.js?v=1"></script>
 <script src="voice-preview.js?v=2"></script>
 <script src="home-date.js?v=2"></script>

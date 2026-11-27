@@ -50,7 +50,7 @@ final class WeatherView extends View {
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float s = home ? Math.min(getWidth() / 20f, getHeight() / 25f)
-                : Math.min(getWidth(), getHeight()) * (50f / 76f) / 13f;
+                : Math.min(Math.min(getWidth(), getHeight()), 50f * getResources().getDisplayMetrics().density) / 13f;
         float x0 = (getWidth() - 13f*s) / 2f;
         float y0 = (getHeight() - (home ? 22f : 13f)*s) / 2f;
         paint.setColor(color); paint.setStyle(Paint.Style.FILL);

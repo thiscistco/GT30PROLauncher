@@ -37,7 +37,7 @@ import java.util.Locale;
  * Akses melalui gesture:
  *   - Swipe ke atas di mana saja -> Super App
  *   - Swipe ke bawah kiri/kanan -> notifikasi/panel kontrol Android
- *   - Double-tap     -> Super App
+ *   - Double-tap     -> kunci layar (izin admin opsional)
  *   - Long-press     -> menu pintasan (Super App / Semua Aplikasi / Setelan)
  */
 public class MainActivity extends BottomSwipeActivity {
@@ -69,7 +69,7 @@ public class MainActivity extends BottomSwipeActivity {
             if (action==MotionEvent.ACTION_UP) {
                 int result=homeCancelled ? HomeGesture.NONE : HomeGesture.action(homeStartX,homeStartY,event.getX(),event.getY(),homeWidth,homeHeight,getResources().getDisplayMetrics().density);
                 homeTracking=false; homeIntercepting=false;
-                if (result==HomeGesture.SUPER) openSuperApp();
+                if (result==HomeGesture.SUPER) openSuperAppFromSwipe();
                 else if (result==HomeGesture.NOTIFICATIONS) SystemPanels.open(this,false);
                 else if (result==HomeGesture.CONTROLS) SystemPanels.open(this,true);
             } else if (action==MotionEvent.ACTION_CANCEL) { homeTracking=false; homeIntercepting=false; }
@@ -273,7 +273,7 @@ public class MainActivity extends BottomSwipeActivity {
 
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                openSuperApp();
+                lockHomeScreen();
                 return true;
             }
 
@@ -619,6 +619,27 @@ public class MainActivity extends BottomSwipeActivity {
                 batteryBolt.setVisibility(View.INVISIBLE);
             }
         }
+    }
+
+    private void lockHomeScreen() {
+        android.app.admin.DevicePolicyManager policy=(android.app.admin.DevicePolicyManager)getSystemService(DEVICE_POLICY_SERVICE);
+        android.content.ComponentName admin=new android.content.ComponentName(this,ScreenLockAdmin.class);
+        if (policy==null) { Toast.makeText(this,"Penguncian layar tidak tersedia.",Toast.LENGTH_LONG).show(); return; }
+        if (!policy.isAdminActive(admin)) {
+            try {
+                Intent intent=new Intent(android.app.admin.DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+                        .putExtra(android.app.admin.DevicePolicyManager.EXTRA_DEVICE_ADMIN,admin)
+                        .putExtra(android.app.admin.DevicePolicyManager.EXTRA_ADD_EXPLANATION,"Opsional: izinkan launcher mengunci layar saat homescreen diketuk dua kali. Izin dapat dicabut di setelan Android.");
+                startActivity(intent);
+            } catch (RuntimeException ex) { Toast.makeText(this,"Izin penguncian layar tidak tersedia.",Toast.LENGTH_LONG).show(); }
+            return;
+        }
+        try { policy.lockNow(); } catch (RuntimeException ex) { Toast.makeText(this,"Layar tidak dapat dikunci.",Toast.LENGTH_LONG).show(); }
+    }
+
+    private void openSuperAppFromSwipe() {
+        startActivity(new Intent(this,SuperAppActivity.class).putExtra("home_swipe_time",SystemClock.elapsedRealtime()));
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private void openSuperApp() {

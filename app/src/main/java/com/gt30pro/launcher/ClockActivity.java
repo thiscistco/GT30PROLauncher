@@ -146,7 +146,7 @@ public class ClockActivity extends SwipeBackActivity {
         if (stage.getHeight() <= 0) return;
         float density=getResources().getDisplayMetrics().density;
         int top=Math.round(ClockHudView.frameGap(stage.getWidth(),stage.getHeight(),density)
-                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,(tab >= 1 || (alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE))) + dp(4));
+                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,(tab >= 0)) + dp(4));
         top=Math.max(0,Math.min(top,stage.getHeight()-dp(64)));
         FrameLayout.LayoutParams params=(FrameLayout.LayoutParams) tabsScroll.getLayoutParams();
         if (params.topMargin != top) { params.topMargin=top; tabsScroll.setLayoutParams(params); }
@@ -183,7 +183,7 @@ public class ClockActivity extends SwipeBackActivity {
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     private void showTab(int selected) {
         saveTimerDraft(); timerHours = null; timerMinutes = null; timerSeconds = null;
-        hud.setEditorOpen(selected >= 1);
+        hud.setEditorOpen(selected >= 0);
         tab = selected; tabs.removeAllViews(); content.removeAllViews(); alarmRows.clear(); lastAlarmSecond=-1; alarmEditor=null; soundButton=null; timerDisplay = null; stopwatchDisplay = null; worldList = null;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = i;
@@ -385,7 +385,7 @@ public class ClockActivity extends SwipeBackActivity {
     }
     private void closeAlarmEditor() {
         if (alarmEditor != null) alarmEditor.setVisibility(View.GONE);
-        soundButton=null; hud.setEditorOpen(false); positionTabs();
+        soundButton=null; hud.setEditorOpen(tab >= 0); positionTabs();
     }
     private String soundName(String value) {
         if (value.isEmpty()) return "Hening";

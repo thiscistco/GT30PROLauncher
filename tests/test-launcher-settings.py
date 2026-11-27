@@ -5,7 +5,7 @@ activity=(java/'LauncherSettingsActivity.java').read_text(); superapp=(java/'Sup
 manifest=ET.parse(root/'app/src/main/AndroidManifest.xml').getroot(); a='{http://schemas.android.com/apk/res/android}'
 settings=manifest.find("application/activity[@%sname='.LauncherSettingsActivity']" % a)
 assert settings is not None and settings.get(a+'exported')=='false'
-for item in ('Settings.ACTION_HOME_SETTINGS','Settings.ACTION_APPLICATION_DETAILS_SETTINGS','com.android.settings.TTS_SETTINGS','VoiceController.start(this,VoiceCommands.COMMAND)','VoiceController.start(this,VoiceCommands.TYPING)','VoiceController.stop(this)','Pengenalan khusus suara Anda belum tersedia','Belum ada model yang bisa diunduh'):
+for item in ('Settings.ACTION_HOME_SETTINGS','Settings.ACTION_APPLICATION_DETAILS_SETTINGS','com.android.settings.TTS_SETTINGS','VoiceController.start(this,VoiceCommands.COMMAND)','VoiceController.start(this,VoiceCommands.TYPING)','VoiceController.stop(this)','Pengenalan khusus suara Anda belum tersedia','Runtime AI belum terintegrasi'):
     assert item in activity, item
 assert 'LauncherSettingsActivity.class' in superapp
 assert 'mode==VoiceCommands.COMMAND && "stop".equals(action)' in svc and 'stopSelf();' in svc

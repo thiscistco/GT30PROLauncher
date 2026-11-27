@@ -39,7 +39,7 @@ assert 'R.drawable.ic_calendar_cancel,"Batal"' in java and 'id="previewCancelAla
 assert 'if (existing != null)' in java and '"Hapus alarm",() -> deleteAlarm(existing)' in java
 assert 'id="previewEditorDelete" type="button" aria-label="Hapus alarm"' in html
 assert 'hud.setEditorOpen(true); positionTabs(); panelScroll.scrollTo(0,0);' in java
-assert 'hud.setEditorOpen(false); positionTabs();' in java
+assert 'hud.setEditorOpen(tab >= 0); positionTabs();' in java
 assert 'dp(80),dp(120)' in java and '100cqh - 78.6mm' in html
 # A target-sized stage reserves at least enough vertical room for the editor.
 width,height=405,854; gap=8; dial=min(width-2*gap,height-2*gap-480)

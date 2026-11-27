@@ -11,12 +11,21 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Switch;
+import android.os.Handler;
+import android.os.Looper;
 
 /** Explicit controls and honest capability status, not a voice authentication screen. */
 public final class LauncherSettingsActivity extends SwipeBackActivity {
     private AppUi ui;
     private Typeface font;
     private LinearLayout content;
+    private TextView modelStatus;
+    private final Handler handler=new Handler(Looper.getMainLooper());
+    private final Runnable updateModel=new Runnable() { public void run() {
+        if(modelStatus!=null) modelStatus.setText(ModelDownload.status(LauncherSettingsActivity.this));
+        handler.postDelayed(this,1000);
+    }};
     @Override protected boolean supportsBottomSwipe() { return true; }
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -31,10 +40,22 @@ public final class LauncherSettingsActivity extends SwipeBackActivity {
         content.addView(ui.header(this,font,"Setelan"));
         section("Launcher");
         button("Pilih launcher bawaan",() -> open(new Intent(Settings.ACTION_HOME_SETTINGS)));
-        button("Lampu jalur: ubah hidup / mati",() -> {
-            boolean enabled=getSharedPreferences("launcher_effects",MODE_PRIVATE).getBoolean("amber_glow",true);
-            getSharedPreferences("launcher_effects",MODE_PRIVATE).edit().putBoolean("amber_glow",!enabled).apply();
-            Toast.makeText(this,enabled?"Lampu jalur dimatikan":"Lampu jalur diaktifkan",Toast.LENGTH_SHORT).show();
+        Switch glow=new Switch(this); glow.setText("Animasi lampu jalur"); glow.setTextColor(ui.ink); glow.setTypeface(font);
+        glow.setMinHeight(dp(48)); glow.setChecked(getSharedPreferences("launcher_effects",MODE_PRIVATE).getBoolean("amber_glow",true));
+        glow.setOnCheckedChangeListener((v,checked) -> getSharedPreferences("launcher_effects",MODE_PRIVATE).edit().putBoolean("amber_glow",checked).apply());
+        content.addView(glow);
+        button("Tema aplikasi",() -> ui.dialog(this).setTitle("Tema aplikasi").setItems(new String[]{"Ikuti perangkat","Terang","Gelap"},(d,which) -> {
+            String[] values={"system","light","dark"}; getSharedPreferences("calendar_appearance",MODE_PRIVATE).edit().putString("theme",values[which]).apply(); recreate();
+        }).show());
+        button("Izin kunci layar double tap",() -> {
+            android.content.ComponentName admin=new android.content.ComponentName(this,ScreenLockAdmin.class);
+            android.app.admin.DevicePolicyManager policy=(android.app.admin.DevicePolicyManager)getSystemService(DEVICE_POLICY_SERVICE);
+            if(policy!=null && policy.isAdminActive(admin)) {
+                ui.dialog(this).setMessage("Cabut izin kunci layar? Double tap tidak akan mengunci sampai diaktifkan kembali.")
+                    .setNegativeButton("Batal",null).setPositiveButton("Cabut",(d,w) -> policy.removeActiveAdmin(admin)).show();
+            } else open(new Intent(android.app.admin.DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+                    .putExtra(android.app.admin.DevicePolicyManager.EXTRA_DEVICE_ADMIN,admin)
+                    .putExtra(android.app.admin.DevicePolicyManager.EXTRA_ADD_EXPLANATION,"Opsional: mengunci layar dengan double tap di homescreen."));
         });
         section("Perizinan");
         text("Kelola izin mikrofon, notifikasi dan lokasi di info aplikasi Android. Beberapa izin hanya diminta saat fitur digunakan.");
@@ -48,10 +69,18 @@ public final class LauncherSettingsActivity extends SwipeBackActivity {
         section("Output suara");
         text("Jawaban suara tersedia untuk pertanyaan kalender ada acara minggu ini, saat launcher terbuka dan perangkat tidak terkunci. Pasang suara Indonesia offline di mesin text-to-speech Android. Tidak semua perintah memiliki jawaban suara.");
         button("Setelan text-to-speech Android",() -> open(new Intent("com.android.settings.TTS_SETTINGS")));
-        section("Bantuan AI lokal");
-        text("AI lokal belum terintegrasi. Belum ada model yang bisa diunduh atau dipasang dari launcher ini. Pengenalan suara dan suara jawaban adalah layanan Android terpisah; memasang data suara tidak memasang AI. Bantuan unduh model akan tersedia setelah runtime dan model terintegrasi dan diverifikasi.");
+        section("Model AI lokal");
+        text("Qwen3 0.6B Q8 dari Qwen · 639 MB. Model diverifikasi SHA-256 sebelum disimpan. Runtime AI belum terintegrasi, sehingga model belum dapat digunakan untuk voice command.");
+        modelStatus=new TextView(this); modelStatus.setTextColor(ui.muted); modelStatus.setTypeface(font); modelStatus.setTextSize(14); content.addView(modelStatus);
+        button("Unduh model AI",() -> ui.dialog(this).setTitle("Unduh model 639 MB?")
+            .setMessage("Mengunduh model resmi dari Hugging Face memakai internet dan ruang penyimpanan (sekitar 740 MB kosong). Server menerima alamat IP Anda. Biarkan aplikasi terbuka; jika proses terhenti ulangi unduhan. Model belum dapat dipakai sampai runtime AI tersedia.")
+            .setNegativeButton("Batal",null).setPositiveButton("Unduh",(d,w) -> { ModelDownload.start(this); modelStatus.setText(ModelDownload.status(this)); }).show());
+        button("Batalkan unduhan model",() -> { ModelDownload.cancel(); modelStatus.setText(ModelDownload.status(this)); });
+        button("Hapus model AI",() -> ui.dialog(this).setMessage("Hapus model yang diunduh?")
+            .setNegativeButton("Batal",null).setPositiveButton("Hapus",(d,w) -> { if(!ModelDownload.delete(this)) Toast.makeText(this,"Batalkan unduhan terlebih dahulu.",Toast.LENGTH_LONG).show(); modelStatus.setText(ModelDownload.status(this)); }).show());
     }
-    @Override protected void onResume() { super.onResume(); AppUi current=new AppUi(this); if(ui!=null && (ui.dark!=current.dark || !ui.choice.equals(current.choice))) recreate(); }
+    @Override protected void onResume() { super.onResume(); AppUi current=new AppUi(this); if(ui!=null && (ui.dark!=current.dark || !ui.choice.equals(current.choice))) { recreate(); return; } handler.removeCallbacks(updateModel); handler.post(updateModel); }
+    @Override protected void onPause() { handler.removeCallbacks(updateModel); super.onPause(); }
     private int dp(int v) { return Math.round(v*getResources().getDisplayMetrics().density); }
     private void section(String title) {
         TextView t=new TextView(this); t.setText(title); t.setTypeface(font,Typeface.BOLD); t.setTextColor(ui.ink); t.setTextSize(18);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
-    <cloud-backup><exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" /></cloud-backup>
-    <device-transfer><exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" /></device-transfer>
+    <cloud-backup><exclude domain="file" path="ai/" /><exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" /></cloud-backup>
+    <device-transfer><exclude domain="file" path="ai/" /><exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" /></device-transfer>
 </data-extraction-rules>

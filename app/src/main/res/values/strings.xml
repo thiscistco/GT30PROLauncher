@@ -22,4 +22,5 @@
     <string name="menu_weather">Aktifkan / perbarui cuaca</string>
     <string name="menu_amber_off">Matikan animasi sirkuit</string>
     <string name="menu_amber_on">Nyalakan animasi sirkuit</string>
+    <string name="screen_lock_admin_description">Izinkan launcher mengunci layar saat homescreen diketuk dua kali. Izin ini opsional dan dapat dicabut di setelan Android.</string>
 </resources>

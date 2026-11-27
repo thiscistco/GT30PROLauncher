@@ -16,7 +16,7 @@ class Element {
   getBoundingClientRect() { return { left: 0, top: 0, bottom: 1000, right: 445, width: 445, height: 1000 }; }
 }
 const ids = ['chargeToggle','batteryLed','previewBatteryStatus','previewBatterySource','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
-  'systemPanelPreview','systemPanelBack','systemPanelTitle','superPage','superGrid','previewSettings','openSettingsModule','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
+  'settingsGlow','settingsThemeSystem','settingsThemeLight','settingsThemeDark','superThemeSystem','superThemeLight','superThemeDark','systemPanelPreview','systemPanelBack','systemPanelTitle','systemPanelNote','superPage','superGrid','previewSettings','openSettingsModule','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
   'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','timetablePage','timetableBack','openTimetableModule','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.weatherPage.hidden = true; elements.superPage.hidden = true;
@@ -89,6 +89,9 @@ for (const [x,y] of [[200,950],[200,750],[20,200],[430,500]]) {
   assert.strictEqual(elements.drawerPage.hidden,true,'does not open drawer');
   elements.tabHome.fire('click');
 }
+swipe(200,500,200,400); assert.strictEqual(elements.superPage.hidden,false);
+swipe(200,500,200,400); assert.strictEqual(elements.drawerPage.hidden,false,'two consecutive swipes open drawer');
+elements.drawerBack.fire('click'); assert.strictEqual(elements.drawerPage.hidden,true);
 swipe(200,500,200,520); assert.strictEqual(elements.systemPanelPreview.hidden,true,'short down ignored');
 swipe(100,500,200,560); assert.strictEqual(elements.systemPanelPreview.hidden,true,'diagonal ignored');
 swipe(100,300,100,400); assert.strictEqual(elements.systemPanelPreview.hidden,false);
