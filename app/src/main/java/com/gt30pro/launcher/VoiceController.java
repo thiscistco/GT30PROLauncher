@@ -84,7 +84,7 @@ final class VoiceController {
     static void menu(BottomSwipeActivity a) {
         String mode=VoiceService.mode==VoiceCommands.COMMAND ? "Perintah" : VoiceService.mode==VoiceCommands.TYPING ? "Ketik" : "Tidak aktif";
         new AlertDialog.Builder(a).setTitle("Kontrol suara · " + mode)
-            .setMessage("Pendengaran berlanjut di latar belakang sampai dihentikan. Suara dapat dikirim ke penyedia pengenalan perangkat. Ucapkan yo untuk perintah atau ketik untuk mendikte. Volume naik dua kali: perintah; turun dua kali: ketik.")
+            .setMessage("Pendengaran berlanjut di latar belakang sampai dihentikan. Suara dapat dikirim ke penyedia pengenalan perangkat. Ucapkan yo, kalender, atau set untuk perintah; ketik untuk mendikte. Volume naik dua kali: perintah; turun dua kali: ketik.")
             .setItems(new String[]{"Mulai perintah · yo", "Mulai mengetik · ketik", "Hentikan suara"}, (d,which) -> {
                 if (which==2) stop(a); else start(a, which==0 ? VoiceCommands.COMMAND : VoiceCommands.TYPING);
             }).setNegativeButton("Batal",null).show();
@@ -128,6 +128,13 @@ final class VoiceController {
         else Toast.makeText(a,"Izin mikrofon dan notifikasi diperlukan. Aktifkan di setelan aplikasi.",Toast.LENGTH_LONG).show();
     }
     static void stop(Context c) { c.stopService(new Intent(c,VoiceService.class)); }
+    static boolean foregroundUnlocked(Context c) {
+        BottomSwipeActivity a=active.get();
+        android.app.KeyguardManager lock=(android.app.KeyguardManager)c.getSystemService(Context.KEYGUARD_SERVICE);
+        if (a==null || a.isFinishing() || a.isDestroyed() || lock==null || lock.isDeviceLocked()) return false;
+        Dialog d=dialog.get();
+        return a.getWindow().getDecorView().hasWindowFocus() || (d!=null && d.isShowing() && d.getWindow()!=null && d.getWindow().getDecorView().hasWindowFocus());
+    }
     static Intent destination(Context c,String action) {
         Class<?> target;
         switch (action) {

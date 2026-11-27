@@ -17,4 +17,14 @@ assert 'mode==VoiceCommands.COMMAND && "stop".equals(stop)' in ctl
 assert 'watchDialog(this,dialog)' in (java/'CalendarActivity.java').read_text()
 assert 'watchDialog((BottomSwipeActivity)a, dialog)' in (java/'AppUi.java').read_text()
 assert 'requestPermissions' in ctl and 'areNotificationsEnabled()' in ctl and 'voice_consent' in ctl
+assert 'lock==null || lock.isDeviceLocked()' in ctl
+assert 'foregroundUnlocked(this)' in svc and 'CalendarVoiceSummary.summarize' in svc
+assert svc.index('foregroundUnlocked(this)') < svc.index('CalendarVoiceSummary.summarize')
+assert 'if(matches!=null && !matches.isEmpty() && handle(matches.get(0))) return' in svc
+assert '!replies.isBusy()' in svc and 'replies.close()' in svc and 'replies.cancel()' in svc
+assert 'Buka launcher saat perangkat tidak terkunci, lalu tanyakan lagi.' in svc
+replies=(java/'VoiceReplies.java').read_text()
+assert '!voice.isNetworkConnectionRequired()' in replies and 'notInstalled' in replies
+assert 'foregroundUnlocked(context)' in replies and 'postDelayed(privacyCheck,250)' in replies
+assert 'android.intent.action.TTS_SERVICE' in (root/'app/src/main/AndroidManifest.xml').read_text()
 print('Voice security and lifecycle structure OK')

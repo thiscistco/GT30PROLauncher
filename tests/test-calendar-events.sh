@@ -21,5 +21,6 @@ JAVAC=("$JAVA" -Dsun.boot.class.path="$DIR/stub:$ANDROID" -cp "$TOOLS" com.sun.t
 # A lightweight receiver stub is sufficient for the static logic under test.
 mkdir -p "$DIR/src/com/gt30pro/launcher"
 echo 'package com.gt30pro.launcher; public class CalendarReminderReceiver extends android.content.BroadcastReceiver { public void onReceive(android.content.Context c, android.content.Intent i) {} }' > "$DIR/src/com/gt30pro/launcher/CalendarReminderReceiver.java"
-"${JAVAC[@]}" -d "$DIR/classes" "$JSON_JAVA_SOURCE"/*.java "$DIR/src/com/gt30pro/launcher/CalendarReminderReceiver.java" app/src/main/java/com/gt30pro/launcher/CalendarDates.java app/src/main/java/com/gt30pro/launcher/CalendarRecurrence.java app/src/main/java/com/gt30pro/launcher/CalendarEventLogic.java app/src/main/java/com/gt30pro/launcher/CalendarReminders.java tests/CalendarEventLogicTest.java
+"${JAVAC[@]}" -d "$DIR/classes" "$JSON_JAVA_SOURCE"/*.java "$DIR/src/com/gt30pro/launcher/CalendarReminderReceiver.java" app/src/main/java/com/gt30pro/launcher/CalendarDates.java app/src/main/java/com/gt30pro/launcher/CalendarRecurrence.java app/src/main/java/com/gt30pro/launcher/CalendarEventLogic.java app/src/main/java/com/gt30pro/launcher/CalendarVoiceSummary.java app/src/main/java/com/gt30pro/launcher/CalendarReminders.java tests/CalendarEventLogicTest.java tests/CalendarVoiceSummaryTest.java
 "$JAVA" -cp "$DIR/classes:$ANDROID" com.gt30pro.launcher.CalendarEventLogicTest
+"$JAVA" -cp "$DIR/classes:$ANDROID" com.gt30pro.launcher.CalendarVoiceSummaryTest

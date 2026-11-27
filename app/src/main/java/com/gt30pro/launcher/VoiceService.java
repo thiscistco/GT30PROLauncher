@@ -30,9 +30,11 @@ public final class VoiceService extends Service {
     private long lastRmsAt;
     private final Runnable resetRms=VoiceController::resetWave;
     private NotificationManager notifications;
+    private VoiceReplies replies;
 
     @Override public void onCreate() {
         super.onCreate(); notifications=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        replies=new VoiceReplies(this,handler);
         notifications.createNotificationChannel(new NotificationChannel(CHANNEL,"Suara aktif",NotificationManager.IMPORTANCE_LOW));
         notifications.createNotificationChannel(new NotificationChannel(ALERTS,"Status dan perintah suara",NotificationManager.IMPORTANCE_DEFAULT));
     }
@@ -43,7 +45,7 @@ public final class VoiceService extends Service {
         return PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
     }
     private Notification listening() {
-        String name=mode==VoiceCommands.COMMAND ? "Perintah · ucapkan yo" : "Mengetik · ucapkan ketik";
+        String name=mode==VoiceCommands.COMMAND ? "Perintah · yo / kalender / set" : "Mengetik · ucapkan ketik";
         return new Notification.Builder(this,CHANNEL).setSmallIcon(R.drawable.ic_voice_mic)
                 .setContentTitle("Mikrofon aktif: " + name).setContentText("Ketuk untuk membuka launcher; hentikan bila selesai.")
                 .setContentIntent(homeIntent()).setOngoing(true).setOnlyAlertOnce(true)
@@ -64,7 +66,7 @@ public final class VoiceService extends Service {
         return START_NOT_STICKY;
     }
     private void restartRecognizer() {
-        handler.removeCallbacksAndMessages(null); VoiceController.resetWave(); lastRmsAt=0; generation++;
+        replies.cancel(); handler.removeCallbacksAndMessages(null); VoiceController.resetWave(); lastRmsAt=0; generation++;
         if(recognizer!=null) { recognizer.destroy(); recognizer=null; }
         if (!SpeechRecognizer.isRecognitionAvailable(this)) { fail("Pengenalan suara tidak tersedia di perangkat."); return; }
         try {
@@ -85,7 +87,7 @@ public final class VoiceService extends Service {
                 public void onPartialResults(Bundle b) { }
                 public void onEvent(int event, Bundle b) { }
                 public void onError(int error) {
-                    if (session!=generation || mode==VoiceCommands.OFF) return;
+                    if (session!=generation || mode==VoiceCommands.OFF || replies.isBusy()) return;
                     clearWatchdog(); handler.removeCallbacks(resetRms); VoiceController.resetWave();
                     if (error==SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS || error==SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED || error==SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE || error==SpeechRecognizer.ERROR_CLIENT) {
                         fail("Pengenalan suara berhenti. Periksa izin, bahasa, dan layanan suara."); return;
@@ -96,11 +98,11 @@ public final class VoiceService extends Service {
                     retry(session, error==SpeechRecognizer.ERROR_NO_MATCH || error==SpeechRecognizer.ERROR_SPEECH_TIMEOUT ? 1000 : Math.min(15000,1000L << failures));
                 }
                 public void onResults(Bundle result) {
-                    if (session!=generation || mode==VoiceCommands.OFF) return;
+                    if (session!=generation || mode==VoiceCommands.OFF || replies.isBusy()) return;
                     clearWatchdog(); handler.removeCallbacks(resetRms); VoiceController.resetWave(); failures=0;
                     ArrayList<String> matches=result==null ? null : result.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                    if(matches!=null && !matches.isEmpty()) handle(matches.get(0));
-                    if(mode!=VoiceCommands.OFF) retry(session,500);
+                    if(matches!=null && !matches.isEmpty() && handle(matches.get(0))) return;
+                    if(mode!=VoiceCommands.OFF && !replies.isBusy()) retry(session,500);
                 }
             });
             listen();
@@ -108,7 +110,7 @@ public final class VoiceService extends Service {
     }
     private void clearWatchdog() { if(watchdog!=null) { handler.removeCallbacks(watchdog); watchdog=null; } }
     private void listen() {
-        if(recognizer==null || mode==VoiceCommands.OFF) return;
+        if(recognizer==null || mode==VoiceCommands.OFF || replies.isBusy()) return;
         Intent i=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE,"id-ID")
@@ -127,11 +129,35 @@ public final class VoiceService extends Service {
         } catch (RuntimeException e) { fail("Pengenalan suara tidak dapat dimulai."); }
     }
     private void retry(int session,long delay) { handler.postDelayed(() -> { if(session==generation) listen(); },delay); }
-    private void handle(String spoken) {
+    /** Returns true when a spoken reply owns the next recognizer restart. */
+    private boolean handle(String spoken) {
         String body=VoiceCommands.body(mode,spoken);
-        if(body==null) return;
-        if(mode==VoiceCommands.COMMAND && "stop".equals(VoiceCommands.command(body))) { stopSelf(); return; }
-        if(VoiceController.deliver(mode,spoken)) return;
+        if(body==null) return false;
+        String action=mode==VoiceCommands.COMMAND ? VoiceCommands.command(body) : "";
+        if(mode==VoiceCommands.COMMAND && "stop".equals(action)) { stopSelf(); return false; }
+        if("calendar_week".equals(action)) {
+            if (!VoiceController.foregroundUnlocked(this)) {
+                Intent target=VoiceController.destination(this,"calendar");
+                PendingIntent open=PendingIntent.getActivity(this,1,target,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+                notifications.notify(OPEN_ID,new Notification.Builder(this,ALERTS).setSmallIcon(R.drawable.ic_voice_mic)
+                        .setContentTitle("Buka kalender untuk jawaban suara")
+                        .setContentText("Buka launcher saat perangkat tidak terkunci, lalu tanyakan lagi.")
+                        .setContentIntent(open).setAutoCancel(true).build());
+                return false;
+            }
+            try {
+                String json=getSharedPreferences("launcher_calendar",MODE_PRIVATE).getString("events_v1","[]");
+                String answer=CalendarVoiceSummary.summarize(new org.json.JSONArray(json),java.time.LocalDate.now());
+                final int session=generation;
+                replies.speak(answer,() -> { if(session==generation && mode!=VoiceCommands.OFF) retry(session,500); });
+            } catch(Exception e) {
+                final int session=generation;
+                replies.speak("Data kalender tidak dapat dibaca. Silakan buka kalender dan periksa data.",
+                        () -> { if(session==generation && mode!=VoiceCommands.OFF) retry(session,500); });
+            }
+            return true;
+        }
+        if(VoiceController.deliver(mode,spoken)) return false;
         if(mode==VoiceCommands.COMMAND) {
             Intent target=VoiceController.destination(this,VoiceCommands.command(body));
             if(target!=null) {
@@ -141,6 +167,7 @@ public final class VoiceService extends Service {
                         .setContentIntent(open).setAutoCancel(true).build());
             }
         }
+        return false;
     }
     private void fail(String message) {
         notifications.notify(ALERT_ID,new Notification.Builder(this,ALERTS).setSmallIcon(R.drawable.ic_voice_mic)
@@ -148,7 +175,7 @@ public final class VoiceService extends Service {
         stopSelf();
     }
     @Override public void onDestroy() {
-        mode=VoiceCommands.OFF; VoiceController.resetWave(); VoiceController.refreshButtons(); generation++; handler.removeCallbacksAndMessages(null);
+        mode=VoiceCommands.OFF; VoiceController.resetWave(); VoiceController.refreshButtons(); generation++; replies.close(); handler.removeCallbacksAndMessages(null);
         if(recognizer!=null) { recognizer.destroy(); recognizer=null; }
         notifications.cancel(OPEN_ID); super.onDestroy();
     }
