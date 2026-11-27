@@ -15,7 +15,23 @@ assert sorted(order)==list(range(len(old)))
 assert [old[i] for i in order]==['Jakarta','Makassar','Jayapura','Singapore','Seoul','Sydney','Tokyo','Dubai','Paris','London','Los Angeles','New York']
 assert 'var cityOrder=[0,1,2,3,5,11,4,6,8,7,10,9]' in html
 assert 'getString("cities", "0,3,4,7,9")' in java
-assert 'setMultiChoiceItems(CITIES' not in java and 'toggle.setOnCheckedChangeListener((v,on) -> chosen[index]=on)' in java
+assert 'setMultiChoiceItems(CITIES' not in java and 'toggle.setOnCheckedChangeListener((v,on) -> {' in java
+assert 'MAX_WORLD_CITIES = 3' in java and 'WorldCities.limit(selected,CITY_ORDER,MAX_WORLD_CITIES)' in java
+assert 'WorldCities.count(chosen)>=MAX_WORLD_CITIES' in java and 'v.setChecked(false)' in java
+assert 'R.drawable.ic_calendar_add,"Pilih kota"' in java
+assert 'id="previewCitiesButton" type="button" aria-label="Pilih kota"' in html
+assert "cityBox.querySelectorAll('input:checked').length>3" in html
+assert 'world-city-time { flex:none; text-align:right' in html
+assert '.clock-stage:has([data-clock-panel="world"]:not([hidden]))' in html
+assert 'hud.setEditorOpen(selected == 1 || selected == 2)' in java
+# At the target phone size, title and three rows fit without scrolling.
+width,height=405,854; gap=8; dial=min(width-2*gap,height-2*gap-480)
+panel=height-(gap+dial+4+64)-16
+assert panel >= 8+48+8+3*(56+6)+20
+assert 'time.setGravity(Gravity.END)' in java and 'date.setGravity(Gravity.END)' in java
+assert 'lap.addView(lapLine("Total",formatElapsed(total)))' in java
+assert 'duration.setGravity(Gravity.END)' in java
+assert "['Total',format(value,true)]" in html and 'stopwatch-lap-time { flex:none; text-align:right' in html
 assert 'row.setGravity(Gravity.CENTER_VERTICAL)' in java and 'new LinearLayout.LayoutParams(0,-1,1)' in java
 assert 'input.setAttribute(\'role\',\'switch\')' in html and 'clock-city-name { flex:1; min-width:0' in html
 for value in ('timerHours=alarmWheel(999','timerMinutes=alarmWheel(59','timerSeconds=alarmWheel(59','String.valueOf(timerHours.getValue())','ClockAlarms.scheduleAt(this,ClockAlarms.TIMER_FIRE','ClockAlarms.cancelTimer(this)'):

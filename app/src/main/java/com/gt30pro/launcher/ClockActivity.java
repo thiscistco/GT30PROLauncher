@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -53,6 +54,7 @@ public class ClockActivity extends SwipeBackActivity {
     private static final String[] CITIES = {"Jakarta", "Makassar", "Jayapura", "Singapore", "Tokyo", "Seoul", "Dubai", "London", "Paris", "New York", "Los Angeles", "Sydney"};
     // Keep the original city indices for existing saved selections. Overseas order is
     // approximate great-circle distance from Jakarta; Indonesian cities come first.
+    private static final int MAX_WORLD_CITIES = 3;
     private static final int[] CITY_ORDER = {0,1,2,3,5,11,4,6,8,7,10,9};
     private static final String[] ZONES = {"Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura", "Asia/Singapore", "Asia/Tokyo", "Asia/Seoul", "Asia/Dubai", "Europe/London", "Europe/Paris", "America/New_York", "America/Los_Angeles", "Australia/Sydney"};
     private static final String[] DAYS = {"Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"};
@@ -123,7 +125,7 @@ public class ClockActivity extends SwipeBackActivity {
         if (stage.getHeight() <= 0) return;
         float density=getResources().getDisplayMetrics().density;
         int top=Math.round(ClockHudView.frameGap(stage.getWidth(),stage.getHeight(),density)
-                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,(tab == 2 || (alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE))) + dp(4));
+                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,((tab == 1 || tab == 2) || (alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE))) + dp(4));
         top=Math.max(0,Math.min(top,stage.getHeight()-dp(64)));
         FrameLayout.LayoutParams params=(FrameLayout.LayoutParams) tabsScroll.getLayoutParams();
         if (params.topMargin != top) { params.topMargin=top; tabsScroll.setLayoutParams(params); }
@@ -157,7 +159,7 @@ public class ClockActivity extends SwipeBackActivity {
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     private void showTab(int selected) {
         saveTimerDraft(); timerHours = null; timerMinutes = null; timerSeconds = null;
-        hud.setEditorOpen(selected == 2);
+        hud.setEditorOpen(selected == 1 || selected == 2);
         tab = selected; tabs.removeAllViews(); content.removeAllViews(); alarmRows.clear(); lastAlarmSecond=-1; alarmEditor=null; soundButton=null; timerDisplay = null; stopwatchDisplay = null; worldList = null;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = i;
@@ -383,11 +385,12 @@ public class ClockActivity extends SwipeBackActivity {
         boolean[] selected = new boolean[CITIES.length];
         String saved = ClockAlarms.prefs(this).getString("cities", "0,3,4,7,9");
         for (String s : saved.split(",")) try { int i=Integer.parseInt(s); if(i>=0 && i<selected.length) selected[i]=true; } catch(NumberFormatException ignored) { }
-        return selected;
+        return WorldCities.limit(selected,CITY_ORDER,MAX_WORLD_CITIES);
     }
     private void showWorld() {
-        content.addView(text("JAM DUNIA", 19, AMBER)); addSpace(content,12);
-        content.addView(button("Pilih kota", () -> {
+        LinearLayout heading=new LinearLayout(this); heading.setGravity(Gravity.CENTER_VERTICAL);
+        heading.addView(text("JAM DUNIA",19,AMBER),new LinearLayout.LayoutParams(0,-2,1));
+        ImageButton choose=alarmOption(R.drawable.ic_calendar_add,"Pilih kota",() -> {
             boolean[] chosen=selectedCities();
             ScrollView chooser=new ScrollView(this);
             LinearLayout list=new LinearLayout(this); list.setOrientation(LinearLayout.VERTICAL); list.setPadding(dp(16),0,dp(16),0);
@@ -400,7 +403,12 @@ public class ClockActivity extends SwipeBackActivity {
                 toggle.setThumbTintList(new ColorStateList(states,new int[]{ui.selectedText,ui.dark ? ui.card : ui.ink}));
                 toggle.setTrackTintList(new ColorStateList(states,new int[]{ui.selected,ui.border}));
                 toggle.setContentDescription(CITIES[index]); toggle.setChecked(chosen[index]);
-                toggle.setOnCheckedChangeListener((v,on) -> chosen[index]=on); row.addView(toggle,new LinearLayout.LayoutParams(-2,dp(48)));
+                toggle.setOnCheckedChangeListener((v,on) -> {
+                    if (on && WorldCities.count(chosen)>=MAX_WORLD_CITIES) {
+                        v.setChecked(false); Toast.makeText(this,"Maksimal 3 kota. Nonaktifkan kota lain terlebih dahulu.",Toast.LENGTH_SHORT).show(); return;
+                    }
+                    chosen[index]=on;
+                }); row.addView(toggle,new LinearLayout.LayoutParams(-2,dp(48)));
                 list.addView(row,new LinearLayout.LayoutParams(-1,dp(56)));
             }
             chooser.addView(list);
@@ -408,13 +416,24 @@ public class ClockActivity extends SwipeBackActivity {
                 StringBuilder b=new StringBuilder(); for(int i=0;i<chosen.length;i++) if(chosen[i]) { if(b.length()>0)b.append(',');b.append(i); }
                 ClockAlarms.prefs(this).edit().putString("cities",b.toString()).apply(); showTab(1);
             }).setNegativeButton("Batal",null).show();
-        })); addSpace(content,12);
+        }); choose.setPadding(dp(16),dp(16),dp(16),dp(16)); heading.addView(choose,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        content.addView(heading); addSpace(content,8);
         worldList = new LinearLayout(this); worldList.setOrientation(LinearLayout.VERTICAL); content.addView(worldList); lastWorldSecond=-1; updateWorld();
     }
     private void updateWorld() {
         if (worldList == null) return; worldList.removeAllViews(); boolean[] chosen=selectedCities(); Date now=new Date(); boolean any=false;
-        for(int i : CITY_ORDER) if(chosen[i]) { any=true; SimpleDateFormat f=new SimpleDateFormat("HH:mm  ·  EEE, d MMM",new Locale("id","ID")); f.setTimeZone(TimeZone.getTimeZone(ZONES[i]));
-            TextView row=text(CITIES[i]+"\n"+f.format(now),16,AMBER); row.setPadding(dp(14),dp(12),dp(14),dp(12)); row.setBackground(bg(ui.card)); worldList.addView(row); addSpace(worldList,8); }
+        for(int i : CITY_ORDER) if(chosen[i]) {
+            any=true; TimeZone zone=TimeZone.getTimeZone(ZONES[i]);
+            SimpleDateFormat timeFormat=new SimpleDateFormat("HH:mm",new Locale("id","ID")); timeFormat.setTimeZone(zone);
+            SimpleDateFormat dateFormat=new SimpleDateFormat("EEE, d MMM",new Locale("id","ID")); dateFormat.setTimeZone(zone);
+            LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL); row.setPadding(dp(12),dp(6),dp(12),dp(6)); row.setBackground(bg(ui.card));
+            TextView city=text(CITIES[i],16,AMBER); city.setSingleLine(true); city.setEllipsize(TextUtils.TruncateAt.END); city.setPadding(0,0,dp(8),0);
+            row.addView(city,new LinearLayout.LayoutParams(0,-2,1));
+            LinearLayout right=new LinearLayout(this); right.setOrientation(LinearLayout.VERTICAL); right.setGravity(Gravity.END);
+            TextView time=text(timeFormat.format(now),17,AMBER); time.setGravity(Gravity.END); right.addView(time);
+            TextView date=text(dateFormat.format(now),11,MUTED); date.setGravity(Gravity.END); right.addView(date);
+            row.addView(right,new LinearLayout.LayoutParams(-2,-2)); worldList.addView(row,new LinearLayout.LayoutParams(-1,dp(56))); addSpace(worldList,6);
+        }
         if(!any) worldList.addView(text("Pilih kota untuk ditampilkan.",13,MUTED));
     }
     private int draftValue(String value,int max) {
@@ -455,7 +474,18 @@ public class ClockActivity extends SwipeBackActivity {
         row.addView(alarmOption(R.drawable.ic_clock_action_lap,"Catat lap",()->{ if(!swRunning)return;laps.put(elapsed());saveStopwatch();showTab(3); }),lapParams);
         LinearLayout.LayoutParams resetParams=new LinearLayout.LayoutParams(dp(48),dp(48)); resetParams.leftMargin=dp(8);
         row.addView(alarmOption(R.drawable.ic_clock_action_reset,"Reset stopwatch",()->{swRunning=false;swAccumulated=0;swStarted=0;laps=new JSONArray();saveStopwatch();showTab(3);}),resetParams);content.addView(row);addSpace(content,12);
-        for(int i=laps.length()-1;i>=0;i--) { long total=laps.optLong(i); long prior=i>0?laps.optLong(i-1):0; TextView lap=text("Lap "+(i+1)+"   "+formatElapsed(total-prior)+"\nTotal  "+formatElapsed(total),13,MUTED);lap.setPadding(dp(8),dp(6),dp(8),dp(6));content.addView(lap); }
+        for(int i=laps.length()-1;i>=0;i--) {
+            long total=laps.optLong(i); long prior=i>0?laps.optLong(i-1):0;
+            LinearLayout lap=new LinearLayout(this); lap.setOrientation(LinearLayout.VERTICAL); lap.setPadding(dp(8),dp(6),dp(8),dp(6));
+            lap.addView(lapLine("Lap " + (i+1),formatElapsed(total-prior)));
+            lap.addView(lapLine("Total",formatElapsed(total))); content.addView(lap);
+        }
+    }
+    private LinearLayout lapLine(String label, String value) {
+        LinearLayout line=new LinearLayout(this); line.setGravity(Gravity.CENTER_VERTICAL);
+        TextView caption=text(label,13,MUTED); line.addView(caption,new LinearLayout.LayoutParams(0,-2,1));
+        TextView duration=text(value,13,MUTED); duration.setGravity(Gravity.END); line.addView(duration,new LinearLayout.LayoutParams(-2,-2));
+        return line;
     }
     private int bootCount() { return Settings.Global.getInt(getContentResolver(),Settings.Global.BOOT_COUNT,0); }
     private void restoreStopwatch() {

@@ -579,7 +579,7 @@
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; padding:2.54mm 3.175mm; }
   #clockPage .app-top { flex:none; }
   .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
-  .clock-stage:has([data-clock-panel="alarm"]:not([hidden]) #previewAlarmForm:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
+  .clock-stage:has([data-clock-panel="alarm"]:not([hidden]) #previewAlarmForm:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
   .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
@@ -643,6 +643,21 @@
   .alarm-card-switch input:focus-visible + .alarm-switch-track { outline:2px solid var(--app-text); outline-offset:2px; }
   #clockPage .alarm-delete { min-height:7.62mm; flex:0 0 7.62mm; width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
   .alarm-delete-icon { mask-image:url('assets/alarm-delete.svg?v=1'); -webkit-mask-image:url('assets/alarm-delete.svg?v=1'); }
+  #clockPage [data-clock-panel="world"] { padding-top:0; }
+  .clock-world-header { display:flex; align-items:center; justify-content:space-between; gap:2mm; }
+  .clock-world-header h3 { margin:0; line-height:1.2; }
+  #clockPage .clock-world-choose { min-height:7.62mm; width:7.62mm; height:7.62mm; padding:2.54mm; display:grid; place-items:center; }
+  #clockPage .clock-world-choose .calendar-action-icon { width:2.54mm; height:2.54mm; }
+  #previewCities:not([hidden]) { position:absolute; z-index:4; inset:0; overflow-y:auto; margin:0; box-shadow:0 1mm 3mm #0004; }
+  .city-chooser-header { display:flex; align-items:center; justify-content:space-between; gap:1mm; position:sticky; top:-3mm; background:var(--app-card); }
+  .city-limit { font-size:2.2mm; color:var(--app-muted); margin:1mm 0; }
+  #clockPage .world-city-row { display:flex; align-items:center; gap:1mm; height:8.89mm; margin-top:.95mm; padding:.95mm 1.9mm; }
+  .world-city-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .world-city-time { flex:none; text-align:right; font-size:2.8mm; }
+  .world-city-date { font-size:1.75mm; color:var(--app-muted); }
+  .stopwatch-lap-line { display:flex; align-items:center; gap:1mm; }
+  .stopwatch-lap-caption { flex:1; min-width:0; }
+  .stopwatch-lap-time { flex:none; text-align:right; font-variant-numeric:tabular-nums; }
   #clockPage .clock-city { display:flex; align-items:center; gap:1.27mm; margin:0; min-height:8.89mm; }
   .clock-city-name { flex:1; min-width:0; overflow-wrap:anywhere; }
   #clockPage .clock-city .alarm-card-switch { display:inline-flex; flex:none; margin:0; }
@@ -830,8 +845,8 @@
                   <div id="previewAlarms" class="clock-muted">Belum ada alarm. Tambahkan pengingat pertama.</div>
                 </div>
                 <div class="clock-section" data-clock-panel="world" hidden>
-                  <h3>JAM DUNIA</h3><button class="clock-action clock-wide" id="previewCitiesButton" type="button">Pilih kota</button>
-                  <div class="alarm-form" id="previewCities" hidden></div><div id="previewWorld"></div>
+                  <div class="clock-world-header"><h3>JAM DUNIA</h3><button class="clock-action clock-world-choose" id="previewCitiesButton" type="button" aria-label="Pilih kota" title="Pilih kota" aria-expanded="false" aria-controls="previewCities"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
+                  <div class="alarm-form" id="previewCities" hidden><div class="city-chooser-header"><span>Pilih kota</span><button class="clock-action clock-world-choose" id="previewCitiesClose" type="button" aria-label="Tutup pilihan kota" title="Tutup"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button></div><p id="previewCityLimit" class="city-limit" role="status">Maksimal 3 kota</p></div><div id="previewWorld"></div>
                 </div>
                 <div class="clock-section" data-clock-panel="timer" hidden>
                   <h3>TIMER</h3><div class="clock-display" id="previewTimerDisplay">00:00:00</div>
@@ -1249,17 +1264,25 @@
       var city=cities[index], row=document.createElement('div'); row.className='clock-city';
       var name=document.createElement('span'); name.className='clock-city-name'; name.textContent=city[0]; row.appendChild(name);
       var label=document.createElement('label'); label.className='alarm-card-switch';
-      var input=document.createElement('input'); input.type='checkbox'; input.setAttribute('role','switch'); input.setAttribute('aria-label',city[0]); input.dataset.cityIndex=index; input.checked=[0,3,4,7,9].indexOf(index)!==-1;
+      var input=document.createElement('input'); input.type='checkbox'; input.setAttribute('role','switch'); input.setAttribute('aria-label',city[0]); input.dataset.cityIndex=index; input.checked=[0,3,4].indexOf(index)!==-1;
       var track=document.createElement('span'); track.className='alarm-switch-track'; track.setAttribute('aria-hidden','true');
-      input.addEventListener('change',renderWorld); label.appendChild(input); label.appendChild(track); row.appendChild(label); cityBox.appendChild(row);
+      input.addEventListener('change',function(){
+        if (input.checked && cityBox.querySelectorAll('input:checked').length>3) { input.checked=false; byId('previewCityLimit').textContent='Maksimal 3 kota. Nonaktifkan kota lain terlebih dahulu.'; }
+        else byId('previewCityLimit').textContent='Maksimal 3 kota';
+        renderWorld();
+      }); label.appendChild(input); label.appendChild(track); row.appendChild(label); cityBox.appendChild(row);
     });
-    byId('previewCitiesButton').addEventListener('click', function () { cityBox.hidden = !cityBox.hidden; });
+    byId('previewCitiesButton').addEventListener('click', function () { cityBox.hidden = !cityBox.hidden; this.setAttribute('aria-expanded',String(!cityBox.hidden)); });
+    byId('previewCitiesClose').addEventListener('click', function () { cityBox.hidden=true; byId('previewCitiesButton').setAttribute('aria-expanded','false'); byId('previewCitiesButton').focus(); });
     function renderWorld() {
       var box = byId('previewWorld'); box.textContent = '';
       cityBox.querySelectorAll('input').forEach(function (input) {
         if (!input.checked) return; var city=cities[Number(input.dataset.cityIndex)];
-        var row = document.createElement('div'); row.className = 'clock-entry';
-        row.textContent = city[0] + '  ·  ' + new Intl.DateTimeFormat('id-ID', { timeZone: city[1], hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date());
+        var row = document.createElement('div'); row.className = 'clock-entry world-city-row';
+        var name=document.createElement('span'); name.className='world-city-name'; name.textContent=city[0]; row.appendChild(name);
+        var right=document.createElement('div'); right.className='world-city-time';
+        var time=document.createElement('div'); time.textContent=new Intl.DateTimeFormat('id-ID', { timeZone: city[1], hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date()).replace('.',':'); right.appendChild(time);
+        var date=document.createElement('div'); date.className='world-city-date'; date.textContent=new Intl.DateTimeFormat('id-ID', { timeZone: city[1], weekday:'short', day:'numeric', month:'short' }).format(new Date()); right.appendChild(date); row.appendChild(right);
         box.appendChild(row);
       });
     }
@@ -1297,7 +1320,12 @@
     });
     byId('previewLap').addEventListener('click', function () {
       if (!running) return; var value = current(), previous = laps.length ? laps[laps.length-1] : 0; laps.push(value);
-      var row = document.createElement('div'); row.className = 'clock-entry'; row.textContent = 'Lap ' + laps.length + '   ' + format(value-previous, true) + '  ·  Total ' + format(value, true); byId('previewLaps').prepend(row);
+      var row = document.createElement('div'); row.className = 'clock-entry stopwatch-lap';
+      [['Lap '+laps.length,format(value-previous,true)],['Total',format(value,true)]].forEach(function(pair){
+        var line=document.createElement('div'); line.className='stopwatch-lap-line';
+        var caption=document.createElement('span'); caption.className='stopwatch-lap-caption'; caption.textContent=pair[0]; line.appendChild(caption);
+        var duration=document.createElement('span'); duration.className='stopwatch-lap-time'; duration.textContent=pair[1]; line.appendChild(duration); row.appendChild(line);
+      }); byId('previewLaps').prepend(row);
     });
     byId('previewReset').addEventListener('click', function () { elapsed = 0; running = false; laps = []; byId('previewLaps').textContent = ''; updateStopwatchButton(); });
     setInterval(function () {
