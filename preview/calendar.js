@@ -52,18 +52,34 @@
       updateInfo = updater.getState(); holidayData = updateInfo.data;
     } catch (ignored) { updater = null; }
     var note = byId('calendarStorageNote'), error = byId('calendarError');
-    var theme = byId('calendarTheme'), calendarPage = byId('calendarPage'), media = win.matchMedia ? win.matchMedia('(prefers-color-scheme: dark)') : null;
-    var themeChoice = 'system';
-    try { var savedTheme = win.localStorage.getItem('gt30-calendar-theme'); if (['system','light','dark'].indexOf(savedTheme) >= 0) themeChoice = savedTheme; } catch (ignored) {}
+    var theme = byId('calendarTheme'), themeIcon = byId('calendarThemeIcon'), themeMenu = byId('calendarThemeMenu');
+    var calendarPage = byId('calendarPage'), media = win.matchMedia ? win.matchMedia('(prefers-color-scheme: dark)') : null;
+    var themeChoice = 'system', names = {system:'Sistem', light:'Terang', dark:'Gelap'};
+    var options = {system:byId('calendarThemeSystem'), light:byId('calendarThemeLight'), dark:byId('calendarThemeDark')};
+    try { var savedTheme = win.localStorage.getItem('gt30-calendar-theme'); if (Object.prototype.hasOwnProperty.call(names, savedTheme)) themeChoice = savedTheme; } catch (ignored) {}
     function applyTheme() {
       var dark = themeChoice === 'dark' || (themeChoice === 'system' && media && media.matches);
       if (calendarPage) calendarPage.setAttribute('data-theme', dark ? 'dark' : 'light');
-      if (theme) theme.value = themeChoice;
+      if (themeIcon) themeIcon.setAttribute('class', 'calendar-theme-icon calendar-theme-' + themeChoice);
+      if (theme) theme.setAttribute('aria-label', 'Tema: ' + names[themeChoice] + '. Pilih tema kalender');
+      Object.keys(options).forEach(function (key) { if (options[key]) options[key].setAttribute('aria-pressed', String(key === themeChoice)); });
     }
-    if (theme) theme.addEventListener('change', function () {
-      themeChoice = ['system','light','dark'].indexOf(theme.value) >= 0 ? theme.value : 'system';
-      try { win.localStorage.setItem('gt30-calendar-theme', themeChoice); } catch (ignored) {}
-      applyTheme();
+    function closeThemeMenu() { if (themeMenu) themeMenu.hidden = true; if (theme) theme.setAttribute('aria-expanded','false'); }
+    if (theme && themeMenu) theme.addEventListener('click', function () { themeMenu.hidden = !themeMenu.hidden; theme.setAttribute('aria-expanded', String(!themeMenu.hidden)); });
+    Object.keys(options).forEach(function (key) {
+      if (!options[key]) return;
+      options[key].addEventListener('click', function () {
+        themeChoice = key; try { win.localStorage.setItem('gt30-calendar-theme', themeChoice); } catch (ignored) {}
+        applyTheme(); closeThemeMenu(); if (theme) theme.focus();
+      });
+    });
+    function themeEscape(event) {
+      if (event.key === 'Escape' && themeMenu && !themeMenu.hidden) { event.preventDefault(); event.stopPropagation(); closeThemeMenu(); if (theme) theme.focus(); }
+    }
+    if (themeMenu) themeMenu.addEventListener('keydown', themeEscape);
+    if (theme) theme.addEventListener('keydown', themeEscape);
+    if (doc.addEventListener) doc.addEventListener('click', function (event) {
+      if (themeMenu && !themeMenu.hidden && theme && theme.parentNode && !theme.parentNode.contains(event.target)) closeThemeMenu();
     });
     if (media) { if (media.addEventListener) media.addEventListener('change', applyTheme); else if (media.addListener) media.addListener(applyTheme); }
     applyTheme();
@@ -164,7 +180,7 @@
       });
     }
     function changeMonth(delta) { selected = shiftMonth(selected, delta); discardForm(); render(); }
-    win.calendarOnOpen = function () { selected = today(); discardForm(); render(); if (updater) updater.refresh(true); };
+    win.calendarOnOpen = function () { selected = today(); discardForm(); closeThemeMenu(); render(); if (updater) updater.refresh(true); };
     byId('calendarRefresh').addEventListener('click', function () { if (updater) updater.refresh(true); });
     var monthMenu = byId('calendarMonthMenu');
     if (monthMenu) byId('calendarMonth').addEventListener('click', function () { monthMenu.hidden = !monthMenu.hidden; this.setAttribute('aria-expanded', String(!monthMenu.hidden)); });

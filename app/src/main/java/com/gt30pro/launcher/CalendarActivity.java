@@ -14,7 +14,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -196,13 +199,35 @@ public class CalendarActivity extends SwipeBackActivity {
     }
     private void showDialog(AlertDialog popup) { popup.setOnShowListener(d -> styleDialog(popup)); popup.show(); }
     private String themeLabel() { return "dark".equals(themeChoice) ? "Gelap" : "light".equals(themeChoice) ? "Terang" : "Sistem"; }
-    private void chooseTheme() {
+    private int themeIcon(String value) {
+        return "dark".equals(value) ? R.drawable.ic_calendar_theme_dark : "light".equals(value) ? R.drawable.ic_calendar_theme_light : R.drawable.ic_calendar_theme_system;
+    }
+    private ImageButton themeButton(String value, boolean selected) {
+        ImageButton button = new ImageButton(this); button.setImageResource(themeIcon(value));
+        button.setColorFilter(selected ? selectedText : ink); button.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        button.setPadding(dp(12),dp(12),dp(12),dp(12));
+        button.setBackground(selected ? bg(selectionColor) : bg(controlColor));
+        String label = "dark".equals(value) ? "Gelap" : "light".equals(value) ? "Terang" : "Ikuti perangkat";
+        button.setContentDescription("Tema " + label + (selected ? ", dipilih" : ""));
+        button.setTooltipText("Tema " + label);
+        button.setSelected(selected); return button;
+    }
+    private void chooseTheme(View anchor) {
         final String[] values = {"system", "light", "dark"};
-        int selectedIndex = "light".equals(themeChoice) ? 1 : "dark".equals(themeChoice) ? 2 : 0;
-        showDialog(dialog().setTitle("Tema kalender").setSingleChoiceItems(new String[]{"Ikuti perangkat", "Terang", "Gelap"}, selectedIndex, (d, which) -> {
-            themeChoice = values[which]; getSharedPreferences("calendar_appearance", MODE_PRIVATE).edit().putString("theme", themeChoice).apply();
-            d.dismiss(); applyPalette(); render();
-        }).setNegativeButton("Batal", null).create());
+        LinearLayout choices = new LinearLayout(this); choices.setGravity(Gravity.CENTER);
+        choices.setPadding(dp(4),dp(4),dp(4),dp(4));
+        PopupWindow popup = new PopupWindow(choices, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true);
+        popup.setBackgroundDrawable(bg(cardColor)); popup.setOutsideTouchable(true); popup.setElevation(dp(6));
+        for (String value : values) {
+            ImageButton option = themeButton(value, value.equals(themeChoice));
+            LinearLayout.LayoutParams size = new LinearLayout.LayoutParams(dp(48), dp(48)); size.setMargins(dp(2),0,dp(2),0);
+            choices.addView(option, size);
+            option.setOnClickListener(v -> {
+                themeChoice = value; getSharedPreferences("calendar_appearance", MODE_PRIVATE).edit().putString("theme", themeChoice).apply();
+                popup.dismiss(); applyPalette(); render();
+            });
+        }
+        popup.showAsDropDown(anchor, 0, 0, Gravity.END);
     }
     private void changeMonth(int direction) { selected = CalendarDates.shiftMonth(selected, direction); render(); }
     private void chooseMonth() {
@@ -339,7 +364,12 @@ public class CalendarActivity extends SwipeBackActivity {
         LinearLayout top = new LinearLayout(this); top.setGravity(Gravity.CENTER_VERTICAL);
         TextView back = text("Kembali", 14, ink); back.setMinHeight(dp(48)); back.setGravity(Gravity.CENTER_VERTICAL);
         back.setOnClickListener(v -> finish()); top.addView(back,new LinearLayout.LayoutParams(0,-2,1));
-        top.addView(button("Tema: " + themeLabel(), this::chooseTheme)); page.addView(top); space(8);
+        ImageButton theme = themeButton(themeChoice, false);
+        theme.setBackgroundColor(Color.TRANSPARENT);
+        theme.setContentDescription("Tema: " + themeLabel() + ". Pilih tema kalender");
+        theme.setTooltipText("Pilih tema kalender");
+        theme.setOnClickListener(this::chooseTheme);
+        top.addView(theme,new LinearLayout.LayoutParams(dp(48),dp(48))); page.addView(top); space(8);
         LinearLayout root = page;
         LinearLayout card = new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL);
         card.setPadding(dp(8),dp(8),dp(8),dp(8)); card.setBackground(bg(cardColor));

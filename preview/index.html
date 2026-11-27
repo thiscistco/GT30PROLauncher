@@ -420,8 +420,17 @@
   .calendar-page { --cal-bg:#f4f7fa; --cal-card:#fff; --cal-text:#304355; --cal-muted:#526477; --cal-control:#e3eaf0; --cal-day:#dce5ed; --cal-select:#304355; --cal-selected-text:#fff; --cal-weekend:#b3263b; --cal-selected-weekend:#ff9ea8; --cal-border:#cbd6df; --cal-event:#e5ecf2; --cal-observe:#9b5700; background:var(--cal-bg); color:var(--cal-text); }
   .calendar-page[data-theme="dark"] { color-scheme:dark; --cal-bg:#101820; --cal-card:#19252f; --cal-text:#e9f0f5; --cal-muted:#b9c8d3; --cal-control:#2a3b49; --cal-day:#344957; --cal-select:#dce8f0; --cal-selected-text:#172a38; --cal-weekend:#ff8994; --cal-selected-weekend:#a6152b; --cal-border:#516776; --cal-event:#263743; --cal-observe:#ffc077; }
   .calendar-top { display:flex; align-items:center; justify-content:space-between; gap:2mm; margin-bottom:2mm; }
-  .calendar-theme { color:var(--cal-muted); display:flex; align-items:center; gap:1mm; font-size:2.4mm; }
-  .calendar-theme select { color:var(--cal-text); background:var(--cal-control); border:1px solid var(--cal-border); border-radius:3mm; padding:2mm; min-height:10mm; font:700 2.4mm 'Doto', monospace; }
+  .calendar-theme { position:relative; }
+  .calendar-theme-button, .calendar-theme-option { display:grid; place-items:center; width:7.62mm; height:7.62mm; padding:0; border:0; border-radius:2.5mm; background:transparent; color:var(--cal-text); cursor:pointer; }
+  .calendar-theme-button:focus-visible, .calendar-theme-option:focus-visible { outline:1px solid var(--cal-text); outline-offset:-1px; }
+  .calendar-theme-icon { display:block; width:3.81mm; height:3.81mm; background:currentColor; mask-size:contain; mask-repeat:no-repeat; mask-position:center; -webkit-mask-size:contain; -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; }
+  .calendar-theme-system { mask-image:url('assets/calendar-theme-system.svg?v=1'); -webkit-mask-image:url('assets/calendar-theme-system.svg?v=1'); }
+  .calendar-theme-light { mask-image:url('assets/calendar-theme-light.svg?v=1'); -webkit-mask-image:url('assets/calendar-theme-light.svg?v=1'); }
+  .calendar-theme-dark { mask-image:url('assets/calendar-theme-dark.svg?v=1'); -webkit-mask-image:url('assets/calendar-theme-dark.svg?v=1'); }
+  .calendar-theme-menu { position:absolute; top:100%; right:0; z-index:3; display:flex; gap:1mm; padding:1mm; border:1px solid var(--cal-border); border-radius:3mm; background:var(--cal-card); box-shadow:0 1mm 2mm #0002; }
+  .calendar-theme-menu[hidden] { display:none; }
+  .calendar-theme-option { background:var(--cal-control); }
+  .calendar-theme-option[aria-pressed="true"] { background:var(--cal-select); color:var(--cal-selected-text); }
   .calendar-page .clock-back, .calendar-page .clock-section h3 { color:var(--cal-text); }
   .calendar-card { background:var(--cal-card); }
   .calendar-page .clock-action { color:var(--cal-text); background:var(--cal-control); border-color:var(--cal-border); }
@@ -658,7 +667,12 @@
               </section>
               <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>
                 <div class="calendar-top"><button class="clock-back" id="calendarBack" type="button">Kembali</button>
-                  <label class="calendar-theme">Tema <select id="calendarTheme" aria-label="Tema kalender"><option value="system">Sistem</option><option value="light">Terang</option><option value="dark">Gelap</option></select></label></div>
+                  <div class="calendar-theme"><button class="calendar-theme-button" id="calendarTheme" type="button" aria-label="Tema: Sistem. Pilih tema kalender" aria-expanded="false" aria-controls="calendarThemeMenu" title="Pilih tema kalender"><span class="calendar-theme-icon calendar-theme-system" id="calendarThemeIcon" aria-hidden="true"></span></button>
+                    <div class="calendar-theme-menu" id="calendarThemeMenu" role="group" aria-label="Pilihan tema kalender" hidden>
+                      <button class="calendar-theme-option" id="calendarThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button>
+                      <button class="calendar-theme-option" id="calendarThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button>
+                      <button class="calendar-theme-option" id="calendarThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button>
+                    </div></div></div>
                 <div class="calendar-card">
                 <div class="calendar-nav">
                   <button class="clock-action calendar-month" id="calendarMonth" type="button" aria-label="Pilih bulan" aria-expanded="false"></button>
@@ -977,7 +991,7 @@
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=7"></script>
+<script src="calendar.js?v=8"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

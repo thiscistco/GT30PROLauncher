@@ -25,8 +25,8 @@ class Element {
 const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
 function createUI(){
  const ids = {};
- for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarMonthMenu','calendarWarning','calendarDayLabel']) ids[id]=new Element();
- ids.calendarMonthMenu.hidden=true; ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
+ for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel']) ids[id]=new Element();
+ ids.calendarThemeMenu.hidden=true; ids.calendarMonthMenu.hidden=true; ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
  const media={matches:true,addEventListener(type,fn){this.change=fn;}};
  const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer,matchMedia:()=>media,setTimeout};
@@ -55,7 +55,7 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=7"/);
+assert.match(html,/src="calendar\.js\?v=8"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
@@ -109,10 +109,11 @@ assert(!html.includes('id="calendarPrev" type="button" aria-label="Bulan sebelum
 
 
 storage.clear(); const interactive=createUI();
-assert.equal(interactive.calendarTheme.value,'system'); assert.equal(interactive.calendarPage.attrs['data-theme'],'dark');
+assert.match(interactive.calendarTheme.attrs['aria-label'],/Sistem/); assert.match(interactive.calendarThemeIcon.attrs.class,/system/); assert.equal(interactive.calendarPage.attrs['data-theme'],'dark');
 interactive._media.matches=false;interactive._media.change();assert.equal(interactive.calendarPage.attrs['data-theme'],'light');
-interactive.calendarTheme.value='dark';interactive.calendarTheme.fire('change');assert.equal(storage.get('gt30-calendar-theme'),'dark');
+interactive.calendarTheme.fire('click');assert(!interactive.calendarThemeMenu.hidden);assert.equal(interactive.calendarTheme.attrs['aria-expanded'],'true');interactive.calendarThemeDark.fire('click');assert(interactive.calendarThemeMenu.hidden);assert.equal(storage.get('gt30-calendar-theme'),'dark');assert.match(interactive.calendarThemeIcon.attrs.class,/dark/);assert.equal(interactive.calendarThemeDark.attrs['aria-pressed'],'true');
 interactive._media.change();assert.equal(interactive.calendarPage.attrs['data-theme'],'dark');
+const restored=createUI();assert.match(restored.calendarThemeIcon.attrs.class,/dark/);restored.calendarThemeLight.fire('click');assert.match(restored.calendarThemeIcon.attrs.class,/light/);assert.equal(restored.calendarPage.attrs['data-theme'],'light');restored.calendarThemeSystem.fire('click');assert.match(restored.calendarThemeIcon.attrs.class,/system/);
 const initialMonth=interactive.calendarMonth.textContent;
 function drag(x,y,x2,y2) {
  const e={pointerId:9,isPrimary:true,button:0,clientX:x,clientY:y,cancelable:true};
@@ -125,3 +126,9 @@ interactive.calendarMonth.fire('click');assert(!interactive.calendarMonthMenu.hi
 interactive.calendarToday.fire('click');interactive.calendarAdd.fire('click');interactive.calendarTitle.value='Draft';
 interactive.calendarGrid.children.find(e=>e.attrs['aria-pressed']==='false').fire('click');assert(interactive.calendarForm.hidden);assert.equal(interactive.calendarTitle.value,'');
 console.log('Calendar preview: swipe, theme selection, system mode and discarded draft: OK');
+
+assert.match(html,/id="calendarThemeSystem"[^>]*aria-label="Ikuti perangkat"/);
+assert.match(html,/id="calendarThemeLight"[^>]*aria-label="Terang"/);
+assert.match(html,/id="calendarThemeDark"[^>]*aria-label="Gelap"/);
+assert.match(nativeCalendar,/setContentDescription\("Tema: " \+ themeLabel\(\)/);
+assert.match(nativeCalendar,/new PopupWindow\(/);

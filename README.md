@@ -22,7 +22,8 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 - **Super App** — grid ikon untuk Jam, Kalender dan cuaca (tanpa label suhu).
   Tanggal di homescreen dapat diketuk untuk langsung membuka Kalender; tombol
   kembali mengembalikan ke homescreen. Kalender memakai font Doto; tema dapat
-  dipilih Sistem (default, mengikuti perangkat), Terang, atau Gelap. Ketuk tanggal
+  dipilih lewat ikon titik: Sistem (layar berhuruf A, default mengikuti perangkat),
+  Terang (matahari), atau Gelap (bulan). Ketuk tanggal
   untuk melihat dan menambah acara; geser kisi tanggal ke kiri/kanan untuk pindah
   bulan, atau ketuk nama bulan untuk navigasi tanpa gestur. Akhir pekan dan libur
   nasional tetap merah. Informasi tambahan tersedia pada **Info kalender**.
