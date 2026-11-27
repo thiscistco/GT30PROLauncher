@@ -17,7 +17,7 @@ for (let i=0; i<4; i++) {
 }
 assert(html.indexOf('class="clock-stage"') < html.indexOf('<nav class="clock-tabs"'));
 assert.match(html, /#clockPage:not\(\[hidden\]\) \{ display:flex; flex-direction:column; overflow:hidden/);
-assert.match(html, /#clockPage \.clock-tabs \{ flex:none/);
+assert.match(html, /#clockPage \.clock-tabs \{ position:absolute/);
 assert.match(java, /R\.drawable\.ic_clock_alarm, R\.drawable\.ic_clock_world/);
 assert.match(java, /R\.drawable\.ic_clock_timer, R\.drawable\.ic_clock_stopwatch/);
 assert.match(java, /item\.setContentDescription\(TAB_NAMES\[i\]\)/);
@@ -33,7 +33,10 @@ assert.match(html, /#clockPage \.clock-tabs button:first-child \{ margin-left:au
 assert.match(html, /#clockPage \.clock-tabs button:last-child \{ margin-right:auto/);
 assert(!java.includes('tabsScroll.scrollTo('), 'tab changes must not force scroll on narrow screens');
 assert.match(java, /item\.setPadding\(dp\(12\), dp\(12\), dp\(12\), dp\(12\)\)/);
-assert(java.indexOf('page.addView(stage') < java.indexOf('page.addView(tabsScroll'));
+assert(java.indexOf('page.addView(stage') < java.indexOf('stage.addView(tabsScroll'));
+assert.match(html, /#clockHud:not\(\[hidden\]\) ~ \.clock-tabs \{ top:/);
+assert.match(java, /panelParams\.bottomMargin=dp\(64\)/);
+assert.match(java, /private void positionTabs\(\)/);
 const buttons = names.map(name => ({
   name, attrs:{'aria-pressed':'false'}, active:false,
   getAttribute(key){return key==='data-clock-tab' ? this.name : this.attrs[key]},

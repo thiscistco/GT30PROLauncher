@@ -2,6 +2,7 @@ package com.gt30pro.launcher;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
@@ -30,18 +31,27 @@ final class ClockHudView extends View {
         setContentDescription("Jam " + value);
         invalidate();
     }
+    // Reserve space under the dial for the four 48dp navigation targets.
+    static float frameGap(int width, int height, float density) {
+        return Math.min(8f*density, Math.min(width,height)*.05f);
+    }
+    static float dialSize(int width, int height, float density) {
+        float gap=frameGap(width,height,density);
+        return Math.max(0f,Math.min(width-2f*gap,height-2f*gap-80f*density));
+    }
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float density=getResources().getDisplayMetrics().density;
-        float gap=Math.min(8f*density, Math.min(getWidth(),getHeight())*.05f);
+        float gap=frameGap(getWidth(),getHeight(),density);
         RectF frame=new RectF(gap,gap,getWidth()-gap,getHeight()-gap);
         if (frame.width() <= 0 || frame.height() <= 0) return;
         float corner=Math.min(12f*density,Math.min(frame.width(),frame.height())/2f);
         paint.setStyle(Paint.Style.FILL); paint.setColor(card); canvas.drawRoundRect(frame,corner,corner,paint);
         paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(1f,density)); paint.setColor(border);
         canvas.drawRoundRect(frame,corner,corner,paint);
-        float size=Math.min(frame.width(),frame.height());
-        float cx=getWidth()/2f, cy=getHeight()/2f, radius=size*.43f;
+        float size=dialSize(getWidth(),getHeight(),density);
+        if (size <= 0) return;
+        float cx=getWidth()/2f, cy=gap+size/2f, radius=size*.43f;
         paint.setStyle(Paint.Style.FILL); paint.setColor(card); canvas.drawCircle(cx,cy,radius,paint);
         paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(1f,size*.004f)); paint.setColor(border);
         canvas.drawCircle(cx,cy,radius,paint);
@@ -57,10 +67,15 @@ final class ClockHudView extends View {
         double angle=Math.PI*2*second/60-Math.PI/2;
         paint.setStyle(Paint.Style.FILL); paint.setColor(ink);
         canvas.drawCircle(cx+(float)Math.cos(angle)*radius*.965f,cy+(float)Math.sin(angle)*radius*.965f,Math.max(2f,size*.012f),paint);
-        paint.setTypeface(doto); paint.setFontVariationSettings("'wght' 800"); paint.setTextSize(size*.135f); paint.setTextAlign(Paint.Align.CENTER);
-        float maxWidth=radius*1.52f, width=paint.measureText(value);
+        paint.setTypeface(doto); paint.setFontVariationSettings("'wght' 800"); paint.setTextSize(size*.105f); paint.setTextAlign(Paint.Align.CENTER);
+        float padding=Math.min(8f*density,size*.04f), maxWidth=Math.max(1f,radius*1.52f-2f*padding);
+        float width=paint.measureText(value);
         if (width>maxWidth) paint.setTextSize(paint.getTextSize()*maxWidth/width);
-        Paint.FontMetrics metrics=paint.getFontMetrics();
-        canvas.drawText(value,cx,cy-(metrics.ascent+metrics.descent)/2f,paint);
+        width=paint.measureText(value); Paint.FontMetrics metrics=paint.getFontMetrics();
+        float height=metrics.descent-metrics.ascent+padding*1.4f;
+        RectF label=new RectF(cx-width/2f-padding,cy-height/2f,cx+width/2f+padding,cy+height/2f);
+        float labelCorner=Math.min(12f*density,height/2f);
+        paint.setColor(0xFF19252F); canvas.drawRoundRect(label,labelCorner,labelCorner,paint);
+        paint.setColor(Color.WHITE); canvas.drawText(value,cx,cy-(metrics.ascent+metrics.descent)/2f,paint);
     }
 }

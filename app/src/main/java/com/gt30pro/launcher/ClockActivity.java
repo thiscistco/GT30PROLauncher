@@ -57,6 +57,7 @@ public class ClockActivity extends SwipeBackActivity {
     private Typeface doto;
     private LinearLayout content, tabs;
     private HorizontalScrollView tabsScroll;
+    private FrameLayout stage;
     private ClockHudView hud;
     private ScrollView panelScroll;
     private long lastHudSecond = -1;
@@ -95,16 +96,28 @@ public class ClockActivity extends SwipeBackActivity {
         });
         LinearLayout header=ui.header(this, doto, "Jam");
         header.getChildAt(0).setOnClickListener(v -> onBackPressed()); page.addView(header);
-        FrameLayout stage = new FrameLayout(this); page.addView(stage,new LinearLayout.LayoutParams(-1,0,1));
+        stage = new FrameLayout(this); page.addView(stage,new LinearLayout.LayoutParams(-1,0,1));
         hud = new ClockHudView(this,ui,doto); stage.addView(hud,new FrameLayout.LayoutParams(-1,-1));
-        panelScroll = new ScrollView(this); panelScroll.setFillViewport(false); stage.addView(panelScroll,new FrameLayout.LayoutParams(-1,-1));
+        panelScroll = new ScrollView(this); panelScroll.setFillViewport(false);
+        FrameLayout.LayoutParams panelParams=new FrameLayout.LayoutParams(-1,-1); panelParams.bottomMargin=dp(64);
+        stage.addView(panelScroll,panelParams);
         content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(0, dp(18), 0, dp(20)); panelScroll.addView(content);
         tabsScroll = new HorizontalScrollView(this); tabsScroll.setHorizontalScrollBarEnabled(false); tabsScroll.setFillViewport(true);
         tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); tabs.setGravity(Gravity.CENTER);
         tabs.setPadding(0,dp(8),0,0); tabsScroll.addView(tabs,new FrameLayout.LayoutParams(-1,-1));
-        page.addView(tabsScroll,new LinearLayout.LayoutParams(-1,dp(64)));
+        stage.addView(tabsScroll,new FrameLayout.LayoutParams(-1,dp(64),Gravity.TOP));
+        stage.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,oright,ob) -> positionTabs());
         setContentView(root);
         showTab(tab);
+    }
+    private void positionTabs() {
+        if (stage.getHeight() <= 0) return;
+        float density=getResources().getDisplayMetrics().density;
+        int top=tab == -1 ? Math.round(ClockHudView.frameGap(stage.getWidth(),stage.getHeight(),density)
+                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density) + dp(4)) : stage.getHeight()-dp(64);
+        top=Math.max(0,Math.min(top,stage.getHeight()-dp(64)));
+        FrameLayout.LayoutParams params=(FrameLayout.LayoutParams) tabsScroll.getLayoutParams();
+        if (params.topMargin != top) { params.topMargin=top; tabsScroll.setLayoutParams(params); }
     }
     @Override protected void onSaveInstanceState(Bundle state) {
         saveTimerDraft(); state.putInt("clock_tab",tab); state.putStringArray("timer_draft",timerDraft); super.onSaveInstanceState(state);
@@ -149,6 +162,7 @@ public class ClockActivity extends SwipeBackActivity {
             if (i > 0) itemParams.leftMargin = dp(5);
             tabs.addView(item, itemParams);
         }
+        positionTabs();
         hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE);
         panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE);
         if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else if (selected == 3) showStopwatch();

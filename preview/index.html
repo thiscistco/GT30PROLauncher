@@ -578,19 +578,21 @@
   /* Clock: one central local-time HUD and a fixed four-icon bottom bar. */
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; }
   #clockPage .app-top { flex:none; }
-  .clock-stage { flex:1; min-height:0; position:relative; }
-  .clock-hud { position:absolute; inset:1.2mm; display:grid; place-items:center; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
+  .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 15.1mm))); }
+  .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
-  .clock-hud-dial { height:min(100%, 64mm); width:auto; max-width:100%; aspect-ratio:1; overflow:visible; }
+  .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
   .clock-hud-face { fill:var(--app-card); stroke:var(--app-border); stroke-width:1; }
   .clock-hud-inner { fill:none; stroke:var(--app-border); stroke-width:.5; }
   .clock-hud-ticks { stroke-linecap:round; }
   .clock-hud-ticks .major { stroke:var(--app-text); stroke-width:1.7; }
   .clock-hud-ticks .minor { stroke:var(--app-muted); stroke-width:.72; }
   .clock-hud-marker { fill:var(--app-text); }
-  #clockHudText { fill:var(--app-text); font:800 32.4px 'Doto', monospace; font-variation-settings:'wght' 800; }
-  .clock-panel-scroll { position:absolute; inset:0; overflow-y:auto; overscroll-behavior:contain; }
-  #clockPage .clock-tabs { flex:none; display:flex; gap:.79mm; margin:0; padding-top:2mm; overflow-x:auto; }
+  .clock-hud-label { fill:#19252f; }
+  #clockHudText { fill:#fff; font:800 25.2px 'Doto', monospace; font-variation-settings:'wght' 800; }
+  .clock-panel-scroll { position:absolute; inset:0 0 10.16mm; overflow-y:auto; overscroll-behavior:contain; }
+  #clockPage .clock-tabs { position:absolute; left:0; right:0; bottom:0; height:10.16mm; box-sizing:border-box; display:flex; gap:.79mm; margin:0; padding-top:2mm; overflow-x:auto; }
+  #clockHud:not([hidden]) ~ .clock-tabs { top:min(calc(1.2mm + var(--clock-dial-size) + .63mm), max(0px, calc(100cqh - 10.16mm))); bottom:auto; }
   #clockPage .clock-tabs button { flex:0 0 7.62mm; width:7.62mm; min-width:0; height:7.62mm; padding:1.905mm; border-radius:2.5mm; }
   #clockPage .clock-tabs button:first-child { margin-left:auto; }
   #clockPage .clock-tabs button:last-child { margin-right:auto; }
@@ -746,6 +748,7 @@
                       <circle class="clock-hud-face" cx="120" cy="120" r="103.2"/><circle class="clock-hud-inner" cx="120" cy="120" r="80.5"/>
                       <g class="clock-hud-ticks"><line class="major" x1="120.00" y1="33.31" x2="120.00" y2="22.99"/><line class="minor" x1="129.60" y1="28.66" x2="130.14" y2="23.52"/><line class="minor" x1="139.10" y1="30.16" x2="140.17" y2="25.11"/><line class="minor" x1="148.38" y1="32.65" x2="149.98" y2="27.74"/><line class="minor" x1="157.36" y1="36.09" x2="159.46" y2="31.38"/><line class="major" x1="163.34" y1="44.93" x2="168.50" y2="35.99"/><line class="minor" x1="173.99" y1="45.69" x2="177.02" y2="41.52"/><line class="minor" x1="181.46" y1="51.74" x2="184.91" y2="47.91"/><line class="minor" x1="188.26" y1="58.54" x2="192.09" y2="55.09"/><line class="minor" x1="194.31" y1="66.01" x2="198.48" y2="62.98"/><line class="major" x1="195.07" y1="76.66" x2="204.01" y2="71.50"/><line class="minor" x1="203.91" y1="82.64" x2="208.62" y2="80.54"/><line class="minor" x1="207.35" y1="91.62" x2="212.26" y2="90.02"/><line class="minor" x1="209.84" y1="100.90" x2="214.89" y2="99.83"/><line class="minor" x1="211.34" y1="110.40" x2="216.48" y2="109.86"/><line class="major" x1="206.69" y1="120.00" x2="217.01" y2="120.00"/><line class="minor" x1="211.34" y1="129.60" x2="216.48" y2="130.14"/><line class="minor" x1="209.84" y1="139.10" x2="214.89" y2="140.17"/><line class="minor" x1="207.35" y1="148.38" x2="212.26" y2="149.98"/><line class="minor" x1="203.91" y1="157.36" x2="208.62" y2="159.46"/><line class="major" x1="195.07" y1="163.34" x2="204.01" y2="168.50"/><line class="minor" x1="194.31" y1="173.99" x2="198.48" y2="177.02"/><line class="minor" x1="188.26" y1="181.46" x2="192.09" y2="184.91"/><line class="minor" x1="181.46" y1="188.26" x2="184.91" y2="192.09"/><line class="minor" x1="173.99" y1="194.31" x2="177.02" y2="198.48"/><line class="major" x1="163.34" y1="195.07" x2="168.50" y2="204.01"/><line class="minor" x1="157.36" y1="203.91" x2="159.46" y2="208.62"/><line class="minor" x1="148.38" y1="207.35" x2="149.98" y2="212.26"/><line class="minor" x1="139.10" y1="209.84" x2="140.17" y2="214.89"/><line class="minor" x1="129.60" y1="211.34" x2="130.14" y2="216.48"/><line class="major" x1="120.00" y1="206.69" x2="120.00" y2="217.01"/><line class="minor" x1="110.40" y1="211.34" x2="109.86" y2="216.48"/><line class="minor" x1="100.90" y1="209.84" x2="99.83" y2="214.89"/><line class="minor" x1="91.62" y1="207.35" x2="90.02" y2="212.26"/><line class="minor" x1="82.64" y1="203.91" x2="80.54" y2="208.62"/><line class="major" x1="76.66" y1="195.07" x2="71.50" y2="204.01"/><line class="minor" x1="66.01" y1="194.31" x2="62.98" y2="198.48"/><line class="minor" x1="58.54" y1="188.26" x2="55.09" y2="192.09"/><line class="minor" x1="51.74" y1="181.46" x2="47.91" y2="184.91"/><line class="minor" x1="45.69" y1="173.99" x2="41.52" y2="177.02"/><line class="major" x1="44.93" y1="163.34" x2="35.99" y2="168.50"/><line class="minor" x1="36.09" y1="157.36" x2="31.38" y2="159.46"/><line class="minor" x1="32.65" y1="148.38" x2="27.74" y2="149.98"/><line class="minor" x1="30.16" y1="139.10" x2="25.11" y2="140.17"/><line class="minor" x1="28.66" y1="129.60" x2="23.52" y2="130.14"/><line class="major" x1="33.31" y1="120.00" x2="22.99" y2="120.00"/><line class="minor" x1="28.66" y1="110.40" x2="23.52" y2="109.86"/><line class="minor" x1="30.16" y1="100.90" x2="25.11" y2="99.83"/><line class="minor" x1="32.65" y1="91.62" x2="27.74" y2="90.02"/><line class="minor" x1="36.09" y1="82.64" x2="31.38" y2="80.54"/><line class="major" x1="44.93" y1="76.66" x2="35.99" y2="71.50"/><line class="minor" x1="45.69" y1="66.01" x2="41.52" y2="62.98"/><line class="minor" x1="51.74" y1="58.54" x2="47.91" y2="55.09"/><line class="minor" x1="58.54" y1="51.74" x2="55.09" y2="47.91"/><line class="minor" x1="66.01" y1="45.69" x2="62.98" y2="41.52"/><line class="major" x1="76.66" y1="44.93" x2="71.50" y2="35.99"/><line class="minor" x1="82.64" y1="36.09" x2="80.54" y2="31.38"/><line class="minor" x1="91.62" y1="32.65" x2="90.02" y2="27.74"/><line class="minor" x1="100.90" y1="30.16" x2="99.83" y2="25.11"/><line class="minor" x1="110.40" y1="28.66" x2="109.86" y2="23.52"/></g>
                       <g id="clockHudMarker"><circle class="clock-hud-marker" cx="120" cy="20.4" r="2.88"/></g>
+                      <rect class="clock-hud-label" x="52" y="103" width="136" height="34" rx="10"/>
                       <text id="clockHudText" x="120" y="120" text-anchor="middle" dominant-baseline="central">00:00:00</text>
                     </svg>
                   </div>
@@ -783,13 +786,13 @@
                   <div id="previewLaps"></div>
                 </div>
                   </div>
-                </div>
                 <nav class="clock-tabs" aria-label="Fitur jam">
                   <button data-clock-tab="alarm" type="button" aria-label="Alarm" aria-pressed="false" title="Alarm"><img src="assets/clock-alarm.svg?v=3" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="world" type="button" aria-label="Jam Dunia" aria-pressed="false" title="Jam Dunia"><img src="assets/clock-world.svg?v=3" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="timer" type="button" aria-label="Timer" aria-pressed="false" title="Timer"><img src="assets/clock-timer.svg?v=3" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="stopwatch" type="button" aria-label="Stopwatch" aria-pressed="false" title="Stopwatch"><img src="assets/clock-stopwatch.svg?v=4" alt="" aria-hidden="true"></button>
                 </nav>
+                </div>
               </section>
               <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>
                 <div class="calendar-top"><button class="calendar-icon-button" id="calendarBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button>
