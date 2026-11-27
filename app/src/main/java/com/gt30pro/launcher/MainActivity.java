@@ -106,7 +106,7 @@ public class MainActivity extends BottomSwipeActivity {
         FrameLayout micRoot=findViewById(R.id.root);
         android.widget.ImageButton mic=VoiceController.button(this,0xFFB7CBD6); voiceButton=mic;
         int micSize=Math.round(48*getResources().getDisplayMetrics().density);
-        FrameLayout.LayoutParams micParams=new FrameLayout.LayoutParams(micSize,micSize,Gravity.CENTER);
+        FrameLayout.LayoutParams micParams=new FrameLayout.LayoutParams(micSize,micSize,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
         mic.setElevation(4f*getResources().getDisplayMetrics().density); micRoot.addView(mic,micParams);
 
         ImageView wallpaper = findViewById(R.id.wallpaper);
@@ -269,6 +269,14 @@ public class MainActivity extends BottomSwipeActivity {
         batteryBolt.setTranslationX(left - params.leftMargin);
         batteryBolt.setTranslationY(top - params.topMargin);
         batteryBolt.setLayoutParams(params);
+        // Anchor to the bolt's untransformed position, not the shifted battery percentage.
+        // Keep the button available even when the charging bolt is hidden.
+        if (voiceButton != null) {
+            FrameLayout.LayoutParams voiceParams=(FrameLayout.LayoutParams) voiceButton.getLayoutParams();
+            int margin=Math.max(0,Math.round(root.getHeight() - top + pixelsPerMm));
+            if (voiceParams.bottomMargin != margin) { voiceParams.bottomMargin=margin; voiceButton.setLayoutParams(voiceParams); }
+            voiceButton.setTranslationX(cssPixel);
+        }
     }
 
     private void updateClockLayout(FrameLayout root, HomeClockView clockBox) {
