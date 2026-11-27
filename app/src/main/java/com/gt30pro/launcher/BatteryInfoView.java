@@ -43,7 +43,7 @@ final class BatteryInfoView extends LinearLayout {
     private int dp(float value) { return Math.round(value*getResources().getDisplayMetrics().density); }
     void setLightGlass(boolean light) {
         title.setTextColor(light?0xFF6A4000:0xFFFFCD6A);
-        for(int i=0;i<names.length;i++) { names[i].setTextColor(light?0xFF48535B:0xFFADC0C8); values[i].setTextColor(light?0xFF17242B:0xFFF1F2E9); }
+        for(int i=0;i<names.length;i++) { names[i].setTextColor(0xFFFFCD6A); values[i].setTextColor(light?0xFF17242B:0xFFF1F2E9); }
     }
     private static int property(BatteryManager b,int id) {
         if(b==null) return Integer.MIN_VALUE;
