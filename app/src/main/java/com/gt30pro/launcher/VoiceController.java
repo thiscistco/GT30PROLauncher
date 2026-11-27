@@ -25,6 +25,7 @@ final class VoiceController {
     private static WeakReference<Dialog> dialog=new WeakReference<>(null);
     private static WeakReference<BottomSwipeActivity> dialogOwner=new WeakReference<>(null);
     private static int pendingMode=VoiceCommands.OFF;
+    private static int wavePhase;
     // Weak keys avoid retaining destroyed pages or calendar headers after re-rendering.
     private static final WeakHashMap<ImageButton,Integer> buttons=new WeakHashMap<>();
     static void resume(BottomSwipeActivity activity) {
@@ -32,7 +33,7 @@ final class VoiceController {
         if(dialogOwner.get()!=activity) { dialog.clear(); dialogOwner.clear(); }
     }
     static void pause(BottomSwipeActivity activity) {
-        if (active.get()==activity) active.clear();
+        if (active.get()==activity) { active.clear(); resetWave(); }
     }
     static void watchDialog(BottomSwipeActivity activity, Dialog value) {
         dialogOwner=new WeakReference<>(activity); dialog=new WeakReference<>(value);
@@ -40,7 +41,7 @@ final class VoiceController {
     }
     static ImageButton button(BottomSwipeActivity a, int color) {
         ImageButton b=new ImageButton(a);
-        b.setImageResource(R.drawable.ic_voice_command);
+        b.setImageDrawable(new VoiceWaveDrawable(a));
         b.setScaleType(ImageView.ScaleType.FIT_CENTER);
         int padding=Math.round(12*a.getResources().getDisplayMetrics().density);
         b.setPadding(padding,padding,padding,padding);
@@ -52,15 +53,28 @@ final class VoiceController {
     static void refreshButtons() {
         for (java.util.Map.Entry<ImageButton,Integer> entry : buttons.entrySet()) updateButton(entry.getKey(),entry.getValue());
     }
+    static void voiceLevel(float rms) {
+        BottomSwipeActivity foreground=active.get();
+        if (foreground==null || VoiceService.mode==VoiceCommands.OFF) return;
+        int phase=wavePhase++ & 1023;
+        for (ImageButton b : buttons.keySet()) {
+            if (b.getContext()==foreground && b.isShown() && b.getWindowVisibility()==View.VISIBLE && b.getDrawable() instanceof VoiceWaveDrawable)
+                ((VoiceWaveDrawable)b.getDrawable()).setLevel(rms,phase);
+        }
+    }
+    static void resetWave() {
+        for (ImageButton b : buttons.keySet()) if (b.getDrawable() instanceof VoiceWaveDrawable) ((VoiceWaveDrawable)b.getDrawable()).reset();
+    }
     private static void updateButton(ImageButton b,int color) {
         int mode=VoiceService.mode;
         boolean lightInk=android.graphics.Color.red(color)+android.graphics.Color.green(color)+android.graphics.Color.blue(color)>420;
-        int tint=mode==VoiceCommands.COMMAND ? (lightInk ? 0xFFFFCB66 : 0xFF8C4800)
+        boolean home=b.getContext() instanceof MainActivity;
+        int tint=home ? color : mode==VoiceCommands.COMMAND ? (lightInk ? 0xFFFFCB66 : 0xFF8C4800)
                 : mode==VoiceCommands.TYPING ? (lightInk ? 0xFF9CE9FF : 0xFF005B7C) : color;
         b.setColorFilter(tint);
         android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();
         bg.setCornerRadius(12*b.getResources().getDisplayMetrics().density);
-        bg.setColor(mode==VoiceCommands.COMMAND ? 0x33E79A24 : mode==VoiceCommands.TYPING ? 0x33379DC0 : android.graphics.Color.TRANSPARENT);
+        bg.setColor(home ? android.graphics.Color.TRANSPARENT : mode==VoiceCommands.COMMAND ? 0x33E79A24 : mode==VoiceCommands.TYPING ? 0x33379DC0 : android.graphics.Color.TRANSPARENT);
         b.setBackground(bg); b.setSelected(mode==VoiceCommands.COMMAND);
         String label=mode==VoiceCommands.COMMAND ? "Hentikan perintah suara" : "Aktifkan perintah suara";
         String state=mode==VoiceCommands.TYPING ? ". Mode mengetik aktif" : "";

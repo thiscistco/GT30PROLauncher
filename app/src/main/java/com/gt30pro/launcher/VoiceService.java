@@ -27,6 +27,8 @@ public final class VoiceService extends Service {
     private SpeechRecognizer recognizer;
     private int failures=0, generation=0;
     private Runnable watchdog;
+    private long lastRmsAt;
+    private final Runnable resetRms=VoiceController::resetWave;
     private NotificationManager notifications;
 
     @Override public void onCreate() {
@@ -62,7 +64,7 @@ public final class VoiceService extends Service {
         return START_NOT_STICKY;
     }
     private void restartRecognizer() {
-        handler.removeCallbacksAndMessages(null); generation++;
+        handler.removeCallbacksAndMessages(null); VoiceController.resetWave(); lastRmsAt=0; generation++;
         if(recognizer!=null) { recognizer.destroy(); recognizer=null; }
         if (!SpeechRecognizer.isRecognitionAvailable(this)) { fail("Pengenalan suara tidak tersedia di perangkat."); return; }
         try {
@@ -71,14 +73,20 @@ public final class VoiceService extends Service {
             recognizer.setRecognitionListener(new RecognitionListener() {
                 public void onReadyForSpeech(Bundle b) { }
                 public void onBeginningOfSpeech() { }
-                public void onRmsChanged(float rms) { }
+                public void onRmsChanged(float rms) {
+                    if (session!=generation || mode==VoiceCommands.OFF) return;
+                    long now=android.os.SystemClock.elapsedRealtime();
+                    if (now-lastRmsAt<60) return;
+                    lastRmsAt=now; VoiceController.voiceLevel(rms);
+                    handler.removeCallbacks(resetRms); handler.postDelayed(resetRms,350);
+                }
                 public void onBufferReceived(byte[] b) { }
-                public void onEndOfSpeech() { }
+                public void onEndOfSpeech() { if(session==generation) { handler.removeCallbacks(resetRms); VoiceController.resetWave(); } }
                 public void onPartialResults(Bundle b) { }
                 public void onEvent(int event, Bundle b) { }
                 public void onError(int error) {
                     if (session!=generation || mode==VoiceCommands.OFF) return;
-                    clearWatchdog();
+                    clearWatchdog(); handler.removeCallbacks(resetRms); VoiceController.resetWave();
                     if (error==SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS || error==SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED || error==SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE || error==SpeechRecognizer.ERROR_CLIENT) {
                         fail("Pengenalan suara berhenti. Periksa izin, bahasa, dan layanan suara."); return;
                     }
@@ -89,7 +97,7 @@ public final class VoiceService extends Service {
                 }
                 public void onResults(Bundle result) {
                     if (session!=generation || mode==VoiceCommands.OFF) return;
-                    clearWatchdog(); failures=0;
+                    clearWatchdog(); handler.removeCallbacks(resetRms); VoiceController.resetWave(); failures=0;
                     ArrayList<String> matches=result==null ? null : result.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                     if(matches!=null && !matches.isEmpty()) handle(matches.get(0));
                     if(mode!=VoiceCommands.OFF) retry(session,500);
@@ -140,7 +148,7 @@ public final class VoiceService extends Service {
         stopSelf();
     }
     @Override public void onDestroy() {
-        mode=VoiceCommands.OFF; VoiceController.refreshButtons(); generation++; handler.removeCallbacksAndMessages(null);
+        mode=VoiceCommands.OFF; VoiceController.resetWave(); VoiceController.refreshButtons(); generation++; handler.removeCallbacksAndMessages(null);
         if(recognizer!=null) { recognizer.destroy(); recognizer=null; }
         notifications.cancel(OPEN_ID); super.onDestroy();
     }

@@ -270,13 +270,13 @@ public class MainActivity extends BottomSwipeActivity {
         batteryBolt.setTranslationY(top - params.topMargin);
         batteryBolt.setLayoutParams(params);
         // Anchor to the bolt's untransformed position, not the shifted battery percentage.
-        // Shift the voice button 45 preview pixels left and 10 up; keep it available
+        // Shift the voice button 40 preview pixels left and 10 up; keep it available
         // even when the charging bolt is hidden.
         if (voiceButton != null) {
             FrameLayout.LayoutParams voiceParams=(FrameLayout.LayoutParams) voiceButton.getLayoutParams();
             int margin=Math.max(0,Math.round(root.getHeight() - top + pixelsPerMm + 10f * cssPixel));
             if (voiceParams.bottomMargin != margin) { voiceParams.bottomMargin=margin; voiceButton.setLayoutParams(voiceParams); }
-            voiceButton.setTranslationX(-44f * cssPixel);
+            voiceButton.setTranslationX(-39f * cssPixel);
         }
     }
 
@@ -369,7 +369,7 @@ public class MainActivity extends BottomSwipeActivity {
                 glassDark = dark;
             }
         }
-        if (voiceButton != null) VoiceController.setButtonColor(voiceButton,dark ? 0xFFFFFFFF : 0xFF142A3A);
+        if (voiceButton != null) VoiceController.setButtonColor(voiceButton,0xFFFFCD6A);
         if (clockLed != null) clockLed.setLightGlass(!dark);
         if (dateLed != null) dateLed.setLightGlass(!dark);
         if (weatherLed != null) weatherLed.setLightGlass(!dark);

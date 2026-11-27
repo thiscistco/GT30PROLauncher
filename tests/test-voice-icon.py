@@ -27,7 +27,15 @@ assert [(float(c.get('cx')),float(c.get('cy'))) for c in circles]==generator.poi
 assert all(float(c.get('r'))==.36 for c in circles)
 java=root/'app/src/main/java/com/gt30pro/launcher'
 ctl=(java/'VoiceController.java').read_text(); service=(java/'VoiceService.java').read_text()
-assert 'R.drawable.ic_voice_command' in ctl
+assert 'b.setImageDrawable(new VoiceWaveDrawable(a))' in ctl
+wave=(java/'VoiceWaveDrawable.java').read_text()
+assert 'ValueAnimator.areAnimatorsEnabled()' in wave
+assert 'VoiceWaveLogic.heights' in wave and 'canvas.drawCircle' in wave
+assert 'public void onRmsChanged(float rms)' in service
+assert 'VoiceController.voiceLevel(rms)' in service
+assert 'handler.postDelayed(resetRms,350)' in service
+assert 'VoiceController.resetWave()' in service and 'resetWave();' in ctl
+assert 'boolean home=b.getContext() instanceof MainActivity' in ctl and 'int tint=home ? color' in ctl
 assert 'b.setOnClickListener(v -> toggle(a,VoiceCommands.COMMAND))' in ctl
 assert 'b.setOnLongClickListener(v -> { menu(a); return true; })' in ctl
 assert 'mode==VoiceCommands.COMMAND' in ctl and 'mode==VoiceCommands.TYPING' in ctl
@@ -35,14 +43,14 @@ assert 'setContentDescription(label+state+' in ctl and 'WeakHashMap<ImageButton,
 assert service.count('VoiceController.refreshButtons()')>=2
 assert 'R.drawable.ic_voice_mic' in service # solid notification small icon remains legible
 home=(java/'MainActivity.java').read_text()
-assert 'VoiceController.setButtonColor(voiceButton,dark ?' in home
+assert 'VoiceController.setButtonColor(voiceButton,0xFFFFCD6A)' in home
 assert 'mic.setElevation(4f*' in home
 assert 'new FrameLayout.LayoutParams(micSize,micSize,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL)' in home
 assert 'Math.round(root.getHeight() - top + pixelsPerMm + 10f * cssPixel)' in home
-assert 'voiceButton.setTranslationX(-44f * cssPixel)' in home
+assert 'voiceButton.setTranslationX(-39f * cssPixel)' in home
 assert 'if (voiceParams.bottomMargin != margin)' in home
 assert 'micParams.topMargin' not in home and 'micParams.rightMargin' not in home
-# Relative to v0.1.191, move only the voice target 10 preview pixels left;
+# Relative to v0.1.192, move only the voice target 5 preview pixels right;
 # the vertical position remains unchanged even when the bolt is hidden.
 for width,height in ((269,597),(720,1600),(1080,2400),(1224,2720)):
     mm=width/70.9; css=mm*25.4/96
@@ -51,9 +59,9 @@ for width,height in ((269,597),(720,1600),(1080,2400),(1224,2720)):
     previous_bottom=height-round(height-bolt_top+mm+10*css)
     voice_bottom=height-round(height-bolt_top+mm+10*css)
     assert voice_bottom==previous_bottom
-    previous_center=width/2-34*css
-    voice_center=width/2-44*css
-    assert abs((previous_center-voice_center)-10*css)<1e-9
+    previous_center=width/2-44*css
+    voice_center=width/2-39*css
+    assert abs((voice_center-previous_center)-5*css)<1e-9
 assert 'VoiceController.button' in (java/'AppUi.java').read_text()
 assert 'VoiceController.button' in (java/'CalendarActivity.java').read_text()
 print('Voice icon generation, click/long-click, state, theme and lifecycle wiring: OK')

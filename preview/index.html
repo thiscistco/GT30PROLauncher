@@ -264,16 +264,28 @@
   .weather-widget .weather-temp { position: absolute; top: 68%; left: 0; width: 100%; text-align: center; line-height: 1; font-size: 3.025mm; }
   .home-weather { position: absolute; z-index: 6; left: calc(49% - 2px); bottom: calc(6% + 460px); transform: translateX(-50%) scale(0.9); width: 11mm; height: 13.75mm; color: #ffcd6a; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
   .home-weather .weather-temp { top: calc(68% - 5px); }
-  /* 48dp target: 45px left and 10px above the original bolt-aligned position. */
-  .home-voice { position:absolute; z-index:6; bottom:calc(1.2% + 12.75px + 3mm); left:calc(50% - 44px); transform:translateX(-50%); width:8.3mm; height:8.3mm;
+  /* 48dp target: 40px left and 10px above the original bolt-aligned position. */
+  .home-voice { position:absolute; z-index:6; bottom:calc(1.2% + 12.75px + 3mm); left:calc(50% - 39px); transform:translateX(-50%); width:8.3mm; height:8.3mm;
     display:flex; align-items:center; justify-content:center; padding:2.075mm; border:0; border-radius:2.1mm;
-    color:#142a3a; background:transparent; cursor:pointer; }
+    color:#ffcd6a; background:transparent; cursor:pointer; filter:drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
   .home-voice[hidden] { display:none; }
   .home-voice:focus-visible { outline:1px solid currentColor; outline-offset:1px; }
-  .home-voice-icon { display:block; width:100%; height:100%; background:currentColor;
+  .home-voice-icon { display:block; position:relative; width:100%; height:100%; }
+  .home-voice-bar { position:absolute; inset:0; background:currentColor; transform-origin:center;
     mask:url('assets/voice-command.svg?v=3') center/contain no-repeat;
     -webkit-mask:url('assets/voice-command.svg?v=3') center/contain no-repeat; }
-  @media (prefers-color-scheme: dark) { .home-voice { color:#fff; } }
+  .home-voice-bar:nth-child(1) { clip-path:inset(0 80% 0 0); }
+  .home-voice-bar:nth-child(2) { clip-path:inset(0 60% 0 20%); }
+  .home-voice-bar:nth-child(3) { clip-path:inset(0 40% 0 40%); }
+  .home-voice-bar:nth-child(4) { clip-path:inset(0 20% 0 60%); }
+  .home-voice-bar:nth-child(5) { clip-path:inset(0 0 0 80%); }
+  .home-voice.voice-demo .home-voice-bar { animation:voice-wave-demo .8s ease-in-out infinite alternate; }
+  .home-voice.voice-demo .home-voice-bar:nth-child(2) { animation-delay:-.2s; }
+  .home-voice.voice-demo .home-voice-bar:nth-child(3) { animation-delay:-.4s; }
+  .home-voice.voice-demo .home-voice-bar:nth-child(4) { animation-delay:-.6s; }
+  .home-voice.voice-demo .home-voice-bar:nth-child(5) { animation-delay:-.3s; }
+  @keyframes voice-wave-demo { from { transform:scaleY(.55); } to { transform:scaleY(1); } }
+  @media (prefers-reduced-motion: reduce) { .home-voice.voice-demo .home-voice-bar { animation:none; } }
   .voice-preview-note { max-width:70.9mm; color:#c3cad4; font:600 11px/1.4 'Doto',monospace; text-align:center; }
   .super-weather { width: 100%; height: 12mm; }
   .super-weather svg { width: 8mm; height: 8mm; top: 2mm; left: calc(50% - 4mm); }
@@ -839,7 +851,7 @@
               <img class="home-screen-glass light" src="assets/home-screen-glass.png?v=5" alt="" aria-hidden="true" draggable="false">
               <img class="home-screen-glass dark" src="assets/home-screen-glass-dark.png?v=4" alt="" aria-hidden="true" draggable="false">
               <canvas class="path-draw" id="pathDraw" aria-label="Area menggambar jalur animasi" hidden></canvas>
-              <button class="home-voice" id="homeVoice" type="button" aria-label="Ikon perintah suara. Ketuk untuk info preview" aria-describedby="voicePreviewStatus" title="Perintah suara: info preview"><span class="home-voice-icon" aria-hidden="true"></span></button>
+              <button class="home-voice" id="homeVoice" type="button" aria-label="Ikon perintah suara. Ketuk untuk info preview" aria-describedby="voicePreviewStatus" title="Perintah suara: info preview"><span class="home-voice-icon" aria-hidden="true"><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span></span></button>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>
                 <span class="clock-sep"></span>
@@ -1422,7 +1434,7 @@
   })();
 </script>
 <script src="glass-preview.js?v=17"></script>
-<script src="voice-preview.js?v=1"></script>
+<script src="voice-preview.js?v=2"></script>
 <script src="home-date.js?v=2"></script>
 <script src="weather-page.js?v=2"></script>
 <script src="weather.js?v=6"></script>
