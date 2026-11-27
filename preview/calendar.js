@@ -175,7 +175,7 @@
         applyTheme(); closeThemeMenu(); if (theme) theme.focus();
       });
     });
-    // Reuse the same choice across all built-in pages, without changing the home glass.
+    // Reuse the same choice across all built-in pages, without changing the home wallpaper.
     ['clock','weather','super','drawer','timetable'].forEach(function (prefix) {
       var appTheme=byId(prefix+'Theme'), menu=byId(prefix+'ThemeMenu');
       if (!appTheme || !menu) return;

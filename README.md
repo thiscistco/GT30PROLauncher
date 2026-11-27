@@ -33,24 +33,17 @@ Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
 
 Jam, Kalender, Cuaca, Super App, dan laci aplikasi memakai palet dan kontrol
 yang sama. Pilihan tema pada halaman-halaman tersebut berlaku bersama; default
-mengikuti perangkat. Kaca homescreen tetap mengikuti mode sistem secara terpisah.
+mengikuti perangkat. Palet indikator homescreen mengikuti mode sistem secara terpisah.
 Aplikasi pihak ketiga tetap menggunakan desainnya sendiri. Panduan untuk
 aplikasi bawaan baru tersedia di `docs/app-ui.md`.
 
 ## Fitur v0.1
 
 - **Homescreen minimalis** — wallpaper render GT 30 Pro dengan jam, tanggal,
-  baterai, animasi jalur dan ikon cuaca dengan suhu (sesuai preview). Di atas
-  wallpaper terdapat lapisan kaca putih (mode terang) atau hitam (mode gelap)
-  dengan transparansi 25%. Baterai tidak mengisi daya memakai warna gunmetal
-  mengikuti mode terang/gelap; saat mengisi daya, warnanya amber.
-  Indikator non-gunmetal memakai warna inti cahaya jalur (#FFCD6A). Label hari/bulan memakai warna sekunder. Ikon dan label berada di
-  balik kaca; lapisan ini tidak menghalangi sentuhan atau mengubah wallpaper asli.
-  Jam digeser naik 2.182 piksel dan ke kanan 750 piksel gambar, serta diperbesar
-  20%. Angka indikator baterai lama di sebelah kanan disembunyikan; ikon pengisian tetap di bawah dan informasi baterai tersedia pada label dua kolom.
-  Indikator dibuat lebih kontras, walaupun kaca tetap mengurangi keterlihatannya.
-  Preview memungkinkan perbandingan posisi kaca di atas atau di bawah indikator.
-  **Efek kaca 3D:** pantulan halus bergerak mengikuti sensor gravitasi (atau akselerometer bila tidak ada); gambar kaca, wallpaper, ikon dan label tetap diam. Efek otomatis berhenti saat homescreen tidak aktif, mode hemat daya, atau animasi perangkat dimatikan; bila sensor tidak tersedia kaca tetap statis. Tekan lama homescreen lalu pilih “Matikan/Nyalakan efek kaca 3D” untuk mengubahnya. Preview hanya mensimulasikan gerakan menggunakan kursor atau slider dan tidak membaca sensor perangkat.
+  baterai, animasi jalur dan ikon cuaca dengan suhu (sesuai preview), tanpa lapisan kaca atau efek pantulan.
+  Warna indikator mengikuti mode terang/gelap; ikon non-gunmetal memakai amber (#FFCD6A).
+  Jam digeser naik 2.182 piksel dan ke kanan 750 piksel gambar, serta diperbesar 20%.
+  Angka indikator baterai lama di sebelah kanan disembunyikan; ikon pengisian tetap di bawah dan informasi baterai tersedia pada label dua kolom.
 - **Info baterai homescreen** — label dua kolom tanpa judul atau latar memakai font Doto tebal dan nama item berwarna amber seperti ikon, digeser naik 105 piksel CSS dan ke kiri 5 piksel CSS, dengan kolom kedua 25 piksel CSS ke kiri dari posisi semula, dan menampilkan level, status, sumber daya, kondisi yang dilaporkan Android, suhu, tegangan, arus saat ini/rata-rata, muatan dan energi tersisa, siklus, teknologi, keberadaan baterai, status baterai rendah, dan perkiraan waktu hingga penuh. Data diperbarui selama homescreen terbuka; arus/energi diperiksa kembali setiap 15 detik. Angka muatan adalah **sisa**, bukan kapasitas desain atau kapasitas maksimum; kondisi “Baik” bukan persentase kesehatan baterai. Estimasi penuh berasal dari Android, bukan hasil perhitungan launcher. Tidak semua perangkat/versi Android melaporkan semua nilai; yang tidak tersedia ditampilkan sebagai “Tidak tersedia”. Arus bertanda mengikuti laporan perangkat dan dapat bervariasi. Preview memakai data **simulasi** dan tidak membaca baterai perangkat.
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
   long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).
@@ -192,7 +185,7 @@ pengingat. Preview menggunakan penyimpanan browser yang terpisah.
 
 Ketuk ikon gelombang suara bergaya titik di kiri atas ikon pengisian daya pada beranda atau di header aplikasi bawaan untuk mengaktifkan atau menghentikan mode **Perintah**. Tekan lama ikon untuk memilih **Perintah**, **Mengetik**, atau **Hentikan**. Ikon beranda berwarna amber seperti cuaca dan jam; pada header aplikasi, warna aktif membedakan mode perintah dan mengetik. Notifikasi juga menunjukkan mode dan menyediakan tombol berhenti. Saat layanan pengenalan mengirim tingkat suara, kolom titik ikon bergerak mengikuti input; animasi dapat tidak muncul bila penyedia tidak mengirim tingkat suara atau animasi perangkat dinonaktifkan. Saat launcher/aplikasi bawaan memiliki fokus, tekan volume naik dua kali cepat untuk mengaktifkan/menonaktifkan mode perintah; volume turun dua kali untuk mode mengetik. Tekanan volume pertama tetap dapat mengubah volume. Saat pertama mengaktifkan, baca persetujuan dan izinkan mikrofon serta notifikasi; notifikasi launcher harus aktif agar tersedia tombol **Hentikan**.
 
-Preview browser menampilkan ikon gelombang suara di kiri atas ikon pengisian daya di homescreen, di balik kaca. Ketuk untuk demo visual singkat dan info: animasi preview adalah simulasi, tidak mengakses mikrofon atau menjalankan perintah suara yang tersedia di APK Android.
+Preview browser menampilkan ikon gelombang suara di kiri atas ikon pengisian daya di homescreen. Ketuk untuk demo visual singkat dan info: animasi preview adalah simulasi, tidak mengakses mikrofon atau menjalankan perintah suara yang tersedia di APK Android.
 
 - Mode perintah: perintah umum diawali **“yo”**, misalnya “yo buka kalender”, “yo buka jadwal mengajar”, “yo buka timer”, “yo buka alarm”, “yo buka jam dunia”, “yo buka stopwatch”, “yo buka cuaca”, “yo buka super app”, “yo buka semua aplikasi”, “yo buka beranda”. Di Kalender: “yo tambah acara”, “yo hari ini”, “yo minggu berikutnya/sebelumnya” atau “yo bulan berikutnya/sebelumnya” mengikuti tampilan. Di Jam: “yo tambah alarm”, “yo mulai stopwatch”, “yo jeda stopwatch”, “yo catat lap”. “yo berhenti mendengarkan” menghentikan mode perintah. Khusus **“kalender ada acara minggu ini?”**, **“set alarm”**, **“set timer”**, **“set jam dunia”**, dan **“set stopwatch”**, awalan “yo” boleh dipakai atau dilewati. “Set alarm” membuka editor alarm dan “set timer” membuka pengaturan timer; isi waktu/durasi dan tekan simpan/mulai sendiri. Perintah dengan waktu atau durasi yang disebutkan belum dipahami. Perintah yang tidak dikenal diabaikan; tidak ada perintah hapus/simpan otomatis.
 - Jawaban suara Kalender membaca acara lokal minggu ini (Senin–Minggu, termasuk acara yang sudah lewat dan pengulangan); maksimal lima acara dibacakan, sisanya ditunjukkan jumlahnya. Jawaban hanya dibacakan saat launcher di depan dan perangkat tidak terkunci; saat di latar belakang ketuk notifikasi, lalu tanyakan lagi. Pasang suara **Bahasa Indonesia offline** pada mesin text-to-speech Android. Launcher memilih suara yang ditandai offline oleh mesin; gunakan mesin yang dipercaya. Pengenalan suara ditunda saat jawaban dibacakan dan dilanjutkan sesudahnya. Jika suara offline tidak tersedia, tampil pesan kesalahan, bukan jawaban palsu.

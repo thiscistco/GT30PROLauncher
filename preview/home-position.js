@@ -1,14 +1,8 @@
-/* Compare home layering; Android uses the default (glass over indicators). */
+/* Match background-size: cover of the 1224 × 2720 wallpaper. */
 (function () {
   'use strict';
-  var toggle=document.getElementById('glassPreviewToggle');
   var screen=document.querySelector('.screen');
-  if (!toggle || !screen) return;
-  function update() { screen.classList.toggle('glass-over-home',toggle.checked); }
-  toggle.addEventListener('change',update);
-  update();
-
-  // Match background-size: cover of the 1224 × 2720 wallpaper.
+  if (!screen) return;
   // Displacements are in source-image pixels, not CSS pixels.
   function updateShift() {
     var scale=Math.max(screen.clientWidth / 1224, screen.clientHeight / 2720);

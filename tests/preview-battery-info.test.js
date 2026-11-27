@@ -32,7 +32,8 @@ for (const width of [269,405,1224]) {
  assert(Math.abs((-5*cssPixel - (-10*cssPixel))/cssPixel-5)<1e-9);
  assert(Math.abs((-25*cssPixel - (-30*cssPixel))/cssPixel-5)<1e-9);
 }
-assert.match(main,/screenGlass\.setElevation\(8f/);
+assert(!main.includes('screenGlass'));
+assert(!html.includes('home-screen-glass'));
 assert.match(main,/batteryInfo\.update\(intent\)/);
 assert.match(main,/postDelayed\(this,15000\)/);
 assert.match(main,/removeCallbacks\(batteryInfoTick\)/);

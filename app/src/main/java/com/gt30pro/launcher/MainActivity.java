@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -33,7 +32,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Homescreen minimalis — indikator dan wallpaper di balik lapisan kaca transparan.
+ * Homescreen minimalis — indikator di atas wallpaper.
  *
  * Akses melalui gesture:
  *   - Swipe ke atas  -> laci aplikasi (semua aplikasi)
@@ -63,10 +62,7 @@ public class MainActivity extends BottomSwipeActivity {
     private ValueAnimator chargeAnim;
     private ValueAnimator dateAnim;
     private CircuitGlowView amberGlow;
-    private ImageView screenGlass;
-    private GlassParallaxController glassParallax;
     private android.widget.ImageButton voiceButton;
-    private Boolean glassDark;
     private boolean homeResumed;
     private ValueAnimator amberAnim;
     private double amberPhase, amberDurationMs;
@@ -74,7 +70,7 @@ public class MainActivity extends BottomSwipeActivity {
     private static final long MEMORY_SAMPLE_INTERVAL_MS = 3000;
     private boolean charging = false;
     private final BroadcastReceiver powerSaveReceiver = new BroadcastReceiver() {
-        @Override public void onReceive(Context context, Intent intent) { updateAmberGlow(); updateGlassParallax(); }
+        @Override public void onReceive(Context context, Intent intent) { updateAmberGlow(); }
     };
 
     private final Handler clockHandler = new Handler(Looper.getMainLooper());
@@ -126,14 +122,7 @@ public class MainActivity extends BottomSwipeActivity {
         amberGlow = findViewById(R.id.amber_glow);
         amberGlow.load();
         amberGlow.setVisibility(View.INVISIBLE);
-        screenGlass = findViewById(R.id.screen_glass);
-        // Higher Z than every home indicator, without intercepting taps.
-        screenGlass.setElevation(8f * getResources().getDisplayMetrics().density);
-        GlassParallaxView reflection=new GlassParallaxView(this);
-        reflection.setElevation(9f * getResources().getDisplayMetrics().density);
-        micRoot.addView(reflection,new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.MATCH_PARENT));
-        glassParallax=new GlassParallaxController(this,reflection);
-        updateScreenGlass();
+        updateHomePalette();
 
         // Angka baterai Doto; posisi ikon pengisian dihitung terpisah.
         batteryLed = new TextView(this);
@@ -166,7 +155,7 @@ public class MainActivity extends BottomSwipeActivity {
         batteryBolt = new BatteryBoltView(this);
         batteryBolt.setVisibility(View.INVISIBLE);
         homeRoot.addView(batteryBolt, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
-        // Read-only card is behind the glass, does not consume home gestures.
+        // Read-only label does not consume home gestures.
         batteryInfo=new BatteryInfoView(this);
         batteryInfo.setElevation(4f * getResources().getDisplayMetrics().density);
         FrameLayout.LayoutParams infoParams=new FrameLayout.LayoutParams(1,FrameLayout.LayoutParams.WRAP_CONTENT,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
@@ -395,17 +384,9 @@ public class MainActivity extends BottomSwipeActivity {
         if (weather != null) weather.permissionResult(requestCode);
     }
 
-    private void updateScreenGlass() {
-        if (screenGlass == null) return;
+    private void updateHomePalette() {
         boolean dark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                 == Configuration.UI_MODE_NIGHT_YES;
-        if (glassDark == null || glassDark.booleanValue() != dark) {
-            Bitmap bitmap = Wallpapers.loadScreenGlass(this, dark);
-            if (bitmap != null) {
-                screenGlass.setImageBitmap(bitmap);
-                glassDark = dark;
-            }
-        }
         if (voiceButton != null) VoiceController.setButtonColor(voiceButton,0xFFFFCD6A);
         if (clockLed != null) clockLed.setLightGlass(!dark);
         if (dateLed != null) dateLed.setLightGlass(!dark);
@@ -416,20 +397,17 @@ public class MainActivity extends BottomSwipeActivity {
 
     @Override public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        updateScreenGlass();
-        if(glassParallax!=null) glassParallax.recenter();
-        updateGlassParallax();
+        updateHomePalette();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         homeResumed = true;
-        updateScreenGlass();
+        updateHomePalette();
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         registerReceiver(powerSaveReceiver, new IntentFilter(android.os.PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
         updateAmberGlow();
-        updateGlassParallax();
         if (weather != null) weather.resume();
         if (clockLed != null) {
             clockLed.setVisibility(View.VISIBLE);
@@ -465,7 +443,6 @@ public class MainActivity extends BottomSwipeActivity {
         unregisterReceiver(batteryReceiver);
         unregisterReceiver(powerSaveReceiver);
         stopAmberGlow();
-        if (glassParallax != null) glassParallax.stop();
         if (weather != null) weather.pause();
         stopDateAnimation();
         clockHandler.removeCallbacks(clockTick);
@@ -501,16 +478,6 @@ public class MainActivity extends BottomSwipeActivity {
             dateAnim = null;
         }
         if (dateLed != null) dateLed.setAlpha(.85f);
-    }
-
-    private boolean isGlassParallaxEnabled() {
-        return getSharedPreferences("launcher_effects", MODE_PRIVATE).getBoolean("glass_parallax", true);
-    }
-    private void updateGlassParallax() {
-        if(glassParallax==null) return;
-        android.os.PowerManager power=(android.os.PowerManager)getSystemService(POWER_SERVICE);
-        if(!homeResumed || !isGlassParallaxEnabled() || !ValueAnimator.areAnimatorsEnabled() || (power!=null && power.isPowerSaveMode())) glassParallax.stop();
-        else glassParallax.start();
     }
 
     private boolean isAmberGlowEnabled() {
@@ -643,7 +610,6 @@ public class MainActivity extends BottomSwipeActivity {
                 getString(R.string.menu_settings),
                 getString(isAmberGlowEnabled() ? R.string.menu_amber_off : R.string.menu_amber_on),
                 getString(R.string.menu_weather),
-                getString(isGlassParallaxEnabled() ? R.string.menu_glass_parallax_off : R.string.menu_glass_parallax_on),
         };
         new AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
@@ -664,10 +630,6 @@ public class MainActivity extends BottomSwipeActivity {
                         updateAmberGlow();
                     } else if (which == 4 && weather != null) {
                         weather.requestFromUser();
-                    } else if (which == 5) {
-                        getSharedPreferences("launcher_effects", MODE_PRIVATE).edit()
-                                .putBoolean("glass_parallax", !isGlassParallaxEnabled()).apply();
-                        updateGlassParallax();
                     }
                 })
                 .show();

@@ -21,10 +21,6 @@ public final class Wallpapers {
         return loadAsset(context, "wallpaper_amber_glow.png");
     }
 
-    public static Bitmap loadScreenGlass(Context context, boolean dark) {
-        return loadAsset(context, dark ? "home_screen_glass_dark.png" : "home_screen_glass.png");
-    }
-
     private static Bitmap loadAsset(Context context, String assetName) {
         try {
             BitmapFactory.Options bounds = new BitmapFactory.Options();

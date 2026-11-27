@@ -27,5 +27,5 @@ assert "win.localStorage.setItem('gt30-calendar-theme',key)" in js
 assert 'prefers-color-scheme: dark' in js
 for css in ('--app-bg:#f4f7fa','--app-bg:#101820','--app-text:#142a3a','--app-text:#f5f8fa','--app-control:#e3eaf0','--app-control:#2a3b49'):
     assert css in html, css
-assert 'home-screen-glass.png?v=5' in html and 'home-screen-glass-dark.png?v=4' in html
-print('Shared app theme, header, palettes, clock state, preview and unchanged home glass: OK')
+assert 'home-screen-glass' not in html
+print('Shared app theme, header, palettes, clock state, preview and glass-free homescreen: OK')

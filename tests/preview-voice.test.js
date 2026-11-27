@@ -3,8 +3,8 @@ const html=fs.readFileSync('preview/index.html','utf8');
 const js=fs.readFileSync('preview/voice-preview.js','utf8');
 assert.match(html,/<button class="home-voice" id="homeVoice"[^>]*type="button"/);
 assert.match(html,/\.home-voice \{[^}]*z-index:6;[^}]*bottom:calc\(1\.2% \+ 13\.75px \+ 3mm\);[^}]*left:calc\(50% - 40px\);[^}]*transform:translateX\(-50%\)/);
-assert.match(html,/\.screen\.glass-over-home \.home-screen-glass \{ z-index:7; \}/);
-assert.match(html,/\.home-screen-glass \{[^}]*pointer-events:none/);
+assert(!html.includes('home-screen-glass'));
+assert(!html.includes('glass-parallax'));
 assert.match(html,/\.home-voice\[hidden\] \{ display:none; \}/);
 assert.match(html,/\.home-voice \{[^}]*color:#ffcd6a/);
 assert.equal((html.match(/class="home-voice-bar"/g)||[]).length,5);
@@ -28,4 +28,4 @@ for (const page of Object.values(pages)) {
   page.hidden=false; observers.find(([el])=>el===page)[1](); assert.equal(button.hidden,true);
   page.hidden=true; observers.find(([el])=>el===page)[1](); assert.equal(button.hidden,false);
 }
-console.log('Voice preview: icon behind glass, page focus, no microphone and explanatory click: OK');
+console.log('Voice preview: icon without glass, page focus, no microphone and explanatory click: OK');
