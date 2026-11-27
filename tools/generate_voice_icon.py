@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
-"""Generate Android and preview versions of the five-bar rounded voice waveform."""
+"""Generate matching Doto dot-matrix voice waveforms for Android and preview."""
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-# Line caps extend 1.5 units beyond these endpoints; symmetry and ratios follow
-# the supplied reference: short outer bars, mid-height inner bars and tall center.
-BARS=[(1.5,11.1,12.9),(6.75,6.4,17.6),(12,1.5,22.5),(17.25,6.4,17.6),(22.5,11.1,12.9)]
-WIDTH=3
+# Five symmetric dot columns preserve the supplied waveform silhouette.
+# Coordinates are within the same 13×13 grid as the other launcher icons.
+BARS=[(1,5,7),(3.5,2,10),(6,0,12),(8.5,2,10),(11,5,7)]
+RADIUS=.36
+
+def points():
+ return [(x+.5,y+.5) for x,start,end in BARS for y in range(start,end+1)]
 
 def generate():
- path=' '.join(f'M{x:g},{top:g} L{x:g},{bottom:g}' for x,top,bottom in BARS)
- vector=('<vector xmlns:android="http://schemas.android.com/apk/res/android"\n    android:width="24dp" android:height="24dp"\n    android:viewportWidth="24" android:viewportHeight="24">\n'
-         f'    <path android:fillColor="@android:color/transparent" android:strokeColor="#FFFFFF" android:strokeWidth="{WIDTH}" android:strokeLineCap="round" android:pathData="{path}" />\n</vector>\n')
+ path=' '.join(f'M{x-RADIUS:g},{y:g} a.36,.36 0 1,0 .72,0 a.36,.36 0 1,0 -.72,0 z' for x,y in points())
+ vector=('<vector xmlns:android="http://schemas.android.com/apk/res/android"\n    android:width="24dp" android:height="24dp"\n    android:viewportWidth="13" android:viewportHeight="13">\n'
+         f'    <path android:fillColor="#FFFFFF" android:pathData="{path}" />\n</vector>\n')
  return ROOT/'app/src/main/res/drawable/ic_voice_command.xml',vector
 
 def generate_svg():
- bars='\n'.join(f'  <line x1="{x:g}" y1="{top:g}" x2="{x:g}" y2="{bottom:g}" />' for x,top,bottom in BARS)
- svg=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="{WIDTH}" stroke-linecap="round">\n{bars}\n</svg>\n'
+ circles='\n'.join(f'  <circle cx="{x:g}" cy="{y:g}" r=".36" />' for x,y in points())
+ svg=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 13" fill="#ffffff">\n{circles}\n</svg>\n'
  return ROOT/'preview/assets/voice-command.svg',svg
 if __name__=='__main__':
  for path,content in (generate(),generate_svg()): path.write_text(content,encoding='utf8')

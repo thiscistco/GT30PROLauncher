@@ -1,7 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round">
-  <line x1="1.5" y1="11.1" x2="1.5" y2="12.9" />
-  <line x1="6.75" y1="6.4" x2="6.75" y2="17.6" />
-  <line x1="12" y1="1.5" x2="12" y2="22.5" />
-  <line x1="17.25" y1="6.4" x2="17.25" y2="17.6" />
-  <line x1="22.5" y1="11.1" x2="22.5" y2="12.9" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 13" fill="#ffffff">
+  <circle cx="1.5" cy="5.5" r=".36" />
+  <circle cx="1.5" cy="6.5" r=".36" />
+  <circle cx="1.5" cy="7.5" r=".36" />
+  <circle cx="4" cy="2.5" r=".36" />
+  <circle cx="4" cy="3.5" r=".36" />
+  <circle cx="4" cy="4.5" r=".36" />
+  <circle cx="4" cy="5.5" r=".36" />
+  <circle cx="4" cy="6.5" r=".36" />
+  <circle cx="4" cy="7.5" r=".36" />
+  <circle cx="4" cy="8.5" r=".36" />
+  <circle cx="4" cy="9.5" r=".36" />
+  <circle cx="4" cy="10.5" r=".36" />
+  <circle cx="6.5" cy="0.5" r=".36" />
+  <circle cx="6.5" cy="1.5" r=".36" />
+  <circle cx="6.5" cy="2.5" r=".36" />
+  <circle cx="6.5" cy="3.5" r=".36" />
+  <circle cx="6.5" cy="4.5" r=".36" />
+  <circle cx="6.5" cy="5.5" r=".36" />
+  <circle cx="6.5" cy="6.5" r=".36" />
+  <circle cx="6.5" cy="7.5" r=".36" />
+  <circle cx="6.5" cy="8.5" r=".36" />
+  <circle cx="6.5" cy="9.5" r=".36" />
+  <circle cx="6.5" cy="10.5" r=".36" />
+  <circle cx="6.5" cy="11.5" r=".36" />
+  <circle cx="6.5" cy="12.5" r=".36" />
+  <circle cx="9" cy="2.5" r=".36" />
+  <circle cx="9" cy="3.5" r=".36" />
+  <circle cx="9" cy="4.5" r=".36" />
+  <circle cx="9" cy="5.5" r=".36" />
+  <circle cx="9" cy="6.5" r=".36" />
+  <circle cx="9" cy="7.5" r=".36" />
+  <circle cx="9" cy="8.5" r=".36" />
+  <circle cx="9" cy="9.5" r=".36" />
+  <circle cx="9" cy="10.5" r=".36" />
+  <circle cx="11.5" cy="5.5" r=".36" />
+  <circle cx="11.5" cy="6.5" r=".36" />
+  <circle cx="11.5" cy="7.5" r=".36" />
 </svg>

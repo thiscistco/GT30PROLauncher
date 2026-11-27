@@ -10,19 +10,21 @@ path,expected=generator.generate()
 assert path.read_text(encoding='utf8')==expected
 svg,svg_expected=generator.generate_svg()
 assert svg.read_text(encoding='utf8')==svg_expected
-assert len(generator.BARS)==5 and generator.WIDTH==3
+assert len(generator.BARS)==5 and generator.RADIUS==.36
 bars=generator.BARS
-assert [bar[0] for bar in bars]==[1.5,6.75,12,17.25,22.5]
-assert bars[0][1:]==bars[4][1:] and bars[1][1:]==bars[3][1:]
-assert all(abs((top+bottom)/2-12)<1e-8 for _,top,bottom in bars)
-assert bars[0][2]-bars[0][1] < bars[1][2]-bars[1][1] < bars[2][2]-bars[2][1]
+assert [bar[0] for bar in bars]==[1,3.5,6,8.5,11]
+assert [end-start+1 for _,start,end in bars]==[3,9,13,9,3]
+assert all(start+end==12 for _,start,end in bars)
 icon=ET.parse(path).getroot()
 ns='{http://schemas.android.com/apk/res/android}'
-assert icon.get(ns+'viewportWidth')=='24' and icon.get(ns+'viewportHeight')=='24'
-assert icon.find('path').get(ns+'pathData').count('M')==5
-assert icon.find('path').get(ns+'strokeLineCap')=='round'
+assert icon.get(ns+'viewportWidth')=='13' and icon.get(ns+'viewportHeight')=='13'
+assert icon.find('path').get(ns+'pathData').count('a.36,.36')==2*len(generator.points())
 svgroot=ET.parse(svg).getroot()
-assert svgroot.get('stroke-linecap')=='round' and len(list(svgroot))==5
+assert svgroot.get('viewBox')=='0 0 13 13'
+circles=list(svgroot)
+assert len(circles)==37
+assert [(float(c.get('cx')),float(c.get('cy'))) for c in circles]==generator.points()
+assert all(float(c.get('r'))==.36 for c in circles)
 java=root/'app/src/main/java/com/gt30pro/launcher'
 ctl=(java/'VoiceController.java').read_text(); service=(java/'VoiceService.java').read_text()
 assert 'R.drawable.ic_voice_command' in ctl
@@ -37,10 +39,10 @@ assert 'VoiceController.setButtonColor(voiceButton,dark ?' in home
 assert 'mic.setElevation(4f*' in home
 assert 'new FrameLayout.LayoutParams(micSize,micSize,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL)' in home
 assert 'Math.round(root.getHeight() - top + pixelsPerMm + 10f * cssPixel)' in home
-assert 'voiceButton.setTranslationX(-34f * cssPixel)' in home
+assert 'voiceButton.setTranslationX(-44f * cssPixel)' in home
 assert 'if (voiceParams.bottomMargin != margin)' in home
 assert 'micParams.topMargin' not in home and 'micParams.rightMargin' not in home
-# Relative to v0.1.190, move only the voice target 10 preview pixels left;
+# Relative to v0.1.191, move only the voice target 10 preview pixels left;
 # the vertical position remains unchanged even when the bolt is hidden.
 for width,height in ((269,597),(720,1600),(1080,2400),(1224,2720)):
     mm=width/70.9; css=mm*25.4/96
@@ -49,8 +51,8 @@ for width,height in ((269,597),(720,1600),(1080,2400),(1224,2720)):
     previous_bottom=height-round(height-bolt_top+mm+10*css)
     voice_bottom=height-round(height-bolt_top+mm+10*css)
     assert voice_bottom==previous_bottom
-    previous_center=width/2-24*css
-    voice_center=width/2-34*css
+    previous_center=width/2-34*css
+    voice_center=width/2-44*css
     assert abs((previous_center-voice_center)-10*css)<1e-9
 assert 'VoiceController.button' in (java/'AppUi.java').read_text()
 assert 'VoiceController.button' in (java/'CalendarActivity.java').read_text()
