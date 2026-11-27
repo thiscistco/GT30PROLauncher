@@ -62,7 +62,9 @@ final class WeatherView extends View {
         if (home) {
             paint.setTextSize(5.5f*s);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(temperature, getWidth()/2f, y0+20.8f*s - (5f + 4f / .9f)*homeCssPixel, paint);
+            // Move only the temperature by five final CSS pixels in each direction; the view is scaled to 90%.
+            float tempShift=5f / .9f * homeCssPixel;
+            canvas.drawText(temperature, getWidth()/2f + tempShift, y0+20.8f*s - (5f + 4f / .9f)*homeCssPixel + tempShift, paint);
         }
         paint.clearShadowLayer();
     }
