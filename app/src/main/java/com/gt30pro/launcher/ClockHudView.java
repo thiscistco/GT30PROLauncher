@@ -17,6 +17,7 @@ final class ClockHudView extends View {
     private final int ink, muted, border, card;
     private String value = "00:00:00";
     private int second;
+    private boolean editorOpen;
 
     ClockHudView(Context context, AppUi ui, Typeface font) {
         super(context);
@@ -35,10 +36,11 @@ final class ClockHudView extends View {
     static float frameGap(int width, int height, float density) {
         return Math.min(8f*density, Math.min(width,height)*.05f);
     }
-    static float dialSize(int width, int height, float density) {
+    static float dialSize(int width, int height, float density, boolean editorOpen) {
         float gap=frameGap(width,height,density);
-        return Math.max(0f,Math.min(width-2f*gap,height-2f*gap-220f*density));
+        return Math.max(0f,Math.min(width-2f*gap,height-2f*gap-(editorOpen ? 480f : 220f)*density));
     }
+    void setEditorOpen(boolean open) { if (editorOpen != open) { editorOpen=open; invalidate(); } }
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float density=getResources().getDisplayMetrics().density;
@@ -49,7 +51,7 @@ final class ClockHudView extends View {
         paint.setStyle(Paint.Style.FILL); paint.setColor(card); canvas.drawRoundRect(frame,corner,corner,paint);
         paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(1f,density)); paint.setColor(border);
         canvas.drawRoundRect(frame,corner,corner,paint);
-        float size=dialSize(getWidth(),getHeight(),density);
+        float size=dialSize(getWidth(),getHeight(),density,editorOpen);
         if (size <= 0) return;
         float cx=getWidth()/2f, cy=gap+size/2f, radius=size*.43f;
         paint.setStyle(Paint.Style.FILL); paint.setColor(card); canvas.drawCircle(cx,cy,radius,paint);

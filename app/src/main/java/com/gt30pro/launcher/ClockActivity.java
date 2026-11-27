@@ -122,7 +122,7 @@ public class ClockActivity extends SwipeBackActivity {
         if (stage.getHeight() <= 0) return;
         float density=getResources().getDisplayMetrics().density;
         int top=Math.round(ClockHudView.frameGap(stage.getWidth(),stage.getHeight(),density)
-                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density) + dp(4));
+                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE) + dp(4));
         top=Math.max(0,Math.min(top,stage.getHeight()-dp(64)));
         FrameLayout.LayoutParams params=(FrameLayout.LayoutParams) tabsScroll.getLayoutParams();
         if (params.topMargin != top) { params.topMargin=top; tabsScroll.setLayoutParams(params); }
@@ -156,6 +156,7 @@ public class ClockActivity extends SwipeBackActivity {
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     private void showTab(int selected) {
         saveTimerDraft(); timerHours = null; timerMinutes = null; timerSeconds = null;
+        hud.setEditorOpen(false);
         tab = selected; tabs.removeAllViews(); content.removeAllViews(); alarmRows.clear(); lastAlarmSecond=-1; alarmEditor=null; soundButton=null; timerDisplay = null; stopwatchDisplay = null; worldList = null;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = i;
@@ -178,7 +179,7 @@ public class ClockActivity extends SwipeBackActivity {
         if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else if (selected == 3) showStopwatch();
         updateLive();
     }
-    @Override public void onBackPressed() { if (tab == 0 && alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE) { alarmEditor.setVisibility(View.GONE); soundButton=null; } else if (tab != -1) showTab(-1); else super.onBackPressed(); }
+    @Override public void onBackPressed() { if (tab == 0 && alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE) { closeAlarmEditor(); } else if (tab != -1) showTab(-1); else super.onBackPressed(); }
     private void requestAlerts() {
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 41);
@@ -197,7 +198,7 @@ public class ClockActivity extends SwipeBackActivity {
         return false;
     }
     private String dayLabel(int mask) {
-        if (mask == 0) return "Sekali"; if (mask == 127) return "Setiap hari";
+        if (mask == 0) return ""; if (mask == 127) return "Setiap hari";
         StringBuilder b = new StringBuilder(); for (int i : new int[]{1,2,3,4,5,6,0}) if ((mask & (1 << i)) != 0) { if (b.length() > 0) b.append(" · "); b.append(DAYS[i]); }
         return b.toString();
     }
@@ -205,7 +206,7 @@ public class ClockActivity extends SwipeBackActivity {
         LinearLayout heading=new LinearLayout(this); heading.setGravity(Gravity.CENTER_VERTICAL);
         heading.addView(text("ALARM",19,AMBER),new LinearLayout.LayoutParams(0,-2,1));
         ImageButton add=new ImageButton(this); add.setImageResource(R.drawable.ic_calendar_add); add.setColorFilter(ui.ink);
-        add.setScaleType(ImageView.ScaleType.FIT_CENTER); add.setPadding(dp(16),dp(16),dp(16),dp(16));
+        add.setScaleType(ImageView.ScaleType.FIT_CENTER); add.setPadding(dp(18),dp(18),dp(18),dp(18));
         add.setBackground(bg(ui.control)); add.setContentDescription("Tambah alarm"); add.setTooltipText("Tambah alarm");
         add.setOnClickListener(v -> editAlarm(null)); heading.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
         content.addView(heading);
@@ -217,15 +218,16 @@ public class ClockActivity extends SwipeBackActivity {
             LinearLayout box = new LinearLayout(this); box.setGravity(Gravity.CENTER_VERTICAL); box.setPadding(dp(12),dp(8),dp(8),dp(8)); box.setBackground(bg(ui.card));
             LinearLayout details=new LinearLayout(this); details.setOrientation(LinearLayout.VERTICAL);
             TextView label = text(String.format(Locale.US, "%02d:%02d", a.optInt("hour"), a.optInt("minute")), 27, AMBER);
-            label.setContentDescription("Ubah alarm " + label.getText()); label.setOnClickListener(v -> editAlarm(a)); details.addView(label);
-            TextView countdown=text("",13,MUTED); details.addView(countdown);
-            LinearLayout metadata=new LinearLayout(this); metadata.setGravity(Gravity.CENTER_VERTICAL);
-            metadata.addView(text(dayLabel(a.optInt("days")), 12, MUTED));
+            label.setContentDescription("Ubah alarm " + label.getText()); label.setOnClickListener(v -> editAlarm(a));
+            LinearLayout timeRow=new LinearLayout(this); timeRow.setGravity(Gravity.CENTER_VERTICAL); timeRow.addView(label);
+
             String alarmSound=a.optString("sound",Settings.System.DEFAULT_ALARM_ALERT_URI.toString());
             ImageView soundIcon=new ImageView(this); soundIcon.setImageResource(R.drawable.ic_alarm_sound); soundIcon.setColorFilter(ui.muted); soundIcon.setAlpha(alarmSound.isEmpty() ? .4f : 1f); soundIcon.setContentDescription("Nada alarm: " + soundName(alarmSound));
-            LinearLayout.LayoutParams soundInfoParams=new LinearLayout.LayoutParams(dp(16),dp(16)); soundInfoParams.leftMargin=dp(8); metadata.addView(soundIcon,soundInfoParams);
+            LinearLayout.LayoutParams soundInfoParams=new LinearLayout.LayoutParams(dp(16),dp(16)); soundInfoParams.leftMargin=dp(8); timeRow.addView(soundIcon,soundInfoParams);
             ImageView vibrationIcon=new ImageView(this); vibrationIcon.setImageResource(R.drawable.ic_alarm_vibrate); vibrationIcon.setColorFilter(ui.muted); vibrationIcon.setAlpha(a.optBoolean("vibrate",true) ? 1f : .4f); vibrationIcon.setContentDescription(a.optBoolean("vibrate",true) ? "Getar aktif" : "Getar tidak aktif");
-            LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(16),dp(16)); iconParams.leftMargin=dp(4); metadata.addView(vibrationIcon,iconParams); details.addView(metadata);
+            LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(16),dp(16)); iconParams.leftMargin=dp(4); timeRow.addView(vibrationIcon,iconParams); details.addView(timeRow);
+            TextView countdown=text("",13,MUTED); details.addView(countdown);
+            if (a.optInt("days") != 0) details.addView(text(dayLabel(a.optInt("days")), 12, MUTED));
             box.addView(details,new LinearLayout.LayoutParams(0,-2,1));
             Switch enabled = new Switch(this); styleSwitch(enabled);
             int[][] switchStates={new int[]{android.R.attr.state_checked},new int[]{}};
@@ -246,11 +248,17 @@ public class ClockActivity extends SwipeBackActivity {
                 } catch (JSONException ignored) { }
                 lastAlarmSecond=-1; updateAlarmCountdowns();
             }); box.addView(enabled);
-            ImageButton remove=alarmOption(R.drawable.ic_alarm_delete,"Hapus alarm " + label.getText(),() ->
-                ui.dialog(this).setMessage("Hapus alarm ini?").setPositiveButton("Hapus", (d,w) -> { ClockAlarms.remove(this, a.optInt("id")); ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000 + a.optInt("id")); showTab(0); }).setNegativeButton("Batal",null).show());
+            ImageButton remove=alarmOption(R.drawable.ic_alarm_delete,"Hapus alarm " + label.getText(),() -> deleteAlarm(a));
             LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(48),dp(48)); deleteParams.leftMargin=dp(4); box.addView(remove,deleteParams);
             content.addView(box); addSpace(content,10);
         }
+    }
+    private void deleteAlarm(JSONObject alarm) {
+        ui.dialog(this).setMessage("Hapus alarm ini?").setPositiveButton("Hapus", (d,w) -> {
+            ClockAlarms.remove(this,alarm.optInt("id"));
+            ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000+alarm.optInt("id"));
+            showTab(0);
+        }).setNegativeButton("Batal",null).show();
     }
     private void updateAlarmCountdowns() {
         long now=System.currentTimeMillis();
@@ -295,7 +303,8 @@ public class ClockActivity extends SwipeBackActivity {
         final int[] days = {existing == null ? 0 : existing.optInt("days",0)};
         final boolean[] vibrate = {existing == null || existing.optBoolean("vibrate",true)};
         editingSound = existing == null ? Settings.System.DEFAULT_ALARM_ALERT_URI.toString() : existing.optString("sound", Settings.System.DEFAULT_ALARM_ALERT_URI.toString());
-        alarmEditor.removeAllViews(); alarmEditor.setPadding(dp(12),dp(12),dp(12),dp(12)); alarmEditor.setBackground(bg(ui.event)); alarmEditor.setVisibility(View.VISIBLE);
+        alarmEditor.removeAllViews(); alarmEditor.setPadding(dp(8),dp(8),dp(8),dp(8)); alarmEditor.setBackground(bg(ui.event)); alarmEditor.setVisibility(View.VISIBLE);
+        hud.setEditorOpen(true); positionTabs(); panelScroll.scrollTo(0,0);
         LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL);
         TextView timeLabel=text("Waktu",13,AMBER); row.addView(timeLabel,new LinearLayout.LayoutParams(0,dp(48),1));
         soundButton=alarmOption(R.drawable.ic_alarm_sound,"Nada alarm",() -> pickSound());
@@ -309,10 +318,10 @@ public class ClockActivity extends SwipeBackActivity {
         wheelFrame.addView(selectionBand,new FrameLayout.LayoutParams(-1,dp(48),Gravity.CENTER));
         LinearLayout wheels=new LinearLayout(this); wheels.setGravity(Gravity.CENTER);
         NumberPicker hours=alarmWheel(23,hour[0],"Jam"), minutes=alarmWheel(59,minute[0],"Menit");
-        wheels.addView(hours,new LinearLayout.LayoutParams(dp(80),dp(144)));
+        wheels.addView(hours,new LinearLayout.LayoutParams(dp(80),dp(120)));
         TextView separator=text(":",24,AMBER); separator.setGravity(Gravity.CENTER); wheels.addView(separator,new LinearLayout.LayoutParams(dp(24),dp(48)));
-        wheels.addView(minutes,new LinearLayout.LayoutParams(dp(80),dp(144)));
-        wheelFrame.addView(wheels,new FrameLayout.LayoutParams(-1,dp(144),Gravity.CENTER)); alarmEditor.addView(wheelFrame); addSpace(alarmEditor,8);
+        wheels.addView(minutes,new LinearLayout.LayoutParams(dp(80),dp(120)));
+        wheelFrame.addView(wheels,new FrameLayout.LayoutParams(-1,dp(120),Gravity.CENTER)); alarmEditor.addView(wheelFrame); addSpace(alarmEditor,8);
         HorizontalScrollView daysScroll=new HorizontalScrollView(this); daysScroll.setHorizontalScrollBarEnabled(false);
         LinearLayout dayRow=new LinearLayout(this); dayRow.setOrientation(LinearLayout.HORIZONTAL); dayRow.setGravity(Gravity.CENTER);
         final int[] order={1,2,3,4,5,6,0};
@@ -324,7 +333,7 @@ public class ClockActivity extends SwipeBackActivity {
         }
         daysScroll.addView(dayRow); alarmEditor.addView(daysScroll); addSpace(alarmEditor,8);
         LinearLayout actions=new LinearLayout(this);
-        actions.addView(button("Batal",() -> { alarmEditor.setVisibility(View.GONE); soundButton=null; }),new LinearLayout.LayoutParams(0,dp(48),1));
+        actions.addView(alarmOption(R.drawable.ic_calendar_cancel,"Batal",() -> closeAlarmEditor()),new LinearLayout.LayoutParams(dp(48),dp(48)));
         LinearLayout.LayoutParams saveParams=new LinearLayout.LayoutParams(0,dp(48),1); saveParams.leftMargin=dp(8);
         actions.addView(button("Simpan",() -> {
             boolean enabled=existing == null || existing.optBoolean("enabled",false);
@@ -339,8 +348,16 @@ public class ClockActivity extends SwipeBackActivity {
                 if (enabled && !ClockAlarms.schedule(this,a)) Toast.makeText(this,"Alarm belum terjadwal. Periksa izin alarm.",Toast.LENGTH_LONG).show();
                 showTab(0);
             } catch (JSONException ignored) { }
-        }),saveParams); alarmEditor.addView(actions);
-        LinearLayout editor=alarmEditor; panelScroll.post(() -> { if (alarmEditor==editor) panelScroll.smoothScrollTo(0,editor.getTop()); });
+        }),saveParams);
+        if (existing != null) {
+            LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(48),dp(48)); deleteParams.leftMargin=dp(8);
+            actions.addView(alarmOption(R.drawable.ic_alarm_delete,"Hapus alarm",() -> deleteAlarm(existing)),deleteParams);
+        }
+        alarmEditor.addView(actions);
+    }
+    private void closeAlarmEditor() {
+        if (alarmEditor != null) alarmEditor.setVisibility(View.GONE);
+        soundButton=null; hud.setEditorOpen(false); positionTabs();
     }
     private String soundName(String value) {
         if (value.isEmpty()) return "Hening";

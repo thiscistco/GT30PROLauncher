@@ -6,9 +6,9 @@ import re
 root=Path(__file__).resolve().parents[1]
 java=(root/'app/src/main/java/com/gt30pro/launcher/ClockActivity.java').read_text()
 html=(root/'preview/index.html').read_text()
-assert 'add.setPadding(dp(16),dp(16),dp(16),dp(16))' in java
+assert 'add.setPadding(dp(18),dp(18),dp(18),dp(18))' in java
 assert 'new LinearLayout.LayoutParams(dp(48),dp(48))' in java
-assert '.clock-alarm-add .calendar-action-icon { width:2.54mm; height:2.54mm;' in html
+assert '.clock-alarm-add .calendar-action-icon { width:1.905mm; height:1.905mm;' in html
 assert 'Simulasi preview; alarm aktif di aplikasi Android.' not in html
 assert 'kosong = sekali' not in java and 'kosong = sekali' not in html
 assert 'final int[] order={1,2,3,4,5,6,0}' in java
@@ -28,11 +28,26 @@ assert 'a.put("hour",hours.getValue())' in java and 'a.put("minute",minutes.getV
 assert 'picker.setWrapSelectorWheel(true)' in java and 'requestDisallowInterceptTouchEvent(true)' in java
 assert 'R.drawable.ic_alarm_delete' in java and '"Hapus alarm " + label.getText()' in java
 assert 'enabled.setText("Aktif")' not in java and 'enabled.setContentDescription("Alarm "' in java
-assert java.index('details.addView(countdown)') < java.index('metadata.addView(text(dayLabel')
+assert java.index('timeRow.addView(soundIcon') < java.index('details.addView(countdown)') < java.index('details.addView(text(dayLabel')
+assert 'if (mask == 0) return ""' in java and 'if (a.optInt("days") != 0)' in java
 assert 'if (enabled && !ensureExact()) return;' in java and 'a.put("enabled",enabled)' in java
 assert 'alarmHourWheel' in html and 'alarmMinuteWheel' in html and 'role="spinbutton"' in html
 assert 'alarm-card-switch' in html and 'alarm-delete-icon' in html
-assert "details.appendChild(countdown)" in html and html.index("details.appendChild(countdown)") < html.index("meta.appendChild(text)")
+assert html.index('timeRow.appendChild(icon)') < html.index('details.appendChild(countdown)') < html.index('details.appendChild(text)')
+assert 'if (alarm.days.length) { var text' in html
+assert 'R.drawable.ic_calendar_cancel,"Batal"' in java and 'id="previewCancelAlarm" type="button" aria-label="Batal"' in html
+assert 'if (existing != null)' in java and '"Hapus alarm",() -> deleteAlarm(existing)' in java
+assert 'id="previewEditorDelete" type="button" aria-label="Hapus alarm"' in html
+assert 'hud.setEditorOpen(true); positionTabs(); panelScroll.scrollTo(0,0);' in java
+assert 'hud.setEditorOpen(false); positionTabs();' in java
+assert 'dp(80),dp(120)' in java and '100cqh - 78.6mm' in html
+# A target-sized stage reserves at least enough vertical room for the editor.
+width,height=405,854; gap=8; dial=min(width-2*gap,height-2*gap-480)
+panel_height=height-(gap+dial+4+64)-16
+editor_content=8+48+16+48+8+120+8+48+8+48
+assert panel_height>=editor_content
+# Seven 48dp day targets and their gaps fit the target editor width.
+assert width-32-16 >= 7*48+6*3
 spec=importlib.util.spec_from_file_location('icons',root/'tools/generate_alarm_option_icons.py')
 module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
 for path, content in module.generate(): assert path.read_text()==content, f'stale icon: {path}'

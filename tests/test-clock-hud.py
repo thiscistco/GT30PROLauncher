@@ -11,7 +11,7 @@ assert 'new ClockHudView(this,ui,doto)' in clock
 assert 'page.addView(stage,new LinearLayout.LayoutParams(-1,0,1))' in clock
 assert clock.index('page.addView(stage') < clock.index('stage.addView(tabsScroll')
 assert 'panelParams.bottomMargin=dp(16)' in clock and 'stage.addOnLayoutChangeListener' in clock
-assert 'ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density)' in clock
+assert 'ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,alarmEditor != null'  in clock
 assert 'panelParams.topMargin=panelTop' in clock and 'top+dp(64)' in clock
 assert 'hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE)' not in clock
 assert 'panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE)' in clock
@@ -22,14 +22,14 @@ assert 'Calendar.HOUR_OF_DAY' in hud and 'Calendar.MINUTE' in hud and 'Calendar.
 assert 'String.format(Locale.US,"%02d:%02d:%02d",h,m,s)' in hud
 assert 'i<60' in hud and 'i%5==0' in hud and 'second/60' in hud
 assert 'ui.ink' in hud and 'ui.card' in hud and 'ui.border' in hud
-assert 'float size=dialSize(getWidth(),getHeight(),density)' in hud
-assert 'height-2f*gap-220f*density' in hud and 'cy=gap+size/2f' in hud
+assert 'float size=dialSize(getWidth(),getHeight(),density,editorOpen)' in hud
+assert 'height-2f*gap-(editorOpen ? 480f : 220f)*density' in hud and 'cy=gap+size/2f' in hud
 assert 'canvas.drawCircle(cx,cy,radius,paint)' in hud and 'setTextSize(size*.105f)' in hud
 assert 'paint.setColor(0xFF19252F); canvas.drawCircle(cx,cy,radius*.78f,paint)' in hud and 'paint.setColor(Color.WHITE); canvas.drawText' in hud
 assert 'canvas.drawRoundRect(frame,corner,corner,paint)' in hud and 'clock-hud-inner { fill:#19252f;' in html
 assert 'RectF frame=new RectF(gap,gap,getWidth()-gap,getHeight()-gap)' in hud
 assert '.clock-hud { position:absolute; inset:1.2mm;' in html and 'background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm' in html
-assert 'container-type:size' in html and '100cqh - 37.3mm' in html
+assert 'container-type:size' in html and '100cqh - 37.3mm' in html and '100cqh - 78.6mm' in html
 assert '#clockPage .clock-tabs { top:' in html and 'align-items:flex-start' in html
 assert 'clock-hud-inner { fill:#19252f;' in html and "fill:#fff; font:800 25.2px" in html
 assert 'width:7.62mm; min-width:0; height:7.62mm' in html
