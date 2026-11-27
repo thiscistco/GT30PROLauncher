@@ -283,7 +283,7 @@ public class MainActivity extends BottomSwipeActivity {
         params.leftMargin = Math.round(left);
         params.topMargin = Math.round(top);
         clockBox.setTranslationX(left - params.leftMargin);
-        clockBox.setTranslationY(top - params.topMargin - 2185f * wallpaperScale(root));
+        clockBox.setTranslationY(top - params.topMargin - 2182f * wallpaperScale(root));
         clockBox.setScale(pixelsPerMm);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
