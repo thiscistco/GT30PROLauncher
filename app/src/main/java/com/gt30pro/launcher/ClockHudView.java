@@ -31,13 +31,13 @@ final class ClockHudView extends View {
         setContentDescription("Jam " + value);
         invalidate();
     }
-    // Reserve space under the dial for the four 48dp navigation targets.
+    // Reserve space for navigation and an inline, scrollable feature panel.
     static float frameGap(int width, int height, float density) {
         return Math.min(8f*density, Math.min(width,height)*.05f);
     }
     static float dialSize(int width, int height, float density) {
         float gap=frameGap(width,height,density);
-        return Math.max(0f,Math.min(width-2f*gap,height-2f*gap-80f*density));
+        return Math.max(0f,Math.min(width-2f*gap,height-2f*gap-220f*density));
     }
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -68,14 +68,10 @@ final class ClockHudView extends View {
         paint.setStyle(Paint.Style.FILL); paint.setColor(ink);
         canvas.drawCircle(cx+(float)Math.cos(angle)*radius*.965f,cy+(float)Math.sin(angle)*radius*.965f,Math.max(2f,size*.012f),paint);
         paint.setTypeface(doto); paint.setFontVariationSettings("'wght' 800"); paint.setTextSize(size*.105f); paint.setTextAlign(Paint.Align.CENTER);
-        float padding=Math.min(8f*density,size*.04f), maxWidth=Math.max(1f,radius*1.52f-2f*padding);
-        float width=paint.measureText(value);
+        float maxWidth=radius*1.30f, width=paint.measureText(value);
         if (width>maxWidth) paint.setTextSize(paint.getTextSize()*maxWidth/width);
-        width=paint.measureText(value); Paint.FontMetrics metrics=paint.getFontMetrics();
-        float height=metrics.descent-metrics.ascent+padding*1.4f;
-        RectF label=new RectF(cx-width/2f-padding,cy-height/2f,cx+width/2f+padding,cy+height/2f);
-        float labelCorner=Math.min(12f*density,height/2f);
-        paint.setColor(0xFF19252F); canvas.drawRoundRect(label,labelCorner,labelCorner,paint);
+        Paint.FontMetrics metrics=paint.getFontMetrics();
+        paint.setColor(0xFF19252F); canvas.drawCircle(cx,cy,radius*.78f,paint);
         paint.setColor(Color.WHITE); canvas.drawText(value,cx,cy-(metrics.ascent+metrics.descent)/2f,paint);
     }
 }

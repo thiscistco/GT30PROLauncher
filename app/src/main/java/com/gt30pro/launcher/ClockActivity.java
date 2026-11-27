@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Calendar;
+import java.util.ArrayList;
 
 /** Jam bawaan: alarm, waktu dunia, timer dan stopwatch. */
 public class ClockActivity extends SwipeBackActivity {
@@ -69,7 +70,12 @@ public class ClockActivity extends SwipeBackActivity {
     private long swAccumulated, swStarted;
     private boolean swRunning;
     private JSONArray laps = new JSONArray();
-    private long lastWorldSecond = -1;
+    private long lastWorldSecond = -1, lastAlarmSecond = -1;
+    private final ArrayList<AlarmRow> alarmRows = new ArrayList<>();
+    private static final class AlarmRow {
+        final int id; final TextView countdown; final Switch enabled; boolean updating;
+        AlarmRow(int id, TextView countdown, Switch enabled) { this.id=id; this.countdown=countdown; this.enabled=enabled; }
+    }
     private boolean awaitingExactPermission;
 
     private final Runnable tick = new Runnable() {
@@ -99,9 +105,9 @@ public class ClockActivity extends SwipeBackActivity {
         stage = new FrameLayout(this); page.addView(stage,new LinearLayout.LayoutParams(-1,0,1));
         hud = new ClockHudView(this,ui,doto); stage.addView(hud,new FrameLayout.LayoutParams(-1,-1));
         panelScroll = new ScrollView(this); panelScroll.setFillViewport(false);
-        FrameLayout.LayoutParams panelParams=new FrameLayout.LayoutParams(-1,-1); panelParams.bottomMargin=dp(64);
+        FrameLayout.LayoutParams panelParams=new FrameLayout.LayoutParams(-1,-1); panelParams.leftMargin=dp(16); panelParams.rightMargin=dp(16); panelParams.bottomMargin=dp(16);
         stage.addView(panelScroll,panelParams);
-        content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(0, dp(18), 0, dp(20)); panelScroll.addView(content);
+        content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(0, dp(8), 0, dp(20)); panelScroll.addView(content);
         tabsScroll = new HorizontalScrollView(this); tabsScroll.setHorizontalScrollBarEnabled(false); tabsScroll.setFillViewport(true);
         tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); tabs.setGravity(Gravity.CENTER);
         tabs.setPadding(0,dp(8),0,0); tabsScroll.addView(tabs,new FrameLayout.LayoutParams(-1,-1));
@@ -113,11 +119,14 @@ public class ClockActivity extends SwipeBackActivity {
     private void positionTabs() {
         if (stage.getHeight() <= 0) return;
         float density=getResources().getDisplayMetrics().density;
-        int top=tab == -1 ? Math.round(ClockHudView.frameGap(stage.getWidth(),stage.getHeight(),density)
-                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density) + dp(4)) : stage.getHeight()-dp(64);
+        int top=Math.round(ClockHudView.frameGap(stage.getWidth(),stage.getHeight(),density)
+                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density) + dp(4));
         top=Math.max(0,Math.min(top,stage.getHeight()-dp(64)));
         FrameLayout.LayoutParams params=(FrameLayout.LayoutParams) tabsScroll.getLayoutParams();
         if (params.topMargin != top) { params.topMargin=top; tabsScroll.setLayoutParams(params); }
+        FrameLayout.LayoutParams panelParams=(FrameLayout.LayoutParams) panelScroll.getLayoutParams();
+        int panelTop=Math.min(stage.getHeight(),top+dp(64));
+        if (panelParams.topMargin != panelTop) { panelParams.topMargin=panelTop; panelScroll.setLayoutParams(panelParams); }
     }
     @Override protected void onSaveInstanceState(Bundle state) {
         saveTimerDraft(); state.putInt("clock_tab",tab); state.putStringArray("timer_draft",timerDraft); super.onSaveInstanceState(state);
@@ -145,7 +154,7 @@ public class ClockActivity extends SwipeBackActivity {
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     private void showTab(int selected) {
         saveTimerDraft(); timerHours = null; timerMinutes = null; timerSeconds = null;
-        tab = selected; tabs.removeAllViews(); content.removeAllViews(); timerDisplay = null; stopwatchDisplay = null; worldList = null;
+        tab = selected; tabs.removeAllViews(); content.removeAllViews(); alarmRows.clear(); lastAlarmSecond=-1; timerDisplay = null; stopwatchDisplay = null; worldList = null;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = i;
             ImageButton item = new ImageButton(this);
@@ -163,7 +172,6 @@ public class ClockActivity extends SwipeBackActivity {
             tabs.addView(item, itemParams);
         }
         positionTabs();
-        hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE);
         panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE);
         if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else if (selected == 3) showStopwatch();
         updateLive();
@@ -192,8 +200,13 @@ public class ClockActivity extends SwipeBackActivity {
         return b.toString();
     }
     private void showAlarms() {
-        content.addView(text("ALARM", 19, AMBER)); addSpace(content, 12);
-        content.addView(button("+ Tambah alarm", () -> editAlarm(null))); addSpace(content, 16);
+        LinearLayout heading=new LinearLayout(this); heading.setGravity(Gravity.CENTER_VERTICAL);
+        heading.addView(text("ALARM",19,AMBER),new LinearLayout.LayoutParams(0,-2,1));
+        ImageButton add=new ImageButton(this); add.setImageResource(R.drawable.ic_calendar_add); add.setColorFilter(ui.ink);
+        add.setScaleType(ImageView.ScaleType.FIT_CENTER); add.setPadding(dp(12),dp(12),dp(12),dp(12));
+        add.setBackground(bg(ui.control)); add.setContentDescription("Tambah alarm"); add.setTooltipText("Tambah alarm");
+        add.setOnClickListener(v -> editAlarm(null)); heading.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        content.addView(heading); addSpace(content, 12);
         JSONArray all = ClockAlarms.read(this);
         if (all.length() == 0) content.addView(text("Belum ada alarm. Tambahkan pengingat pertama.", 13, MUTED));
         for (int i = 0; i < all.length(); i++) {
@@ -201,8 +214,11 @@ public class ClockActivity extends SwipeBackActivity {
             LinearLayout box = new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL); box.setPadding(dp(14),dp(12),dp(14),dp(12)); box.setBackground(bg(ui.card));
             TextView label = text(String.format(Locale.US, "%02d:%02d", a.optInt("hour"), a.optInt("minute")), 27, AMBER); box.addView(label);
             box.addView(text(dayLabel(a.optInt("days")) + (a.optBoolean("vibrate", true) ? "  ·  Getar" : ""), 12, MUTED));
+            TextView countdown=text("",13,MUTED); box.addView(countdown);
             Switch enabled = new Switch(this); enabled.setText("Aktif"); styleSwitch(enabled); enabled.setChecked(a.optBoolean("enabled"));
+            AlarmRow alarmRow=new AlarmRow(a.optInt("id"),countdown,enabled); alarmRows.add(alarmRow);
             enabled.setOnCheckedChangeListener((v, checked) -> {
+                if (alarmRow.updating) return;
                 if (checked && !ensureExact()) { v.setChecked(false); return; }
                 try {
                     a.put("enabled", checked); ClockAlarms.put(this, a);
@@ -212,12 +228,26 @@ public class ClockActivity extends SwipeBackActivity {
                         ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000 + a.optInt("id"));
                     }
                 } catch (JSONException ignored) { }
+                lastAlarmSecond=-1; updateAlarmCountdowns();
             }); box.addView(enabled);
             LinearLayout actions = new LinearLayout(this); actions.setOrientation(LinearLayout.HORIZONTAL);
             actions.addView(button("Ubah", () -> editAlarm(a)), new LinearLayout.LayoutParams(0,-2,1));
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0,-2,1); p.leftMargin=dp(8);
             actions.addView(button("Hapus", () -> ui.dialog(this).setMessage("Hapus alarm ini?").setPositiveButton("Hapus", (d,w) -> { ClockAlarms.remove(this, a.optInt("id")); ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000 + a.optInt("id")); showTab(0); }).setNegativeButton("Batal",null).show()), p);
             box.addView(actions); content.addView(box); addSpace(content,10);
+        }
+    }
+    private void updateAlarmCountdowns() {
+        long now=System.currentTimeMillis();
+        for (AlarmRow row : alarmRows) {
+            JSONObject a=ClockAlarms.find(this,row.id);
+            if (a == null) { row.countdown.setText("Alarm dihapus"); continue; }
+            boolean enabled=a.optBoolean("enabled",false);
+            if (row.enabled.isChecked()!=enabled) { row.updating=true; row.enabled.setChecked(enabled); row.updating=false; }
+            long snooze=ClockAlarms.prefs(this).getLong("snooze_"+row.id,0);
+            long when=enabled ? ClockAlarms.nextTime(a,now) : 0;
+            if (snooze>now && (when==0 || snooze<when)) when=snooze;
+            row.countdown.setText(when==0 ? "Tidak aktif" : (!ClockAlarms.canSchedule(this) ? "Izin alarm diperlukan" : ClockTime.countdown(when,now)));
         }
     }
     private void editAlarm(JSONObject existing) {
@@ -339,6 +369,7 @@ public class ClockActivity extends SwipeBackActivity {
         long second=System.currentTimeMillis()/1000;
         if (hud != null && second != lastHudSecond) { lastHudSecond=second; hud.setTime(Calendar.getInstance()); }
         if(worldList!=null&&second!=lastWorldSecond){lastWorldSecond=second;updateWorld();}
+        if(tab==0&&second!=lastAlarmSecond){lastAlarmSecond=second;updateAlarmCountdowns();}
     }
     @Override protected void onResume() { super.onResume(); AppUi current=new AppUi(this); if (ui.dark != current.dark || !ui.choice.equals(current.choice)) { recreate(); return; } if(awaitingExactPermission){awaitingExactPermission=false;if(ClockAlarms.canSchedule(this))requestAlerts();} ClockAlarms.restore(this);lastHudSecond=-1;handler.removeCallbacks(tick);tick.run(); }
     @Override protected void onPause() { handler.removeCallbacks(tick); super.onPause(); }

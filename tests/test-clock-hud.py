@@ -10,10 +10,10 @@ assert 'private int tab = -1;' in clock and 'state.getInt("clock_tab",-1)' in cl
 assert 'new ClockHudView(this,ui,doto)' in clock
 assert 'page.addView(stage,new LinearLayout.LayoutParams(-1,0,1))' in clock
 assert clock.index('page.addView(stage') < clock.index('stage.addView(tabsScroll')
-assert 'panelParams.bottomMargin=dp(64)' in clock and 'stage.addOnLayoutChangeListener' in clock
+assert 'panelParams.bottomMargin=dp(16)' in clock and 'stage.addOnLayoutChangeListener' in clock
 assert 'ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density)' in clock
-assert 'tab == -1 ?' in clock and 'stage.getHeight()-dp(64)' in clock
-assert 'hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE)' in clock
+assert 'panelParams.topMargin=panelTop' in clock and 'top+dp(64)' in clock
+assert 'hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE)' not in clock
 assert 'panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE)' in clock
 assert 'if (tab != -1) showTab(-1); else super.onBackPressed();' in clock
 assert 'hud.setTime(Calendar.getInstance())' in clock and 'second != lastHudSecond' in clock
@@ -23,15 +23,15 @@ assert 'String.format(Locale.US,"%02d:%02d:%02d",h,m,s)' in hud
 assert 'i<60' in hud and 'i%5==0' in hud and 'second/60' in hud
 assert 'ui.ink' in hud and 'ui.card' in hud and 'ui.border' in hud
 assert 'float size=dialSize(getWidth(),getHeight(),density)' in hud
-assert 'height-2f*gap-80f*density' in hud and 'cy=gap+size/2f' in hud
+assert 'height-2f*gap-220f*density' in hud and 'cy=gap+size/2f' in hud
 assert 'canvas.drawCircle(cx,cy,radius,paint)' in hud and 'setTextSize(size*.105f)' in hud
-assert 'paint.setColor(0xFF19252F); canvas.drawRoundRect(label' in hud and 'paint.setColor(Color.WHITE); canvas.drawText' in hud
-assert 'canvas.drawRoundRect(frame,corner,corner,paint)' in hud and '<rect class="clock-hud-label"' in html
+assert 'paint.setColor(0xFF19252F); canvas.drawCircle(cx,cy,radius*.78f,paint)' in hud and 'paint.setColor(Color.WHITE); canvas.drawText' in hud
+assert 'canvas.drawRoundRect(frame,corner,corner,paint)' in hud and 'clock-hud-inner { fill:#19252f;' in html
 assert 'RectF frame=new RectF(gap,gap,getWidth()-gap,getHeight()-gap)' in hud
 assert '.clock-hud { position:absolute; inset:1.2mm;' in html and 'background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm' in html
-assert 'container-type:size' in html and '100cqh - 15.1mm' in html
-assert '#clockHud:not([hidden]) ~ .clock-tabs' in html and 'align-items:flex-start' in html
-assert 'clock-hud-label { fill:#19252f; }' in html and "fill:#fff; font:800 25.2px" in html
+assert 'container-type:size' in html and '100cqh - 37.3mm' in html
+assert '#clockPage .clock-tabs { top:' in html and 'align-items:flex-start' in html
+assert 'clock-hud-inner { fill:#19252f;' in html and "fill:#fff; font:800 25.2px" in html
 assert 'width:7.62mm; min-width:0; height:7.62mm' in html
 assert 'new LinearLayout.LayoutParams(dp(48), dp(48))' in clock
 assert 'timerDisplay.setBackground(bg(ui.card))' in clock and 'stopwatchDisplay.setBackground(bg(ui.card))' in clock
@@ -49,8 +49,11 @@ for name in ('world','timer','stopwatch'):
 # Verify the shared geometry keeps the circle above navigation at common viewport sizes.
 for width, height in ((405, 760), (320, 480), (600, 300), (240, 180)):
     gap=min(8, min(width,height)*.05)
-    size=max(0,min(width-2*gap,height-2*gap-80))
+    size=max(0,min(width-2*gap,height-2*gap-220))
     circle_bottom=gap+size*.93
     tab_top=min(gap+size+4,height-64)
     assert circle_bottom < tab_top and tab_top+64 <= height
+    assert min(height,tab_top+64) >= circle_bottom
+assert 'ClockTime.countdown(when,now)' in clock and 'ClockAlarms.nextTime(a,now)' in clock
+assert 'R.drawable.ic_calendar_add' in clock and 'setContentDescription("Tambah alarm")' in clock
 print('Clock HUD: local HH:mm:ss, 60 analog ticks, marker, lifecycle and bottom navigation: OK')

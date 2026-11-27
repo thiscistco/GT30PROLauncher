@@ -34,8 +34,8 @@ assert.match(html, /#clockPage \.clock-tabs button:last-child \{ margin-right:au
 assert(!java.includes('tabsScroll.scrollTo('), 'tab changes must not force scroll on narrow screens');
 assert.match(java, /item\.setPadding\(dp\(12\), dp\(12\), dp\(12\), dp\(12\)\)/);
 assert(java.indexOf('page.addView(stage') < java.indexOf('stage.addView(tabsScroll'));
-assert.match(html, /#clockHud:not\(\[hidden\]\) ~ \.clock-tabs \{ top:/);
-assert.match(java, /panelParams\.bottomMargin=dp\(64\)/);
+assert.match(html, /#clockPage \.clock-tabs \{ top:/);
+assert.match(java, /panelParams\.topMargin=panelTop/);
 assert.match(java, /private void positionTabs\(\)/);
 const buttons = names.map(name => ({
   name, attrs:{'aria-pressed':'false'}, active:false,
@@ -52,7 +52,7 @@ const init = html.match(/var activeClockTab = null;[\s\S]*?(?=    function updat
 assert(init);vm.runInNewContext(init[0], {document,byId,window,updateHud(){}});
 assert.equal(hud.hidden,false);assert.equal(scroll.hidden,true);
 for (let i=0; i<4; i++) {
-  buttons[i].click();assert(hud.hidden);assert(!scroll.hidden);
+  buttons[i].click();assert(!hud.hidden);assert(!scroll.hidden);
   buttons.forEach((b,j)=>{assert.equal(b.active, i===j);assert.equal(b.attrs['aria-pressed'], i===j?'true':'false');});
   panels.forEach((p,j)=>assert.equal(p.hidden, i!==j));
 }

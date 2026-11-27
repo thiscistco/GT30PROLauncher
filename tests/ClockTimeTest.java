@@ -21,6 +21,9 @@ public class ClockTimeTest {
         check("next selected Monday after deadline", ClockTime.nextAlarm(6,0,1<<1,monday,jakarta),time(jakarta,2026,11,30,6,0));
         TimeZone london = TimeZone.getTimeZone("Europe/London");
         check("DST transition",ClockTime.nextAlarm(9,0,127,time(london,2026,3,28,10,0),london),time(london,2026,3,29,9,0));
+        if (!ClockTime.countdown(monday+3500,monday).equals("Dalam 00:00:04")) throw new AssertionError("ceil seconds");
+        if (!ClockTime.countdown(monday+90061000,monday).equals("Dalam 1 hari 01:01:01")) throw new AssertionError("days");
+        if (!ClockTime.countdown(monday-1000,monday).equals("Dalam 00:00:00")) throw new AssertionError("past");
         System.out.println("ClockTime tests passed");
     }
 }

@@ -578,26 +578,28 @@
   /* Clock: one central local-time HUD and a fixed four-icon bottom bar. */
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; }
   #clockPage .app-top { flex:none; }
-  .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 15.1mm))); }
+  .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
   .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
   .clock-hud-face { fill:var(--app-card); stroke:var(--app-border); stroke-width:1; }
-  .clock-hud-inner { fill:none; stroke:var(--app-border); stroke-width:.5; }
+  .clock-hud-inner { fill:#19252f; stroke:var(--app-border); stroke-width:.5; }
   .clock-hud-ticks { stroke-linecap:round; }
   .clock-hud-ticks .major { stroke:var(--app-text); stroke-width:1.7; }
   .clock-hud-ticks .minor { stroke:var(--app-muted); stroke-width:.72; }
   .clock-hud-marker { fill:var(--app-text); }
-  .clock-hud-label { fill:#19252f; }
   #clockHudText { fill:#fff; font:800 25.2px 'Doto', monospace; font-variation-settings:'wght' 800; }
-  .clock-panel-scroll { position:absolute; inset:0 0 10.16mm; overflow-y:auto; overscroll-behavior:contain; }
-  #clockPage .clock-tabs { position:absolute; left:0; right:0; bottom:0; height:10.16mm; box-sizing:border-box; display:flex; gap:.79mm; margin:0; padding-top:2mm; overflow-x:auto; }
-  #clockHud:not([hidden]) ~ .clock-tabs { top:min(calc(1.2mm + var(--clock-dial-size) + .63mm), max(0px, calc(100cqh - 10.16mm))); bottom:auto; }
+  .clock-panel-scroll { position:absolute; left:2.54mm; right:2.54mm; bottom:2.54mm; top:min(calc(12mm + var(--clock-dial-size)), 100cqh); overflow-y:auto; overscroll-behavior:contain; padding-top:1.27mm; }
+  #clockPage .clock-tabs { position:absolute; left:0; right:0; height:10.16mm; box-sizing:border-box; display:flex; gap:.79mm; margin:0; padding-top:2mm; overflow-x:auto; }
+  #clockPage .clock-tabs { top:min(calc(1.2mm + var(--clock-dial-size) + .63mm), max(0px, calc(100cqh - 10.16mm))); }
   #clockPage .clock-tabs button { flex:0 0 7.62mm; width:7.62mm; min-width:0; height:7.62mm; padding:1.905mm; border-radius:2.5mm; }
   #clockPage .clock-tabs button:first-child { margin-left:auto; }
   #clockPage .clock-tabs button:last-child { margin-right:auto; }
   #clockPage .clock-tabs button img { width:3.81mm; height:3.81mm; }
   #clockPage .clock-action { border-radius:2.5mm; }
+  .clock-alarm-header { display:flex; align-items:center; justify-content:space-between; gap:2mm; }
+  #clockPage .clock-alarm-add { width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
+  .clock-alarm-countdown { margin:.8mm 0; font-size:2.2mm; color:var(--app-muted); }
   #clockPage .clock-entry, #clockPage .alarm-form, #clockPage input, #clockPage select { border-radius:3mm; }
   #clockPage .clock-display { background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; padding:2mm; }
   /* ===== Punch-hole kamera depan 13 MP (tengah atas) ===== */
@@ -748,13 +750,12 @@
                       <circle class="clock-hud-face" cx="120" cy="120" r="103.2"/><circle class="clock-hud-inner" cx="120" cy="120" r="80.5"/>
                       <g class="clock-hud-ticks"><line class="major" x1="120.00" y1="33.31" x2="120.00" y2="22.99"/><line class="minor" x1="129.60" y1="28.66" x2="130.14" y2="23.52"/><line class="minor" x1="139.10" y1="30.16" x2="140.17" y2="25.11"/><line class="minor" x1="148.38" y1="32.65" x2="149.98" y2="27.74"/><line class="minor" x1="157.36" y1="36.09" x2="159.46" y2="31.38"/><line class="major" x1="163.34" y1="44.93" x2="168.50" y2="35.99"/><line class="minor" x1="173.99" y1="45.69" x2="177.02" y2="41.52"/><line class="minor" x1="181.46" y1="51.74" x2="184.91" y2="47.91"/><line class="minor" x1="188.26" y1="58.54" x2="192.09" y2="55.09"/><line class="minor" x1="194.31" y1="66.01" x2="198.48" y2="62.98"/><line class="major" x1="195.07" y1="76.66" x2="204.01" y2="71.50"/><line class="minor" x1="203.91" y1="82.64" x2="208.62" y2="80.54"/><line class="minor" x1="207.35" y1="91.62" x2="212.26" y2="90.02"/><line class="minor" x1="209.84" y1="100.90" x2="214.89" y2="99.83"/><line class="minor" x1="211.34" y1="110.40" x2="216.48" y2="109.86"/><line class="major" x1="206.69" y1="120.00" x2="217.01" y2="120.00"/><line class="minor" x1="211.34" y1="129.60" x2="216.48" y2="130.14"/><line class="minor" x1="209.84" y1="139.10" x2="214.89" y2="140.17"/><line class="minor" x1="207.35" y1="148.38" x2="212.26" y2="149.98"/><line class="minor" x1="203.91" y1="157.36" x2="208.62" y2="159.46"/><line class="major" x1="195.07" y1="163.34" x2="204.01" y2="168.50"/><line class="minor" x1="194.31" y1="173.99" x2="198.48" y2="177.02"/><line class="minor" x1="188.26" y1="181.46" x2="192.09" y2="184.91"/><line class="minor" x1="181.46" y1="188.26" x2="184.91" y2="192.09"/><line class="minor" x1="173.99" y1="194.31" x2="177.02" y2="198.48"/><line class="major" x1="163.34" y1="195.07" x2="168.50" y2="204.01"/><line class="minor" x1="157.36" y1="203.91" x2="159.46" y2="208.62"/><line class="minor" x1="148.38" y1="207.35" x2="149.98" y2="212.26"/><line class="minor" x1="139.10" y1="209.84" x2="140.17" y2="214.89"/><line class="minor" x1="129.60" y1="211.34" x2="130.14" y2="216.48"/><line class="major" x1="120.00" y1="206.69" x2="120.00" y2="217.01"/><line class="minor" x1="110.40" y1="211.34" x2="109.86" y2="216.48"/><line class="minor" x1="100.90" y1="209.84" x2="99.83" y2="214.89"/><line class="minor" x1="91.62" y1="207.35" x2="90.02" y2="212.26"/><line class="minor" x1="82.64" y1="203.91" x2="80.54" y2="208.62"/><line class="major" x1="76.66" y1="195.07" x2="71.50" y2="204.01"/><line class="minor" x1="66.01" y1="194.31" x2="62.98" y2="198.48"/><line class="minor" x1="58.54" y1="188.26" x2="55.09" y2="192.09"/><line class="minor" x1="51.74" y1="181.46" x2="47.91" y2="184.91"/><line class="minor" x1="45.69" y1="173.99" x2="41.52" y2="177.02"/><line class="major" x1="44.93" y1="163.34" x2="35.99" y2="168.50"/><line class="minor" x1="36.09" y1="157.36" x2="31.38" y2="159.46"/><line class="minor" x1="32.65" y1="148.38" x2="27.74" y2="149.98"/><line class="minor" x1="30.16" y1="139.10" x2="25.11" y2="140.17"/><line class="minor" x1="28.66" y1="129.60" x2="23.52" y2="130.14"/><line class="major" x1="33.31" y1="120.00" x2="22.99" y2="120.00"/><line class="minor" x1="28.66" y1="110.40" x2="23.52" y2="109.86"/><line class="minor" x1="30.16" y1="100.90" x2="25.11" y2="99.83"/><line class="minor" x1="32.65" y1="91.62" x2="27.74" y2="90.02"/><line class="minor" x1="36.09" y1="82.64" x2="31.38" y2="80.54"/><line class="major" x1="44.93" y1="76.66" x2="35.99" y2="71.50"/><line class="minor" x1="45.69" y1="66.01" x2="41.52" y2="62.98"/><line class="minor" x1="51.74" y1="58.54" x2="47.91" y2="55.09"/><line class="minor" x1="58.54" y1="51.74" x2="55.09" y2="47.91"/><line class="minor" x1="66.01" y1="45.69" x2="62.98" y2="41.52"/><line class="major" x1="76.66" y1="44.93" x2="71.50" y2="35.99"/><line class="minor" x1="82.64" y1="36.09" x2="80.54" y2="31.38"/><line class="minor" x1="91.62" y1="32.65" x2="90.02" y2="27.74"/><line class="minor" x1="100.90" y1="30.16" x2="99.83" y2="25.11"/><line class="minor" x1="110.40" y1="28.66" x2="109.86" y2="23.52"/></g>
                       <g id="clockHudMarker"><circle class="clock-hud-marker" cx="120" cy="20.4" r="2.88"/></g>
-                      <rect class="clock-hud-label" x="52" y="103" width="136" height="34" rx="10"/>
                       <text id="clockHudText" x="120" y="120" text-anchor="middle" dominant-baseline="central">00:00:00</text>
                     </svg>
                   </div>
                   <div class="clock-panel-scroll" id="clockPanelScroll" hidden>
                 <div class="clock-section" data-clock-panel="alarm" hidden>
-                  <h3>ALARM</h3><button class="clock-action clock-wide" id="previewAddAlarm" type="button">+ Tambah alarm</button>
+                  <div class="clock-alarm-header"><h3>ALARM</h3><button class="clock-action clock-alarm-add" id="previewAddAlarm" type="button" aria-label="Tambah alarm" title="Tambah alarm"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
                   <p class="clock-muted">Simulasi preview; alarm aktif di aplikasi Android.</p>
                   <div class="alarm-form" id="previewAlarmForm" hidden>
                     <label>Waktu <input id="previewAlarmTime" type="time" value="07:00"></label>
@@ -1052,7 +1053,6 @@
     var activeClockTab = null;
     function selectClockTab(name) {
       activeClockTab = name;
-      byId('clockHud').hidden = name !== null;
       byId('clockPanelScroll').hidden = name === null;
       document.querySelectorAll('[data-clock-tab]').forEach(function (b) {
         var active = b.getAttribute('data-clock-tab') === name;
@@ -1080,11 +1080,35 @@
     tickHud();
     byId('previewAddAlarm').addEventListener('click', function () { byId('previewAlarmForm').hidden = !byId('previewAlarmForm').hidden; });
     var alarms = [];
+    function nextPreviewAlarm(alarm, now) {
+      var parts = alarm.time.split(':'), hour = Number(parts[0]), minute = Number(parts[1]);
+      for (var offset = 0; offset <= 7; offset++) {
+        var date = new Date(now); date.setHours(0,0,0,0); date.setDate(date.getDate() + offset); date.setHours(hour,minute,0,0);
+        if (date.getTime() > now && (!alarm.days.length || alarm.days.indexOf(date.getDay()) !== -1)) return date.getTime();
+      }
+      return 0;
+    }
+    function previewCountdown(when, now) {
+      var seconds = Math.max(0, Math.ceil((when-now)/1000)), days = Math.floor(seconds/86400);
+      function two(n) { return String(n).padStart(2,'0'); }
+      return 'Dalam ' + (days ? days + ' hari ' : '') + two(Math.floor(seconds/3600)%24) + ':' + two(Math.floor(seconds/60)%60) + ':' + two(seconds%60);
+    }
+    function updatePreviewCountdowns() {
+      var now=Date.now();
+      alarms.forEach(function (alarm) {
+        if (alarm.enabled && alarm.next <= now) {
+          if (!alarm.days.length) { alarm.enabled=false; if (alarm.checkbox) alarm.checkbox.checked=false; }
+          else alarm.next=nextPreviewAlarm(alarm,now);
+        }
+        if (alarm.countdown) alarm.countdown.textContent = alarm.enabled ? previewCountdown(alarm.next,now) : 'Tidak aktif';
+      });
+    }
     byId('previewSaveAlarm').addEventListener('click', function () {
       var time = byId('previewAlarmTime').value;
       if (!time) return;
-      var days = Array.from(byId('previewAlarmDays').querySelectorAll('input:checked')).map(function (x) { return ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][Number(x.value)]; });
-      alarms.push({ time: time, days: days.length ? days.join(' · ') : 'Sekali', vibrate: byId('previewVibrate').checked });
+      var days = Array.from(byId('previewAlarmDays').querySelectorAll('input:checked')).map(function (x) { return Number(x.value); });
+      var alarm = { time: time, days: days, vibrate: byId('previewVibrate').checked, enabled:true };
+      alarm.next=nextPreviewAlarm(alarm,Date.now()); alarms.push(alarm);
       byId('previewAlarmForm').hidden = true;
       renderAlarms();
     });
@@ -1093,11 +1117,17 @@
       if (!alarms.length) { list.textContent = 'Belum ada alarm. Tambahkan pengingat pertama.'; return; }
       alarms.forEach(function (alarm, i) {
         var card = document.createElement('div'); card.className = 'clock-entry';
-        var text = document.createElement('div'); text.textContent = alarm.time + '  ·  ' + alarm.days + (alarm.vibrate ? '  ·  Getar' : ''); card.appendChild(text);
+        var text = document.createElement('div'); text.textContent = alarm.time + '  ·  ' + (alarm.days.length ? alarm.days.map(function (d) { return ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d]; }).join(' · ') : 'Sekali') + (alarm.vibrate ? '  ·  Getar' : ''); card.appendChild(text);
+        var countdown = document.createElement('div'); countdown.className = 'clock-alarm-countdown'; card.appendChild(countdown); alarm.countdown=countdown;
+        var toggle = document.createElement('label'), checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.checked=alarm.enabled;
+        alarm.checkbox=checkbox; checkbox.addEventListener('change', function () { alarm.enabled=checkbox.checked; if (alarm.enabled) alarm.next=nextPreviewAlarm(alarm,Date.now()); updatePreviewCountdowns(); });
+        toggle.appendChild(checkbox); toggle.appendChild(document.createTextNode(' Aktif')); card.appendChild(toggle);
         var remove = document.createElement('button'); remove.className = 'clock-action'; remove.textContent = 'Hapus';
         remove.addEventListener('click', function () { alarms.splice(i, 1); renderAlarms(); }); card.appendChild(remove); list.appendChild(card);
       });
+      updatePreviewCountdowns();
     }
+    setInterval(updatePreviewCountdowns,1000);
     var cities = [['Jakarta','Asia/Jakarta'],['Makassar','Asia/Makassar'],['Jayapura','Asia/Jayapura'],['Singapore','Asia/Singapore'],['Tokyo','Asia/Tokyo'],['Seoul','Asia/Seoul'],['Dubai','Asia/Dubai'],['London','Europe/London'],['Paris','Europe/Paris'],['New York','America/New_York'],['Los Angeles','America/Los_Angeles'],['Sydney','Australia/Sydney']];
     var cityBox = byId('previewCities');
     cities.forEach(function (city, index) {

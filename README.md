@@ -14,7 +14,9 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 
 Saat membuka **Jam**, HUD waktu lokal HH:mm:ss tampil di tengah dalam lingkaran
 jam analog di bagian atas bingkai squircle. Angka jam putih berlatar gelap,
-dan ikon Alarm, Jam Dunia, Timer, dan Stopwatch rata tengah di bawah lingkaran. Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
+dan ikon Alarm, Jam Dunia, Timer, dan Stopwatch rata tengah di bawah lingkaran.
+Fitur terbuka sebagai panel pada halaman yang sama; daftar alarm menampilkan
+hitung mundur menuju alarm berikutnya. Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
 
 ## Desain aplikasi bawaan
 

@@ -19,5 +19,11 @@ final class ClockTime {
         }
         return 0;
     }
+    static String countdown(long when, long now) {
+        long seconds = Math.max(0L, (when - now + 999L) / 1000L);
+        long days = seconds / 86400L;
+        String time = String.format(java.util.Locale.US, "%02d:%02d:%02d", (seconds / 3600L) % 24L, (seconds / 60L) % 60L, seconds % 60L);
+        return days > 0 ? "Dalam " + days + " hari " + time : "Dalam " + time;
+    }
     private ClockTime() {}
 }
