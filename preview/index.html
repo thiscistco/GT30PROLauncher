@@ -170,6 +170,17 @@
     src: url('assets/fonts/Doto.ttf?v=1') format('truetype');
     font-weight: 100 900;
   }
+  /* Informational home label; preview uses sample data, never reads device battery. */
+  .battery-info { position:absolute; z-index:6; left:8%; width:84%; bottom:14%; box-sizing:border-box;
+    padding:1.5mm 2.2mm; border:1px solid #8f6c3d; border-radius:1.8mm; background:rgba(16,22,27,.93); color:#f1f2e9; pointer-events:none; }
+  .battery-info-title { color:#ffcd6a; font:800 2mm/1.15 'Doto',monospace; letter-spacing:.08em; }
+  .battery-info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:2mm; }
+  .battery-info-cell { min-width:0; padding-top:.5mm; font:400 2.2mm/1.15 sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .battery-info-name { display:block; color:#adc0c8; font:700 1.65mm/1.15 sans-serif; overflow:hidden; text-overflow:ellipsis; }
+  @media (prefers-color-scheme:light) {
+    .battery-info { background:rgba(245,242,233,.91); border-color:#89724f; color:#17242b; }
+    .battery-info-title { color:#6a4000; } .battery-info-name { color:#48535b; }
+  }
   .battery-led {
     position: absolute;
     left: calc(50% + 1px);
@@ -863,6 +874,19 @@
                 <span id="homeDateMonth">---</span>
               </div>
               <button class="weather-widget home-weather" id="homeWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg><span class="weather-temp">--°</span></button>
+              <section class="battery-info" aria-label="Informasi baterai, data simulasi preview">
+                <div class="battery-info-title">INFO BATERAI · SIMULASI</div>
+                <div class="battery-info-grid">
+                  <div class="battery-info-cell"><span class="battery-info-name">LEVEL</span>85%</div><div class="battery-info-cell"><span class="battery-info-name">STATUS</span><span id="previewBatteryStatus">Digunakan</span></div>
+                  <div class="battery-info-cell"><span class="battery-info-name">SUMBER</span><span id="previewBatterySource">Tidak terhubung</span></div><div class="battery-info-cell"><span class="battery-info-name">KONDISI</span>Baik</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">SUHU</span>31,2 °C</div><div class="battery-info-cell"><span class="battery-info-name">TEGANGAN</span>3,950 V</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">ARUS SAAT INI</span>Tidak tersedia</div><div class="battery-info-cell"><span class="battery-info-name">ARUS RATA-RATA</span>Tidak tersedia</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">MUATAN TERSISA</span>Tidak tersedia</div><div class="battery-info-cell"><span class="battery-info-name">ENERGI TERSISA</span>Tidak tersedia</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">SIKLUS</span>Tidak tersedia</div><div class="battery-info-cell"><span class="battery-info-name">TEKNOLOGI</span>Li-ion</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">BATERAI TERDETEKSI</span>Ya</div><div class="battery-info-cell"><span class="battery-info-name">BATERAI RENDAH</span>Tidak</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">PERKIRAAN PENUH</span>Tidak tersedia</div>
+                </div>
+              </section>
               <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen"><span class="battery-value">85</span><svg class="battery-bolt" viewBox="0 0 5 7" preserveAspectRatio="none" aria-hidden="true">
                 <circle cx="2.5" cy="0.5" r="0.32"/><circle cx="3.5" cy="0.5" r="0.32"/>
                 <circle cx="1.5" cy="1.5" r="0.32"/><circle cx="2.5" cy="1.5" r="0.32"/>
@@ -1095,6 +1119,8 @@
     var toggle = document.getElementById('chargeToggle');
     function sync() {
       battery.classList.toggle('charging', toggle.checked);
+      document.getElementById('previewBatteryStatus').textContent = toggle.checked ? 'Mengisi' : 'Digunakan';
+      document.getElementById('previewBatterySource').textContent = toggle.checked ? 'AC (contoh)' : 'Tidak terhubung';
       battery.setAttribute('aria-label', toggle.checked ? 'Baterai 85 persen, pengisian daya' : 'Baterai 85 persen');
     }
     toggle.addEventListener('change', sync);

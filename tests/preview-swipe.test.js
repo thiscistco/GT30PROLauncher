@@ -15,7 +15,7 @@ class Element {
   focus() {}
   getBoundingClientRect() { return { left: 0, top: 0, bottom: 1000, right: 445, width: 445, height: 1000 }; }
 }
-const ids = ['chargeToggle','batteryLed','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
+const ids = ['chargeToggle','batteryLed','previewBatteryStatus','previewBatterySource','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
   'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
   'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','timetablePage','timetableBack','openTimetableModule','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));

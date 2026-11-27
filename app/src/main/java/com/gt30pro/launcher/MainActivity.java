@@ -47,6 +47,15 @@ public class MainActivity extends BottomSwipeActivity {
     private GestureDetector detector;
     private TextView batteryLed;
     private BatteryBoltView batteryBolt;
+    private BatteryInfoView batteryInfo;
+    private Intent lastBattery;
+    private final Runnable batteryInfoTick=new Runnable() {
+        @Override public void run() {
+            if (!homeResumed) return;
+            if (batteryInfo!=null && lastBattery!=null) batteryInfo.update(lastBattery);
+            clockHandler.postDelayed(this,15000);
+        }
+    };
     private HomeClockView clockLed;
     private HomeDateView dateLed;
     private WeatherView weatherLed;
@@ -95,6 +104,8 @@ public class MainActivity extends BottomSwipeActivity {
                 batteryLed.setContentDescription("Baterai " + percent + " persen"
                         + (charging ? ", pengisian daya" : ""));
             }
+            lastBattery=intent;
+            if (batteryInfo!=null) batteryInfo.update(intent);
             updateChargeAnim();
         }
     };
@@ -148,6 +159,15 @@ public class MainActivity extends BottomSwipeActivity {
         batteryBolt = new BatteryBoltView(this);
         batteryBolt.setVisibility(View.INVISIBLE);
         homeRoot.addView(batteryBolt, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
+        // Read-only card is behind the glass, does not consume home gestures.
+        batteryInfo=new BatteryInfoView(this);
+        batteryInfo.setElevation(4f * getResources().getDisplayMetrics().density);
+        FrameLayout.LayoutParams infoParams=new FrameLayout.LayoutParams(1,FrameLayout.LayoutParams.WRAP_CONTENT,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
+        homeRoot.addView(batteryInfo,infoParams);
+        homeRoot.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,oright,ob) -> {
+            if(r-l!=oright-ol || b-t!=ob-ot) updateBatteryInfoLayout(homeRoot);
+        });
+        homeRoot.post(() -> updateBatteryInfoLayout(homeRoot));
         batteryLed.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
             if (l != oldL || t != oldT || r != oldR || b != oldB) updateBatteryOffset(homeRoot, batteryLed);
         });
@@ -241,6 +261,13 @@ public class MainActivity extends BottomSwipeActivity {
             }
         });
         root.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
+    }
+
+    private void updateBatteryInfoLayout(FrameLayout root) {
+        if(batteryInfo==null || root.getWidth()<=0 || root.getHeight()<=0) return;
+        FrameLayout.LayoutParams p=(FrameLayout.LayoutParams)batteryInfo.getLayoutParams();
+        int width=Math.round(root.getWidth()*.84f), bottom=Math.round(root.getHeight()*.14f);
+        if(p.width!=width || p.bottomMargin!=bottom) { p.width=width; p.bottomMargin=bottom; batteryInfo.setLayoutParams(p); }
     }
 
     // Wallpaper is centered with centerCrop, just like CSS background-size: cover.
@@ -373,6 +400,7 @@ public class MainActivity extends BottomSwipeActivity {
         if (clockLed != null) clockLed.setLightGlass(!dark);
         if (dateLed != null) dateLed.setLightGlass(!dark);
         if (weatherLed != null) weatherLed.setLightGlass(!dark);
+        if (batteryInfo != null) batteryInfo.setLightGlass(!dark);
         if (homeResumed) updateChargeAnim();
     }
 
@@ -413,6 +441,8 @@ public class MainActivity extends BottomSwipeActivity {
         });
         clockHandler.removeCallbacks(clockTick);
         clockHandler.post(clockTick);
+        clockHandler.removeCallbacks(batteryInfoTick);
+        clockHandler.post(batteryInfoTick);
     }
 
     @Override
@@ -425,6 +455,8 @@ public class MainActivity extends BottomSwipeActivity {
         if (weather != null) weather.pause();
         stopDateAnimation();
         clockHandler.removeCallbacks(clockTick);
+        clockHandler.removeCallbacks(batteryInfoTick);
+        lastBattery=null;
         if (chargeAnim != null) {
             chargeAnim.cancel();
             chargeAnim = null;
