@@ -43,10 +43,10 @@ aplikasi bawaan baru tersedia di `docs/app-ui.md`.
   baterai, animasi jalur dan ikon cuaca dengan suhu (sesuai preview). Di atas
   wallpaper terdapat lapisan kaca putih (mode terang) atau hitam (mode gelap)
   dengan transparansi 25%. Di mode gelap, indikator utama putih keabu-abuan
-  dan aksen jam/cuaca amber; di mode terang, indikator gelap dan aksen amber
-  lebih pekat. Label hari/bulan memakai warna sekunder. Ikon dan label berada di
+  dan aksen jam/cuaca amber; di mode terang, indikator gunmetal tetap gelap.
+  Indikator non-gunmetal memakai warna inti cahaya jalur (#FFCD6A). Label hari/bulan memakai warna sekunder. Ikon dan label berada di
   balik kaca; lapisan ini tidak menghalangi sentuhan atau mengubah wallpaper asli.
-  Jam dan angka baterai digeser ke atas setara 1.120 piksel gambar wallpaper dan
+  Jam dan angka baterai digeser ke atas setara 1.220 piksel gambar wallpaper dan
   diperbesar 20%. Ikon pengisian diperbesar dan dinaikkan agar terlihat utuh.
   Indikator dibuat lebih kontras, walaupun kaca tetap mengurangi keterlihatannya.
   Preview memungkinkan perbandingan posisi kaca di atas atau di bawah indikator.

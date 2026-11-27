@@ -22,8 +22,8 @@ final class HomeDateView extends View {
     static final float TEXT_MM = 2f * SIZE_SCALE;
     static final float CONTENT_HEIGHT_MM = TEXT_MM * (1f + 2f * LABEL_SCALE) + 2f * CSS_PX_MM;
     static final float HEIGHT_MM = CONTENT_HEIGHT_MM + 2f * GLOW_PAD_MM;
-    private static final int[] AMBER = {0xFFFF9D2F, 0xFFFFAA46, 0xFFFFB65C, 0xFFFFAA46, 0xFFFF9D2F};
-    private static final int[] AMBER_LIGHT = {0xFF7A2D00, 0xFF893000, 0xFF993800, 0xFF893000, 0xFF7A2D00};
+    private static final int[] AMBER = {0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A};
+    private static final int[] AMBER_LIGHT = {0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A};
     private boolean lightGlass;
     private static final float[] STOPS = {0f, .24f, .5f, .76f, 1f};
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
@@ -37,7 +37,7 @@ final class HomeDateView extends View {
         setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
         text.setTypeface(Typeface.createFromAsset(context.getAssets(), "fonts/Doto.ttf"));
         text.setFontVariationSettings("'wght' 800");
-        text.setColor(0xFFFFB65C);
+        text.setColor(0xFFFFCD6A);
     }
     void setScale(float pixelsPerMm) {
         if (pxPerMm == pixelsPerMm) return;
@@ -59,9 +59,10 @@ final class HomeDateView extends View {
     private void drawLine(Canvas canvas, String value, float top, float sizeFactor, boolean gunmetal) {
         float line = TEXT_MM * sizeFactor * pxPerMm, gap = .2f * SIZE_SCALE * sizeFactor * pxPerMm;
         text.setTextSize(2f * SIZE_SCALE * sizeFactor * pxPerMm);
-        text.setColor(lightGlass ? (gunmetal ? 0xFF263840 : 0xFF993800)
-                : (gunmetal ? 0xFFAABAC5 : 0xFFFFB65C));
-        text.setShadowLayer(.4f * pxPerMm, 0f, 0f, lightGlass ? 0x33283B45 : (gunmetal ? 0xD9141B1F : 0xA6FF6919));
+        // Same effective gunmetal values as the previous brightness filter.
+        text.setColor(lightGlass ? (gunmetal ? 0xFF151F23 : 0xFFFFCD6A)
+                : (gunmetal ? 0xFFEEFFFF : 0xFFFFCD6A));
+        text.setShadowLayer(.4f * pxPerMm, 0f, 0f, gunmetal ? (lightGlass ? 0x33162026 : 0xD91C262B) : 0xA6FF6919);
         Paint.FontMetrics metrics = text.getFontMetrics();
         float baseline = top + (line - (metrics.descent - metrics.ascent)) / 2f - metrics.ascent;
         float width = text.measureText(value) + Math.max(0, value.length() - 1) * gap;

@@ -16,9 +16,9 @@ final class HomeClockView extends View {
     static final float GLOW_PAD_MM = 0.4f;
     static final float HEIGHT_MM = CONTENT_HEIGHT_MM + 2f * GLOW_PAD_MM;
     private static final int[] AMBER = {
-        0xFFFF9D2F, 0xFFFFAA46, 0xFFFFB65C, 0xFFFFAA46, 0xFFFF9D2F
+        0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A
     };
-    private static final int[] AMBER_LIGHT = {0xFF7A2D00, 0xFF893000, 0xFF993800, 0xFF893000, 0xFF7A2D00};
+    private static final int[] AMBER_LIGHT = {0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A};
     private boolean lightGlass;
     private static final float[] STOPS = {0f, .24f, .5f, .76f, 1f};
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
@@ -33,7 +33,7 @@ final class HomeClockView extends View {
         setWillNotDraw(false);
         text.setTypeface(Typeface.createFromAsset(context.getAssets(), "fonts/Doto.ttf"));
         text.setFontVariationSettings("'wght' 800");
-        text.setColor(0xFFFFB65C);
+        text.setColor(0xFFFFCD6A);
     }
 
     void setScale(float pixelsPerMm) {
@@ -62,7 +62,7 @@ final class HomeClockView extends View {
         float firstWidth = text.measureText(value, 0, 1);
         float secondWidth = text.measureText(value, 1, 2);
         float x = (getWidth() - firstWidth - gap - secondWidth) / 2f;
-        text.setShadowLayer(.4f * pxPerMm, 0, 0, lightGlass ? 0x44893000 : 0xA6FF6919);
+        text.setShadowLayer(.4f * pxPerMm, 0, 0, 0xA6FF6919);
         text.setShader(new LinearGradient(0, top, 0, top + lineHeight, lightGlass ? AMBER_LIGHT : AMBER, STOPS, Shader.TileMode.CLAMP));
         canvas.drawText(value, 0, 1, x, baseline, text);
         canvas.drawText(value, 1, 2, x + firstWidth + gap, baseline, text);
@@ -81,13 +81,12 @@ final class HomeClockView extends View {
         float total = 2.8f * pxPerMm - .76f * cssPx;
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;
-        dots.setShadowLayer(.6f * pxPerMm, 0f, 0f, lightGlass ? 0x44893000 : 0xA6FF6919);
+        dots.setShadowLayer(.6f * pxPerMm, 0f, 0f, 0xA6FF6919);
         for (int i = 0; i < 5; i++) {
             float x = start + i * total / 5f;
             float y = dotTop + r;
             dots.setShader(new RadialGradient(x, y, r,
-                lightGlass ? new int[]{0xFF993800, 0xFF893000, 0xFF7A2D00}
-                        : new int[]{0xFFFFB65C, 0xFFFFAA46, 0xFFFF9D2F},
+                new int[]{0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A},
                 new float[]{0f, .55f, 1f}, Shader.TileMode.CLAMP));
             canvas.drawCircle(x, y, r, dots);
         }

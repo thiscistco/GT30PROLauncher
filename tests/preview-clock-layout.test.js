@@ -16,12 +16,12 @@ assert.match(sep, /height:\s*0\.22mm/);
 assert.match(sep, /margin:\s*calc\(0\.461mm - 1px\) 0 0\.45mm 0/);
 const digits = html.match(/\.clock-led > span:not\(\.clock-sep\),\s*\.date-led > span\s*\{([^}]*)\}/)[1];
 // Both home overlays retain an amber gradient tuned to the home palette.
-assert.match(digits, /#ff9d2f 0%, #ffaa46 24%, #ffb65c 50%, #ffaa46 76%, #ff9d2f 100%/);
+assert.match(digits, /#ffcd6a 0%, #ffcd6a 24%, #ffcd6a 50%, #ffcd6a 76%, #ffcd6a 100%/);
 assert.match(digits, /drop-shadow\(0 0 0\.4mm rgba\(255, 105, 25, 0\.65\)\)/);
-assert.match(sep, /#ffb65c 0%, #ffaa46 55%, #ff9d2f 90%/);
+assert.match(sep, /#ffcd6a 0%, #ffcd6a 55%, #ffcd6a 90%/);
 const dateView = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeDateView.java', 'utf8');
 for (const source of [view, dateView]) {
-  assert.match(source, /0xFFFF9D2F, 0xFFFFAA46, 0xFFFFB65C, 0xFFFFAA46, 0xFFFF9D2F/);
+  assert.match(source, /0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A/);
   assert.match(source, /0xA6FF6919/);
 }
 assert.match(java, /new HomeClockView\(this\)/);

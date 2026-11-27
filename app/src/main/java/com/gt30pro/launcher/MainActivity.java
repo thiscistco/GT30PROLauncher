@@ -233,7 +233,7 @@ public class MainActivity extends BottomSwipeActivity {
 
     // Wallpaper is centered with centerCrop, just like CSS background-size: cover.
     private float homeIndicatorShift(FrameLayout root) {
-        return 1120f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f);
+        return 1220f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f);
     }
 
     private void updateBatteryOffset(FrameLayout root, TextView batteryBox) {
@@ -348,17 +348,6 @@ public class MainActivity extends BottomSwipeActivity {
         if (clockLed != null) clockLed.setLightGlass(!dark);
         if (dateLed != null) dateLed.setLightGlass(!dark);
         if (weatherLed != null) weatherLed.setLightGlass(!dark);
-        // Match the preview CSS brightness filter on the completed indicator,
-        // including gradients and shadows, without changing the glass asset.
-        float factor = dark ? 1.4f : .55f;
-        android.graphics.Paint brightness = new android.graphics.Paint();
-        brightness.setColorFilter(new android.graphics.ColorMatrixColorFilter(new float[] {
-                factor, 0, 0, 0, 0, 0, factor, 0, 0, 0,
-                0, 0, factor, 0, 0, 0, 0, 0, 1, 0
-        }));
-        for (View indicator : new View[] {batteryLed, batteryBolt, clockLed, dateLed, weatherLed}) {
-            if (indicator != null) indicator.setLayerType(View.LAYER_TYPE_SOFTWARE, brightness);
-        }
         if (homeResumed) updateChargeAnim();
     }
 
@@ -502,13 +491,27 @@ public class MainActivity extends BottomSwipeActivity {
     private void updateChargeAnim() {
         boolean light = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                 != Configuration.UI_MODE_NIGHT_YES;
+        if (batteryLed != null) {
+            // Preserve the existing gunmetal brightness when not charging; the
+            // amber charging color matches the animation without a color filter.
+            android.graphics.Paint brightness = null;
+            if (!charging) {
+                float factor = light ? .55f : 1.4f;
+                brightness = new android.graphics.Paint();
+                brightness.setColorFilter(new android.graphics.ColorMatrixColorFilter(new float[] {
+                        factor, 0, 0, 0, 0, 0, factor, 0, 0, 0,
+                        0, 0, factor, 0, 0, 0, 0, 0, 1, 0
+                }));
+            }
+            batteryLed.setLayerType(View.LAYER_TYPE_SOFTWARE, brightness);
+        }
         if (charging) {
             if (batteryLed != null) {
-                batteryLed.setTextColor(light ? 0xFF993800 : 0xFFFFB65C);
-                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44893000 : 0x8CFF6919);
+                batteryLed.setTextColor(0xFFFFCD6A);
+                batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFF6919);
             }
             if (batteryBolt != null) {
-                batteryBolt.setColor(light ? 0xFF993800 : 0xFFFFB65C);
+                batteryBolt.setColor(0xFFFFCD6A);
                 batteryBolt.setVisibility(View.VISIBLE);
             }
             if (chargeAnim == null) {
