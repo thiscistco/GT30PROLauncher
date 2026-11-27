@@ -3,7 +3,7 @@ const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/<div class="screen glass-over-home">/);
 assert.match(html,/id="glassPreviewToggle"[^>]*checked/);
-assert.match(html,/Percobaan preview saja/);
+assert.match(html,/APK menggunakan ikon dan label di balik kaca/);
 assert.match(html,/\.home-screen-glass \{[^}]*z-index:1;[^}]*pointer-events:none/);
 assert.match(html,/\.screen\.glass-over-home \.home-screen-glass \{ z-index:7; \}/);
 assert.match(html,/\.screen\.glass-over-home \.punch-hole \{ z-index:8; \}/);

@@ -44,14 +44,12 @@ aplikasi bawaan baru tersedia di `docs/app-ui.md`.
   wallpaper terdapat lapisan kaca putih (mode terang) atau hitam (mode gelap)
   dengan transparansi 25%. Di mode gelap, indikator utama putih keabu-abuan
   dan aksen jam/cuaca amber; di mode terang, indikator gelap dan aksen amber
-  lebih pekat. Label hari/bulan memakai warna sekunder. Ikon dan label berada di atas kaca; lapisan ini
-  tidak menghalangi sentuhan atau mengubah wallpaper asli. Preview menyediakan
-  percobaan ikon dan label di balik kaca. Dalam preview, jam dan angka baterai
-  juga digeser ke atas 1.120 piksel gambar wallpaper serta diperbesar 20%;
-  ikon pengisian diperbesar 50% lagi dari percobaan sebelumnya dan dinaikkan
-  sedikit agar tidak terpotong. Indikator lebih kontras, tetapi kaca tetap mengurangi kecerahannya.
-  Percobaan ini belum mengubah
-  perilaku aplikasi Android.
+  lebih pekat. Label hari/bulan memakai warna sekunder. Ikon dan label berada di
+  balik kaca; lapisan ini tidak menghalangi sentuhan atau mengubah wallpaper asli.
+  Jam dan angka baterai digeser ke atas setara 1.120 piksel gambar wallpaper dan
+  diperbesar 20%. Ikon pengisian diperbesar dan dinaikkan agar terlihat utuh.
+  Indikator dibuat lebih kontras, walaupun kaca tetap mengurangi keterlihatannya.
+  Preview memungkinkan perbandingan posisi kaca di atas atau di bawah indikator.
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
   long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).
 - **App Drawer** — daftar semua aplikasi terpasang + pencarian real-time.

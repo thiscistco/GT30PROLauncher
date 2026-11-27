@@ -35,6 +35,17 @@ assert glass.get(ns+'importantForAccessibility')=='no' and glass.get(ns+'scaleTy
 main=(root/'app/src/main/java/com/gt30pro/launcher/MainActivity.java').read_text()
 assert 'Configuration.UI_MODE_NIGHT_MASK' in main and 'Configuration.UI_MODE_NIGHT_YES' in main
 assert 'Wallpapers.loadScreenGlass(this, dark)' in main
+assert 'screenGlass.setElevation(8f * getResources().getDisplayMetrics().density)' in main
+assert 'clockBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
+assert 'dateBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
+assert 'weatherBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
+assert '1120f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f)' in main
+assert 'clockBox.setTranslationY(top - params.topMargin - homeIndicatorShift(root))' in main
+assert 'batteryBox.setTranslationY(cssPixel - homeIndicatorShift(root))' in main
+assert 'clockBox.setScaleX(1.2f)' in main and 'clockBox.setScaleY(1.2f)' in main
+assert 'batteryLed.setScaleX(1.2f)' in main and 'batteryLed.setScaleY(1.2f)' in main
+assert 'dark ? 1.4f : .55f' in main and 'ColorMatrixColorFilter' in main
+assert 'new View[] {batteryLed, batteryBolt, clockLed, dateLed, weatherLed}' in main
 assert main.index('updateScreenGlass();') < main.index('homeRoot.addView(clockBox')
 assert 'onConfigurationChanged(Configuration newConfig)' in main and 'super.onConfigurationChanged(newConfig);\n        updateScreenGlass();' in main
 assert 'super.onResume();\n        homeResumed = true;\n        updateScreenGlass();' in main

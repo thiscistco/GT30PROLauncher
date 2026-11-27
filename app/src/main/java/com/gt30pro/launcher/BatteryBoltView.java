@@ -7,8 +7,8 @@ import android.view.View;
 
 /** A tiny dotted lightning mark in the same dot-matrix spirit as Doto. */
 final class BatteryBoltView extends View {
-    static final float WIDTH_MM = 1f;
-    static final float HEIGHT_MM = 1.4f;
+    static final float WIDTH_MM = 2.8125f;
+    static final float HEIGHT_MM = 3.9375f;
     // High bit is the leftmost of five columns; matches the preview SVG.
     private static final int[] ROWS = {6, 12, 12, 30, 6, 12, 8};
     private final Paint dot = new Paint(Paint.ANTI_ALIAS_FLAG);

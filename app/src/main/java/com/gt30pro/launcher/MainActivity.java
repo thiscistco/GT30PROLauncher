@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Homescreen minimalis — wallpaper dan lapisan kaca transparan di bawah indikator.
+ * Homescreen minimalis — indikator dan wallpaper di balik lapisan kaca transparan.
  *
  * Akses melalui gesture:
  *   - Swipe ke atas  -> laci aplikasi (semua aplikasi)
@@ -109,6 +109,8 @@ public class MainActivity extends BottomSwipeActivity {
         amberGlow.load();
         amberGlow.setVisibility(View.INVISIBLE);
         screenGlass = findViewById(R.id.screen_glass);
+        // Higher Z than every home indicator, without intercepting taps.
+        screenGlass.setElevation(8f * getResources().getDisplayMetrics().density);
         updateScreenGlass();
 
         // Label indikator baterai (font Doto, putih, kecil, agak transparan) di portal USB Type-C
@@ -116,7 +118,9 @@ public class MainActivity extends BottomSwipeActivity {
         batteryLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         batteryLed.setTextColor(0xFFE9F0F5);
-        batteryLed.setAlpha(0.6f);
+        batteryLed.setAlpha(1f);
+        batteryLed.setScaleX(1.2f);
+        batteryLed.setScaleY(1.2f);
         batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CE9F0F5);
         batteryLed.setLetterSpacing(0.06f);
         batteryLed.setFontVariationSettings("'wght' 700");
@@ -145,6 +149,8 @@ public class MainActivity extends BottomSwipeActivity {
         clockLed = clockBox;
         clockBox.setVisibility(View.VISIBLE);
         clockBox.setAlpha(1f);
+        clockBox.setScaleX(1.2f);
+        clockBox.setScaleY(1.2f);
         clockBox.setElevation(4f * getResources().getDisplayMetrics().density);
         homeRoot.setClipChildren(false);
         homeRoot.addView(clockBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
@@ -225,17 +231,24 @@ public class MainActivity extends BottomSwipeActivity {
         root.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }
 
+    // Wallpaper is centered with centerCrop, just like CSS background-size: cover.
+    private float homeIndicatorShift(FrameLayout root) {
+        return 1120f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f);
+    }
+
     private void updateBatteryOffset(FrameLayout root, TextView batteryBox) {
         if (root.getWidth() <= 0) return;
         float pixelsPerMm = root.getWidth() / 70.9f;
         float cssPixel = pixelsPerMm * 25.4f / 96f;
         batteryBox.setTranslationX(cssPixel);
-        batteryBox.setTranslationY(cssPixel);
+        batteryBox.setTranslationY(cssPixel - homeIndicatorShift(root));
         if (batteryBolt == null || batteryBox.getBottom() <= 0) return;
         int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
         int boltHeight = Math.max(1, Math.round(BatteryBoltView.HEIGHT_MM * pixelsPerMm));
         float left = root.getWidth() / 2f + cssPixel - boltWidth / 2f;
-        float top = batteryBox.getBottom() - .75f * cssPixel;
+        // Position against the unshifted text layout, independently of the number.
+        // The last 2 CSS pixels are the additional user-requested upward nudge.
+        float top = batteryBox.getBottom() - 2.75f * cssPixel - 2f * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) batteryBolt.getLayoutParams();
         params.width = boltWidth; params.height = boltHeight;
         params.leftMargin = Math.round(left); params.topMargin = Math.round(top);
@@ -261,7 +274,7 @@ public class MainActivity extends BottomSwipeActivity {
         params.leftMargin = Math.round(left);
         params.topMargin = Math.round(top);
         clockBox.setTranslationX(left - params.leftMargin);
-        clockBox.setTranslationY(top - params.topMargin);
+        clockBox.setTranslationY(top - params.topMargin - homeIndicatorShift(root));
         clockBox.setScale(pixelsPerMm);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
@@ -335,6 +348,17 @@ public class MainActivity extends BottomSwipeActivity {
         if (clockLed != null) clockLed.setLightGlass(!dark);
         if (dateLed != null) dateLed.setLightGlass(!dark);
         if (weatherLed != null) weatherLed.setLightGlass(!dark);
+        // Match the preview CSS brightness filter on the completed indicator,
+        // including gradients and shadows, without changing the glass asset.
+        float factor = dark ? 1.4f : .55f;
+        android.graphics.Paint brightness = new android.graphics.Paint();
+        brightness.setColorFilter(new android.graphics.ColorMatrixColorFilter(new float[] {
+                factor, 0, 0, 0, 0, 0, factor, 0, 0, 0,
+                0, 0, factor, 0, 0, 0, 0, 0, 1, 0
+        }));
+        for (View indicator : new View[] {batteryLed, batteryBolt, clockLed, dateLed, weatherLed}) {
+            if (indicator != null) indicator.setLayerType(View.LAYER_TYPE_SOFTWARE, brightness);
+        }
         if (homeResumed) updateChargeAnim();
     }
 
@@ -391,16 +415,16 @@ public class MainActivity extends BottomSwipeActivity {
             chargeAnim.cancel();
             chargeAnim = null;
         }
-        if (batteryLed != null) batteryLed.setAlpha(.6f);
+        if (batteryLed != null) batteryLed.setAlpha(1f);
         if (batteryBolt != null) {
-            batteryBolt.setAlpha(.6f);
+            batteryBolt.setAlpha(1f);
             batteryBolt.setVisibility(View.INVISIBLE);
         }
     }
 
     private void startDateAnimation() {
         if (dateLed == null || dateAnim != null || !ValueAnimator.areAnimatorsEnabled()) return;
-        dateAnim = ValueAnimator.ofFloat(.55f, .85f);
+        dateAnim = ValueAnimator.ofFloat(.8f, 1f);
         dateAnim.setDuration(2000);
         dateAnim.setRepeatMode(ValueAnimator.REVERSE);
         dateAnim.setRepeatCount(ValueAnimator.INFINITE);
@@ -488,7 +512,7 @@ public class MainActivity extends BottomSwipeActivity {
                 batteryBolt.setVisibility(View.VISIBLE);
             }
             if (chargeAnim == null) {
-                chargeAnim = ValueAnimator.ofFloat(.21f, .6f);
+                chargeAnim = ValueAnimator.ofFloat(.9f, 1f);
                 chargeAnim.setDuration(900);
                 chargeAnim.setRepeatMode(ValueAnimator.REVERSE);
                 chargeAnim.setRepeatCount(ValueAnimator.INFINITE);
@@ -508,11 +532,11 @@ public class MainActivity extends BottomSwipeActivity {
             if (batteryLed != null) {
                 batteryLed.setTextColor(light ? 0xFF263840 : 0xFFE9F0F5);
                 batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44263840 : 0x8CE9F0F5);
-                batteryLed.setAlpha(.6f);
+                batteryLed.setAlpha(1f);
             }
             if (batteryBolt != null) {
                 batteryBolt.setColor(light ? 0xFF263840 : 0xFFE9F0F5);
-                batteryBolt.setAlpha(.6f);
+                batteryBolt.setAlpha(1f);
                 batteryBolt.setVisibility(View.INVISIBLE);
             }
         }

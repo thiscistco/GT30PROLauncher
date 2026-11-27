@@ -18,16 +18,16 @@ const offset = java.match(/private void updateBatteryOffset\([\s\S]*?\n    }/)[0
 assert.match(offset, /pixelsPerMm = root\.getWidth\(\) \/ 70\.9f/);
 assert.match(offset, /cssPixel = pixelsPerMm \* 25\.4f \/ 96f/);
 assert.match(offset, /batteryBox\.setTranslationX\(cssPixel\)/);
-assert.match(offset, /batteryBox\.setTranslationY\(cssPixel\)/);
+assert.match(offset, /batteryBox\.setTranslationY\(cssPixel - homeIndicatorShift\(root\)\)/);
 assert.match(offset, /float left = root\.getWidth\(\) \/ 2f \+ cssPixel - boltWidth \/ 2f/);
-assert.match(offset, /float top = batteryBox\.getBottom\(\) - \.75f \* cssPixel/);
+assert.match(offset, /float top = batteryBox\.getBottom\(\) - 2\.75f \* cssPixel - 2f \* pixelsPerMm/);
 assert.match(java, /updateBatteryOffset\(homeRoot, batteryLed\)/);
 const boltCss = html.match(/\.battery-bolt\s*\{([^}]*)\}/)[1];
 assert.match(boltCss, /display:\s*none/);
-assert.match(boltCss, /top:\s*calc\(100% - 1\.75px - 2mm\)/);
+assert.match(boltCss, /top:\s*calc\(100% - 3\.75px - 2mm\)/);
 assert.match(boltCss, /width:\s*2\.8125mm/); assert.match(boltCss, /height:\s*3\.9375mm/);
 assert.match(html, /\.battery-led\.charging \.battery-bolt\s*\{\s*display:\s*block/);
-assert.match(boltJava, /WIDTH_MM = 1f/); assert.match(boltJava, /HEIGHT_MM = 1\.4f/);
+assert.match(boltJava, /WIDTH_MM = 2\.8125f/); assert.match(boltJava, /HEIGHT_MM = 3\.9375f/);
 assert.match(boltJava, /ROWS = \{6, 12, 12, 30, 6, 12, 8\}/);
 // Dimensions are 50% larger than the previous experiment. The center rises
 // just enough to keep the enlarged icon visible inside the screen.
@@ -47,10 +47,10 @@ for (const width of [269, 720, 1224]) {
   const room=height*.012-cssPixel; // battery bottom margin
   assert(Math.abs((cssPixel-.5*cssPixel)-.5*cssPixel)<1e-9, 'battery moved right .5 CSS px');
   assert(Math.abs((.25*cssPixel-(-.75*cssPixel))-cssPixel)<1e-9, 'bolt moved up one CSS px');
-  assert(room + 1.75*cssPixel + 2*mm > 3.9375*mm, 'enlarged bolt fits within the screen on the target aspect ratio');
+  assert(room + 3.75*cssPixel + 2*mm > 3.9375*mm, 'enlarged bolt fits within the screen on the target aspect ratio');
 }
 const charge = java.match(/private void updateChargeAnim\(\) \{[\s\S]*?\n    }/)[0];
-assert.match(charge, /ValueAnimator\.ofFloat\(\.21f, \.6f\)/);
+assert.match(charge, /ValueAnimator\.ofFloat\(\.9f, 1f\)/);
 assert.match(charge, /setDuration\(900\)/);
 assert.match(charge, /setRepeatMode\(ValueAnimator\.REVERSE\)/);
 assert.match(charge, /batteryLed\.setAlpha\(alpha\)/);

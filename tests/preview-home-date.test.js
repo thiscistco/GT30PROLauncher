@@ -27,7 +27,7 @@ assert.match(html,/@keyframes datePulse\s*\{\s*from\s*\{\s*opacity:\s*0\.8;\s*\}
 assert.match(html,/prefers-reduced-motion:\s*reduce\)\s*\{\s*\.date-led\s*\{\s*animation:\s*none/);
 const dateAnim = java.match(/private void startDateAnimation\(\)\s*\{[\s\S]*?\n    }/)[0];
 assert.match(dateAnim,/!ValueAnimator\.areAnimatorsEnabled\(\)/);
-assert.match(dateAnim,/ValueAnimator\.ofFloat\(\.55f, \.85f\)/);
+assert.match(dateAnim,/ValueAnimator\.ofFloat\(\.8f, 1f\)/);
 assert.match(dateAnim,/setDuration\(2000\)/);
 assert.match(dateAnim,/setRepeatMode\(ValueAnimator\.REVERSE\)/);
 assert.match(dateAnim,/dateLed\.setAlpha\(\(float\) a\.getAnimatedValue\(\)\)/);

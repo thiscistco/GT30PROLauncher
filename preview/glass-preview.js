@@ -1,4 +1,4 @@
-/* Preview-only comparison: the production Android layering is unchanged. */
+/* Compare home layering; Android uses the default (glass over indicators). */
 (function () {
   'use strict';
   var toggle=document.getElementById('glassPreviewToggle');
