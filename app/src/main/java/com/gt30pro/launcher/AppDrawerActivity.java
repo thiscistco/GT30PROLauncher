@@ -24,17 +24,20 @@ import java.util.Locale;
 public class AppDrawerActivity extends SwipeBackActivity {
 
     private AppGridAdapter adapter;
+    private AppUi ui;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_drawer);
 
+        ui = new AppUi(this); ui.window(this);
         ImageView wallpaper = findViewById(R.id.wallpaper);
-        wallpaper.setImageBitmap(Wallpapers.load(this));
+        wallpaper.setVisibility(View.GONE);
 
         View root = findViewById(R.id.root);
-        View content = findViewById(R.id.content);
+        android.widget.LinearLayout content = findViewById(R.id.content);
+        root.setBackgroundColor(ui.canvas);
         root.setOnApplyWindowInsetsListener((v, insets) -> {
             content.setPadding(content.getPaddingLeft(),
                     insets.getSystemWindowInsetTop(),
@@ -44,13 +47,14 @@ public class AppDrawerActivity extends SwipeBackActivity {
         });
 
         Typeface doto = Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf");
-        ((TextView) findViewById(R.id.back)).setTypeface(doto);
-        ((TextView) findViewById(R.id.drawer_title)).setTypeface(doto);
-        ((EditText) findViewById(R.id.search)).setTypeface(doto);
-        findViewById(R.id.back).setOnClickListener(v -> finish());
+        content.removeView(findViewById(R.id.back)); content.removeView(findViewById(R.id.drawer_title));
+        content.addView(ui.header(this, doto, "Semua Aplikasi"),0);
+        EditText searchBox = findViewById(R.id.search); searchBox.setTypeface(doto);
+        searchBox.setTextColor(ui.ink); searchBox.setHintTextColor(ui.muted); searchBox.setBackground(ui.surface(this, ui.card));
 
         GridView grid = findViewById(R.id.grid);
         adapter = new AppGridAdapter(this);
+        adapter.setTextColor(ui.ink);
         grid.setAdapter(adapter);
         grid.setOnItemClickListener((parent, view, position, id) -> {
             AppInfo info = adapter.getItem(position);
@@ -81,6 +85,8 @@ public class AppDrawerActivity extends SwipeBackActivity {
         loadApps();
     }
 
+    @Override protected void onResume() { super.onResume(); AppUi current = new AppUi(this); if (ui != null && (ui.dark != current.dark || !ui.choice.equals(current.choice))) recreate(); }
+
     private void loadApps() {
         new Thread(() -> {
             PackageManager pm = getPackageManager();
@@ -103,7 +109,12 @@ public class AppDrawerActivity extends SwipeBackActivity {
 
             Collator collator = Collator.getInstance(new Locale("id", "ID"));
             Collections.sort(apps, (a, b) -> collator.compare(a.label, b.label));
-            runOnUiThread(() -> adapter.setApps(apps));
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                adapter.setApps(apps);
+                EditText search = findViewById(R.id.search);
+                adapter.getFilter().filter(search.getText());
+            });
         }).start();
     }
 }

@@ -15,7 +15,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
 import java.time.LocalDateTime;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -113,7 +112,9 @@ public class CalendarActivity extends SwipeBackActivity {
 
     @Override protected void onResume() {
         super.onResume();
-        // Refresh after returning from settings, including changes to the system animation scale.
+        // Refresh theme and animation settings after returning from another page or settings.
+        themeChoice = getSharedPreferences("calendar_appearance", MODE_PRIVATE).getString("theme", "system");
+        applyPalette();
         displayedToday = LocalDate.now(); render();
         dateHandler.removeCallbacks(dateTick); dateHandler.postDelayed(dateTick, 60000L);
         CalendarReminders.restore(this);
@@ -193,24 +194,20 @@ public class CalendarActivity extends SwipeBackActivity {
     }
 
     private void applyPalette() {
-        dark = "dark".equals(themeChoice) || (!"light".equals(themeChoice) &&
-                (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES);
-        canvasColor = dark ? 0xFF101820 : 0xFFF4F7FA;
-        cardColor = dark ? 0xFF19252F : Color.WHITE;
-        ink = dark ? 0xFFF5F8FA : 0xFF142A3A;
-        muted = dark ? 0xFFC7D3DD : 0xFF405465;
+        AppUi palette = new AppUi(this);
+        dark = palette.dark; canvasColor = palette.canvas; cardColor = palette.card;
+        ink = palette.ink; muted = palette.muted;
         weekend = dark ? 0xFFFF9FAA : 0xFFB3263B;
         observance = dark ? 0xFFFFC077 : 0xFF9B5700;
-        controlColor = dark ? 0xFF2A3B49 : 0xFFE3EAF0;
+        controlColor = palette.control;
         dayColor = dark ? 0xFF344957 : 0xFFDCE5ED;
-        selectionColor = dark ? 0xFFDCE8F0 : 0xFF304355;
-        selectedText = dark ? 0xFF172A38 : Color.WHITE;
+        selectionColor = palette.selected;
+        selectedText = palette.selectedText;
         selectedWeekend = dark ? 0xFFA6152B : 0xFFFF9EA8;
-        borderColor = dark ? 0xFF516776 : 0xFFC9D5DE;
-        eventColor = dark ? 0xFF263743 : 0xFFE5ECF2;
+        borderColor = palette.border;
+        eventColor = palette.event;
         todayColor = dark ? cardColor : Color.WHITE;
-        getWindow().setStatusBarColor(canvasColor); getWindow().setNavigationBarColor(canvasColor);
-        getWindow().getDecorView().setSystemUiVisibility(dark ? 0 : View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        palette.window(this);
         if (scroll != null) scroll.setBackgroundColor(canvasColor);
     }
     private AlertDialog.Builder dialog() {
@@ -438,8 +435,8 @@ public class CalendarActivity extends SwipeBackActivity {
         top.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
         ImageButton theme = themeButton(themeChoice, false);
         theme.setBackgroundColor(Color.TRANSPARENT);
-        theme.setContentDescription("Tema: " + themeLabel() + ". Pilih tema kalender");
-        theme.setTooltipText("Pilih tema kalender");
+        theme.setContentDescription("Tema: " + themeLabel() + ". Pilih tema aplikasi");
+        theme.setTooltipText("Pilih tema aplikasi");
         theme.setOnClickListener(this::chooseTheme);
         top.addView(theme,new LinearLayout.LayoutParams(dp(48),dp(48))); page.addView(top); space(8);
         LinearLayout root = page;

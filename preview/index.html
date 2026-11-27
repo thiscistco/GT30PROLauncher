@@ -533,6 +533,47 @@
   .clock-row > * { flex: 1; }
   .clock-entry { color: #ffd49d; font-size: 3mm; line-height: 1.6; }
   .clock-city { display: flex; align-items: center; gap: 2mm; margin: 2mm 0; font-size: 2.8mm; }
+
+  /* Shared Calendar-inspired design tokens for launcher-owned apps. */
+  :is(#clockPage,#weatherPage,#superPage,#drawerPage) {
+    --app-bg:#f4f7fa; --app-card:#fff; --app-text:#142a3a; --app-muted:#405465;
+    --app-control:#e3eaf0; --app-border:#c9d5de; --app-selected:#304355; --app-selected-text:#fff; --app-event:#e5ecf2;
+    background:var(--app-bg); color:var(--app-text); padding:5mm 4mm 8mm;
+    font:800 2.8mm 'Doto', monospace; font-variation-settings:'wght' 800;
+  }
+  :is(#clockPage,#weatherPage,#superPage,#drawerPage)[data-theme="dark"] {
+    color-scheme:dark; --app-bg:#101820; --app-card:#19252f; --app-text:#f5f8fa; --app-muted:#c7d3dd;
+    --app-control:#2a3b49; --app-border:#516776; --app-selected:#dce8f0; --app-selected-text:#172a38; --app-event:#263743;
+  }
+  .app-top { display:flex; align-items:center; gap:2mm; margin-bottom:2mm; }
+  .app-title { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:800 3.6mm 'Doto', monospace; }
+  .app-back, .app-theme-button, .app-theme-option { display:grid; place-items:center; flex:none; width:7.62mm; height:7.62mm; padding:0; border:0; border-radius:2.5mm; background:transparent; color:var(--app-text); font:800 4mm 'Doto', monospace; cursor:pointer; }
+  .app-back:focus-visible, .app-theme-button:focus-visible, .app-theme-option:focus-visible { outline:1px solid var(--app-text); outline-offset:-1px; }
+  .app-theme { position:relative; }
+  .app-theme-menu { position:absolute; top:100%; right:0; z-index:20; display:flex; gap:1mm; padding:1mm; border:1px solid var(--app-border); border-radius:3mm; background:var(--app-card); box-shadow:0 1mm 2mm #0002; }
+  .app-theme-menu[hidden] { display:none; }
+  .app-theme-option { background:var(--app-control); }
+  .app-theme-option[aria-pressed="true"] { background:var(--app-selected); color:var(--app-selected-text); }
+  #clockPage .clock-tabs button, #clockPage .clock-action { color:var(--app-text); background:var(--app-control); border-color:var(--app-border); }
+  #clockPage .clock-tabs button.active { background:var(--app-selected); color:var(--app-selected-text); }
+  #clockPage .clock-tabs button img, #superPage .super-icon-button img { filter:brightness(0); }
+  #clockPage .clock-tabs button.active img, #clockPage[data-theme="dark"] .clock-tabs button:not(.active) img, #superPage[data-theme="dark"] .super-icon-button img { filter:brightness(0) invert(1); }
+  #clockPage[data-theme="dark"] .clock-tabs button.active img { filter:brightness(0); }
+  #clockPage .clock-section h3, #clockPage .clock-display { color:var(--app-text); }
+  #clockPage .clock-muted, #drawerPage p { color:var(--app-muted); }
+  #clockPage .alarm-form, #clockPage .clock-entry { background:var(--app-card); color:var(--app-text); border-color:var(--app-border); }
+  #clockPage input, #clockPage select, #drawerPage input { background:var(--app-card); color:var(--app-text); border-color:var(--app-border); }
+  #clockPage input::placeholder, #drawerPage input::placeholder { color:var(--app-muted); opacity:1; }
+  #superPage .super-weather, #superPage .super-icon-button { color:var(--app-text); }
+  #weatherPage .weather-header h2, #weatherPage h3, #weatherPage .weather-hour strong { color:var(--app-text); }
+  #weatherPage .weather-location, #weatherPage .weather-status, #weatherPage .weather-hour, #weatherPage .weather-rain, #weatherPage .weather-detail-row span:first-child { color:var(--app-muted); }
+  #weatherPage .weather-refresh-icon { background:var(--app-control); border-radius:2.5mm; }
+  #weatherPage .weather-refresh-icon img { filter:brightness(0); }
+  #weatherPage[data-theme="dark"] .weather-refresh-icon img { filter:brightness(0) invert(1); }
+  #weatherPage .weather-summary { background:linear-gradient(#0005,#000a),url('assets/weather-sky.jpg?v=1') center / cover; border-radius:3mm; padding:3mm; color:#fff; }
+  #weatherPage .weather-observed { color:#e5ecf2; }
+  #weatherPage .weather-condition { color:#ffd49d; }
+  #weatherPage .weather-hour svg, #weatherPage .weather-daily-row svg { fill:var(--app-text); }
   /* ===== Punch-hole kamera depan 13 MP (tengah atas) ===== */
   .punch-hole {
     position: absolute;
@@ -661,14 +702,12 @@
                 <circle cx="1.5" cy="6.5" r="0.32"/>
               </svg></div>
               <section class="drawer-page" id="drawerPage" aria-label="Semua Aplikasi" hidden>
-                <button class="super-back" id="drawerBack" type="button">← Kembali</button>
-                <h2>Semua Aplikasi</h2>
+                <div class="app-top"><button class="app-back" id="drawerBack" type="button" aria-label="Kembali" title="Kembali">←</button><span class="app-title">Semua Aplikasi</span><div class="app-theme"><button class="app-theme-button" id="drawerTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="drawerThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="drawerThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="drawerThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="drawerThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="drawerThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="drawerThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <input type="search" aria-label="Cari aplikasi" placeholder="Cari aplikasi…" disabled>
                 <p>Preview tidak dapat membaca aplikasi yang terpasang. Daftar dan pencarian tersedia di Android.</p>
               </section>
               <section class="super-page" id="superPage" aria-label="Super App" hidden>
-                <button class="super-back" id="superBack" type="button">← Kembali</button>
-                <h2>SUPER APP</h2>
+                <div class="app-top"><button class="app-back" id="superBack" type="button" aria-label="Kembali" title="Kembali">←</button><span class="app-title">Super App</span><div class="app-theme"><button class="app-theme-button" id="superTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="superThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="superThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="superThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="superThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="superThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="superThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <div class="super-grid" aria-label="Aplikasi bawaan">
                   <button class="super-icon-button" id="openClockModule" type="button" aria-label="Jam"><img src="assets/module-clock.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="super-icon-button" id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets/module-calendar.svg?v=1" alt="" aria-hidden="true"></button>
@@ -676,9 +715,7 @@
                 </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
-                <button class="clock-back" id="clockBack" type="button">← Kembali</button>
-                <div class="clock-kicker">SUPER APP</div>
-                <div class="clock-title">JAM</div>
+                <div class="app-top"><button class="app-back" id="clockBack" type="button" aria-label="Kembali" title="Kembali">←</button><span class="app-title">Jam</span><div class="app-theme"><button class="app-theme-button" id="clockTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="clockThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="clockThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="clockThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="clockThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="clockThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="clockThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <nav class="clock-tabs" aria-label="Fitur jam">
                   <button class="active" data-clock-tab="alarm" type="button" aria-label="Alarm" aria-pressed="true" title="Alarm"><img src="assets/clock-alarm.svg?v=1" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="world" type="button" aria-label="Dunia" aria-pressed="false" title="Dunia"><img src="assets/clock-world.svg?v=1" alt="" aria-hidden="true"></button>
@@ -721,8 +758,8 @@
               <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>
                 <div class="calendar-top"><button class="calendar-icon-button" id="calendarBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button>
                   <span class="calendar-heading">Kalender <span id="calendarYear" aria-label="Tahun"></span></span>
-                  <div class="calendar-theme"><button class="calendar-theme-button" id="calendarTheme" type="button" aria-label="Tema: Sistem. Pilih tema kalender" aria-expanded="false" aria-controls="calendarThemeMenu" title="Pilih tema kalender"><span class="calendar-theme-icon calendar-theme-system" id="calendarThemeIcon" aria-hidden="true"></span></button>
-                    <div class="calendar-theme-menu" id="calendarThemeMenu" role="group" aria-label="Pilihan tema kalender" hidden>
+                  <div class="calendar-theme"><button class="calendar-theme-button" id="calendarTheme" type="button" aria-label="Tema: Sistem. Pilih tema aplikasi" aria-expanded="false" aria-controls="calendarThemeMenu" title="Pilih tema aplikasi"><span class="calendar-theme-icon calendar-theme-system" id="calendarThemeIcon" aria-hidden="true"></span></button>
+                    <div class="calendar-theme-menu" id="calendarThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden>
                       <button class="calendar-theme-option" id="calendarThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button>
                       <button class="calendar-theme-option" id="calendarThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button>
                       <button class="calendar-theme-option" id="calendarThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button>
@@ -771,7 +808,7 @@
                 </div>
               </section>
               <section class="weather-page" id="weatherPage" aria-label="Cuaca di Super App" hidden>
-                <button class="super-back" id="weatherBack" type="button">← Kembali</button>
+                <div class="app-top"><button class="app-back" id="weatherBack" type="button" aria-label="Kembali" title="Kembali">←</button><span class="app-title">Cuaca</span><div class="app-theme"><button class="app-theme-button" id="weatherTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="weatherThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="weatherThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="weatherThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="weatherThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="weatherThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="weatherThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <div class="weather-header"><h2>CUACA</h2><button class="weather-refresh-icon" type="button" id="weatherPageRefresh" aria-label="Aktifkan / perbarui cuaca" title="Aktifkan / perbarui cuaca"><img src="assets/weather-refresh.svg?v=1" alt="" aria-hidden="true"></button></div>
                 <div class="weather-location" id="weatherLocation">LOKASI SAAT INI · PERKIRAAN</div>
                 <div class="weather-summary">
@@ -1055,7 +1092,7 @@
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=15"></script>
+<script src="calendar.js?v=16"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

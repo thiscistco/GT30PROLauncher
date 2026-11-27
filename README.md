@@ -12,6 +12,14 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 | Sistem | Android 15 (XOS 15), API 35 |
 | Bodi | 163,7 × 75,8 × 8,0 mm |
 
+## Desain aplikasi bawaan
+
+Jam, Kalender, Cuaca, Super App, dan laci aplikasi memakai palet dan kontrol
+yang sama. Pilihan tema pada halaman-halaman tersebut berlaku bersama; default
+mengikuti perangkat. Kaca homescreen tetap mengikuti mode sistem secara terpisah.
+Aplikasi pihak ketiga tetap menggunakan desainnya sendiri. Panduan untuk
+aplikasi bawaan baru tersedia di `docs/app-ui.md`.
+
 ## Fitur v0.1
 
 - **Homescreen minimalis** — wallpaper render GT 30 Pro dengan jam, tanggal,

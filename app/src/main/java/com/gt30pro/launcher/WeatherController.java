@@ -2,7 +2,6 @@ package com.gt30pro.launcher;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -88,7 +87,7 @@ final class WeatherController {
     void requestFromUser() {
         if (permitted()) {
             if (detailsListener != null && !activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).getBoolean("geocode_consent", false)) {
-                new AlertDialog.Builder(activity).setTitle("Tampilkan nama lokasi?")
+                new AppUi(activity).dialog(activity).setTitle("Tampilkan nama lokasi?")
                         .setMessage("Lokasi perkiraan dikirim ke layanan geocoding Android untuk memperoleh nama lokasi. Jika tidak disetujui, koordinat perkiraan tetap ditampilkan.")
                         .setNegativeButton("Koordinat saja", (d, w) -> refresh(true))
                         .setPositiveButton("Setuju", (d, w) -> {
@@ -98,13 +97,13 @@ final class WeatherController {
             } else refresh(true);
             return;
         }
-        new AlertDialog.Builder(activity).setTitle("Aktifkan cuaca?")
+        new AppUi(activity).dialog(activity).setTitle("Aktifkan cuaca?")
                 .setMessage("Lokasi perkiraan diperlukan. Koordinat perkiraan dikirim ke Open-Meteo untuk cuaca dan layanan geocoding Android untuk nama lokasi. Lokasi tidak dipantau di latar belakang.")
                 .setNegativeButton("Batal", null).setPositiveButton("Lanjutkan", (d, w) -> {
                     activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).edit().putBoolean("geocode_consent", true).apply();
                     if (activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).getBoolean("weather_asked", false)
                             && !activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                        new AlertDialog.Builder(activity).setMessage("Jika izin lokasi diblokir, aktifkan lewat setelan aplikasi.")
+                        new AppUi(activity).dialog(activity).setMessage("Jika izin lokasi diblokir, aktifkan lewat setelan aplikasi.")
                                 .setNegativeButton("Batal", null).setPositiveButton("Setelan", (dlg, which) -> activity.startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + activity.getPackageName())))).show();
                     } else {
                         activity.getSharedPreferences("weather_cache", Context.MODE_PRIVATE).edit().putBoolean("weather_asked", true).apply();

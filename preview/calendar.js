@@ -155,8 +155,15 @@
     function applyTheme() {
       var dark = themeChoice === 'dark' || (themeChoice === 'system' && media && media.matches);
       if (calendarPage) calendarPage.setAttribute('data-theme', dark ? 'dark' : 'light');
+      ['clock','weather','super','drawer'].forEach(function (prefix) {
+        var appPage=byId(prefix+'Page'), appIcon=byId(prefix+'ThemeIcon'), appTheme=byId(prefix+'Theme');
+        if (appPage) appPage.setAttribute('data-theme', dark ? 'dark' : 'light');
+        if (appIcon) appIcon.setAttribute('class','calendar-theme-icon calendar-theme-'+themeChoice);
+        if (appTheme) appTheme.setAttribute('aria-label','Tema aplikasi: '+names[themeChoice]);
+        Object.keys(names).forEach(function (key) { var option=byId(prefix+'Theme'+key.charAt(0).toUpperCase()+key.slice(1)); if (option) option.setAttribute('aria-pressed',String(key===themeChoice)); });
+      });
       if (themeIcon) themeIcon.setAttribute('class', 'calendar-theme-icon calendar-theme-' + themeChoice);
-      if (theme) theme.setAttribute('aria-label', 'Tema: ' + names[themeChoice] + '. Pilih tema kalender');
+      if (theme) theme.setAttribute('aria-label', 'Tema: ' + names[themeChoice] + '. Pilih tema aplikasi');
       Object.keys(options).forEach(function (key) { if (options[key]) options[key].setAttribute('aria-pressed', String(key === themeChoice)); });
     }
     function closeThemeMenu() { if (themeMenu) themeMenu.hidden = true; if (theme) theme.setAttribute('aria-expanded','false'); }
@@ -167,6 +174,23 @@
         themeChoice = key; try { win.localStorage.setItem('gt30-calendar-theme', themeChoice); } catch (ignored) {}
         applyTheme(); closeThemeMenu(); if (theme) theme.focus();
       });
+    });
+    // Reuse the same choice across all built-in pages, without changing the home glass.
+    ['clock','weather','super','drawer'].forEach(function (prefix) {
+      var appTheme=byId(prefix+'Theme'), menu=byId(prefix+'ThemeMenu');
+      if (!appTheme || !menu) return;
+      function close() { menu.hidden=true; appTheme.setAttribute('aria-expanded','false'); }
+      appTheme.addEventListener('click',function () { menu.hidden=!menu.hidden; appTheme.setAttribute('aria-expanded',String(!menu.hidden)); });
+      Object.keys(names).forEach(function (key) {
+        var option=byId(prefix+'Theme'+key.charAt(0).toUpperCase()+key.slice(1)); if (!option) return;
+        option.addEventListener('click',function () {
+          themeChoice=key; try { win.localStorage.setItem('gt30-calendar-theme',key); } catch (ignored) {}
+          applyTheme(); close(); appTheme.focus();
+        });
+      });
+      function escape(event) { if (event.key==='Escape' && !menu.hidden) { event.preventDefault(); event.stopPropagation(); close(); appTheme.focus(); } }
+      menu.addEventListener('keydown',escape); appTheme.addEventListener('keydown',escape);
+      if (doc.addEventListener) doc.addEventListener('click',function (event) { if (!menu.hidden && appTheme.parentNode && !appTheme.parentNode.contains(event.target)) close(); });
     });
     function themeEscape(event) {
       if (event.key === 'Escape' && themeMenu && !themeMenu.hidden) { event.preventDefault(); event.stopPropagation(); closeThemeMenu(); if (theme) theme.focus(); }

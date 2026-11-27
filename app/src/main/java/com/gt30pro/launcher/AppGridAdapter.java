@@ -23,6 +23,8 @@ public class AppGridAdapter extends BaseAdapter implements Filterable {
     private final List<AppInfo> all = new ArrayList<>();
     private List<AppInfo> shown = new ArrayList<>();
     private final ItemFilter itemFilter = new ItemFilter();
+    private int textColor = 0xFFFFFFFF;
+    public void setTextColor(int color) { textColor = color; notifyDataSetChanged(); }
 
     public AppGridAdapter(Context context) {
         inflater = LayoutInflater.from(context);
@@ -58,6 +60,7 @@ public class AppGridAdapter extends BaseAdapter implements Filterable {
         ((ImageView) view.findViewById(R.id.icon)).setImageDrawable(info.icon);
         TextView label = view.findViewById(R.id.label);
         label.setTypeface(doto);
+        label.setTextColor(textColor);
         label.setText(info.label);
         return view;
     }

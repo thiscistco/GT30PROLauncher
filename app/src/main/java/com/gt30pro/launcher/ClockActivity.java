@@ -1,13 +1,12 @@
 package com.gt30pro.launcher;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
-import android.graphics.Color;
+import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.media.Ringtone;
@@ -42,7 +41,10 @@ import java.util.TimeZone;
 /** Jam bawaan: alarm, waktu dunia, timer dan stopwatch. */
 public class ClockActivity extends SwipeBackActivity {
     @Override protected boolean supportsBottomSwipe() { return true; }
-    private static final int AMBER = 0xFFFFD49D, MUTED = 0xFFE7A579;
+    private int AMBER, MUTED;
+    private AppUi ui;
+    private EditText timerHours, timerMinutes, timerSeconds;
+    private String[] timerDraft = {"", "", ""};
     private static final String[] TAB_NAMES = {"Alarm", "Dunia", "Timer", "Stopwatch"};
     private static final int[] TAB_ICONS = {R.drawable.ic_clock_alarm, R.drawable.ic_clock_world,
             R.drawable.ic_clock_timer, R.drawable.ic_clock_stopwatch};
@@ -74,39 +76,52 @@ public class ClockActivity extends SwipeBackActivity {
         super.onCreate(state);
         doto = Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf");
         restoreStopwatch();
-        FrameLayout root = new FrameLayout(this); root.setBackgroundColor(Color.BLACK);
-        getWindow().setStatusBarColor(Color.BLACK); getWindow().setNavigationBarColor(Color.BLACK);
+        ui = new AppUi(this); AMBER=ui.ink; MUTED=ui.muted; ui.window(this);
+        if (state != null) {
+            tab = Math.max(0, Math.min(3, state.getInt("clock_tab",0)));
+            String[] saved=state.getStringArray("timer_draft"); if (saved != null && saved.length == 3) timerDraft=saved;
+        }
+        FrameLayout root = new FrameLayout(this); root.setBackgroundColor(ui.canvas);
         LinearLayout page = new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(dp(20), dp(16), dp(20), dp(16)); root.addView(page, new FrameLayout.LayoutParams(-1, -1));
         page.setOnApplyWindowInsetsListener((v, insets) -> {
             v.setPadding(dp(20), dp(16) + insets.getSystemWindowInsetTop(), dp(20), dp(16) + insets.getSystemWindowInsetBottom()); return insets;
         });
-        TextView back = text("←  Kembali", 14, AMBER); back.setMinHeight(dp(48)); back.setGravity(Gravity.CENTER_VERTICAL);
-        back.setOnClickListener(v -> finish()); page.addView(back);
-        page.addView(text("SUPER APP", 12, MUTED));
-        TextView heading = text("JAM", 30, 0xFFFFE5B1); page.addView(heading);
+        page.addView(ui.header(this, doto, "Jam"));
         HorizontalScrollView horizontal = new HorizontalScrollView(this); horizontal.setHorizontalScrollBarEnabled(false);
         tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); horizontal.addView(tabs);
         LinearLayout.LayoutParams tabParams = new LinearLayout.LayoutParams(-1, -2); tabParams.topMargin = dp(18); page.addView(horizontal, tabParams);
         ScrollView scroll = new ScrollView(this); scroll.setFillViewport(false); page.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
         content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(0, dp(18), 0, dp(20)); scroll.addView(content);
         setContentView(root);
-        showTab(0);
+        showTab(tab);
+    }
+    @Override protected void onSaveInstanceState(Bundle state) {
+        saveTimerDraft(); state.putInt("clock_tab",tab); state.putStringArray("timer_draft",timerDraft); super.onSaveInstanceState(state);
+    }
+    private void saveTimerDraft() {
+        if (timerHours != null) timerDraft = new String[]{timerHours.getText().toString(), timerMinutes.getText().toString(), timerSeconds.getText().toString()};
     }
     private TextView text(String value, int size, int color) {
         TextView v = new TextView(this); v.setText(value); v.setTextSize(size); v.setTextColor(color);
-        v.setTypeface(doto); v.setFontVariationSettings("'wght' 700"); return v;
+        v.setTypeface(doto); v.setFontVariationSettings("'wght' 800"); return v;
     }
     private GradientDrawable bg(int color) {
-        GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(14)); d.setStroke(dp(1), 0x77E7A579); return d;
+        return ui.surface(this, color);
     }
     private TextView button(String label, Runnable click) {
         TextView v = text(label, 13, AMBER); v.setGravity(Gravity.CENTER); v.setPadding(dp(12), dp(12), dp(12), dp(12));
-        v.setMinHeight(dp(48)); v.setBackground(bg(0xFF211A17)); v.setOnClickListener(w -> click.run()); return v;
+        v.setMinHeight(dp(48)); v.setBackground(bg(ui.control)); v.setOnClickListener(w -> click.run()); return v;
+    }
+    private void styleSwitch(Switch value) {
+        ColorStateList tint = new ColorStateList(new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
+                new int[]{ui.selected, ui.muted});
+        value.setTextColor(ui.ink); value.setTypeface(doto); value.setThumbTintList(tint); value.setTrackTintList(tint);
     }
     private void addSpace(LinearLayout box, int dp) { android.view.View v = new android.view.View(this); box.addView(v, new LinearLayout.LayoutParams(1, dp(dp))); }
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     private void showTab(int selected) {
+        saveTimerDraft(); timerHours = null; timerMinutes = null; timerSeconds = null;
         tab = selected; tabs.removeAllViews(); content.removeAllViews(); timerDisplay = null; stopwatchDisplay = null; worldList = null;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = i;
@@ -114,7 +129,8 @@ public class ClockActivity extends SwipeBackActivity {
             item.setImageResource(TAB_ICONS[i]);
             item.setScaleType(ImageView.ScaleType.FIT_CENTER);
             item.setPadding(dp(13), dp(13), dp(13), dp(13));
-            item.setBackground(bg(i == selected ? 0xFF61402C : 0xFF181717));
+            item.setBackground(bg(i == selected ? ui.selected : ui.control));
+            item.setColorFilter(i == selected ? ui.selectedText : ui.ink);
             item.setContentDescription(TAB_NAMES[i]);
             item.setTooltipText(TAB_NAMES[i]);
             item.setSelected(i == selected);
@@ -134,7 +150,7 @@ public class ClockActivity extends SwipeBackActivity {
     }
     private boolean ensureExact() {
         if (ClockAlarms.canSchedule(this)) { requestAlerts(); return true; }
-        new AlertDialog.Builder(this).setTitle("Izin alarm tepat waktu")
+        ui.dialog(this).setTitle("Izin alarm tepat waktu")
                 .setMessage("Aktifkan izin alarm & pengingat agar alarm dan timer dapat berbunyi tepat waktu. Setelah kembali, ulangi tindakan jika diperlukan.")
                 .setPositiveButton("Buka setelan", (d, w) -> {
                     awaitingExactPermission = true;
@@ -155,10 +171,10 @@ public class ClockActivity extends SwipeBackActivity {
         if (all.length() == 0) content.addView(text("Belum ada alarm. Tambahkan pengingat pertama.", 13, MUTED));
         for (int i = 0; i < all.length(); i++) {
             JSONObject a = all.optJSONObject(i); if (a == null) continue;
-            LinearLayout box = new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL); box.setPadding(dp(14),dp(12),dp(14),dp(12)); box.setBackground(bg(0xFF191717));
+            LinearLayout box = new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL); box.setPadding(dp(14),dp(12),dp(14),dp(12)); box.setBackground(bg(ui.card));
             TextView label = text(String.format(Locale.US, "%02d:%02d", a.optInt("hour"), a.optInt("minute")), 27, AMBER); box.addView(label);
             box.addView(text(dayLabel(a.optInt("days")) + (a.optBoolean("vibrate", true) ? "  ·  Getar" : ""), 12, MUTED));
-            Switch enabled = new Switch(this); enabled.setText("Aktif"); enabled.setTextColor(AMBER); enabled.setTypeface(doto); enabled.setChecked(a.optBoolean("enabled"));
+            Switch enabled = new Switch(this); enabled.setText("Aktif"); styleSwitch(enabled); enabled.setChecked(a.optBoolean("enabled"));
             enabled.setOnCheckedChangeListener((v, checked) -> {
                 if (checked && !ensureExact()) { v.setChecked(false); return; }
                 try {
@@ -173,7 +189,7 @@ public class ClockActivity extends SwipeBackActivity {
             LinearLayout actions = new LinearLayout(this); actions.setOrientation(LinearLayout.HORIZONTAL);
             actions.addView(button("Ubah", () -> editAlarm(a)), new LinearLayout.LayoutParams(0,-2,1));
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0,-2,1); p.leftMargin=dp(8);
-            actions.addView(button("Hapus", () -> new AlertDialog.Builder(this).setMessage("Hapus alarm ini?").setPositiveButton("Hapus", (d,w) -> { ClockAlarms.remove(this, a.optInt("id")); ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000 + a.optInt("id")); showTab(0); }).setNegativeButton("Batal",null).show()), p);
+            actions.addView(button("Hapus", () -> ui.dialog(this).setMessage("Hapus alarm ini?").setPositiveButton("Hapus", (d,w) -> { ClockAlarms.remove(this, a.optInt("id")); ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000 + a.optInt("id")); showTab(0); }).setNegativeButton("Batal",null).show()), p);
             box.addView(actions); content.addView(box); addSpace(content,10);
         }
     }
@@ -185,16 +201,16 @@ public class ClockActivity extends SwipeBackActivity {
         LinearLayout form = new LinearLayout(this); form.setOrientation(LinearLayout.VERTICAL); form.setPadding(dp(20),0,dp(20),0);
         TextView time = button("", () -> {});
         Runnable updateTime = () -> time.setText(String.format(Locale.US, "Waktu  %02d:%02d", hour[0], minute[0])); updateTime.run();
-        time.setOnClickListener(v -> new TimePickerDialog(this, (picker,h,m) -> { hour[0]=h; minute[0]=m; updateTime.run(); }, hour[0],minute[0],true).show()); form.addView(time); addSpace(form,8);
+        time.setOnClickListener(v -> new TimePickerDialog(this, ui.dark ? android.R.style.Theme_Material_Dialog_Alert : android.R.style.Theme_Material_Light_Dialog_Alert, (picker,h,m) -> { hour[0]=h; minute[0]=m; updateTime.run(); }, hour[0],minute[0],true).show()); form.addView(time); addSpace(form,8);
         TextView repeat = button("Ulangi: " + dayLabel(days[0]), () -> {});
         repeat.setOnClickListener(v -> {
             boolean[] selected = new boolean[7]; for (int i=0;i<7;i++) selected[i]=(days[0] & (1<<i)) != 0;
-            new AlertDialog.Builder(this).setTitle("Pilih hari (kosong = sekali)").setMultiChoiceItems(DAYS, selected, (d,which,on)->selected[which]=on)
+            ui.dialog(this).setTitle("Pilih hari (kosong = sekali)").setMultiChoiceItems(DAYS, selected, (d,which,on)->selected[which]=on)
                     .setPositiveButton("OK", (d,w)-> { days[0]=0; for(int i=0;i<7;i++) if(selected[i]) days[0]|=1<<i; repeat.setText("Ulangi: " + dayLabel(days[0])); }).setNegativeButton("Batal",null).show();
         }); form.addView(repeat); addSpace(form,8);
         soundLabel = button("Nada: " + soundName(editingSound), () -> pickSound()); form.addView(soundLabel); addSpace(form,8);
-        Switch vibrate = new Switch(this); vibrate.setText("Getar"); vibrate.setChecked(existing == null || existing.optBoolean("vibrate",true)); form.addView(vibrate);
-        new AlertDialog.Builder(this).setTitle(existing == null ? "Tambah alarm" : "Ubah alarm").setView(form)
+        Switch vibrate = new Switch(this); styleSwitch(vibrate); vibrate.setText("Getar"); vibrate.setChecked(existing == null || existing.optBoolean("vibrate",true)); form.addView(vibrate);
+        ui.dialog(this).setTitle(existing == null ? "Tambah alarm" : "Ubah alarm").setView(form)
                 .setNegativeButton("Batal",null).setPositiveButton("Simpan", (d,w) -> {
                     if (!ensureExact()) return;
                     try {
@@ -238,7 +254,7 @@ public class ClockActivity extends SwipeBackActivity {
         content.addView(text("JAM DUNIA", 19, AMBER)); addSpace(content,12);
         content.addView(button("Pilih kota", () -> {
             boolean[] chosen=selectedCities();
-            new AlertDialog.Builder(this).setTitle("Pilih kota").setMultiChoiceItems(CITIES,chosen,(d,i,on)->chosen[i]=on).setPositiveButton("Simpan",(d,w)->{
+            ui.dialog(this).setTitle("Pilih kota").setMultiChoiceItems(CITIES,chosen,(d,i,on)->chosen[i]=on).setPositiveButton("Simpan",(d,w)->{
                 StringBuilder b=new StringBuilder(); for(int i=0;i<chosen.length;i++) if(chosen[i]) { if(b.length()>0)b.append(',');b.append(i); }
                 ClockAlarms.prefs(this).edit().putString("cities",b.toString()).apply(); showTab(1);
             }).setNegativeButton("Batal",null).show();
@@ -248,17 +264,18 @@ public class ClockActivity extends SwipeBackActivity {
     private void updateWorld() {
         if (worldList == null) return; worldList.removeAllViews(); boolean[] chosen=selectedCities(); Date now=new Date(); boolean any=false;
         for(int i=0;i<chosen.length;i++) if(chosen[i]) { any=true; SimpleDateFormat f=new SimpleDateFormat("HH:mm  ·  EEE, d MMM",new Locale("id","ID")); f.setTimeZone(TimeZone.getTimeZone(ZONES[i]));
-            TextView row=text(CITIES[i]+"\n"+f.format(now),16,AMBER); row.setPadding(dp(14),dp(12),dp(14),dp(12)); row.setBackground(bg(0xFF191717)); worldList.addView(row); addSpace(worldList,8); }
+            TextView row=text(CITIES[i]+"\n"+f.format(now),16,AMBER); row.setPadding(dp(14),dp(12),dp(14),dp(12)); row.setBackground(bg(ui.card)); worldList.addView(row); addSpace(worldList,8); }
         if(!any) worldList.addView(text("Pilih kota untuk ditampilkan.",13,MUTED));
     }
     private EditText number(String hint) {
-        EditText v=new EditText(this); v.setSingleLine(true); v.setInputType(InputType.TYPE_CLASS_NUMBER); v.setHint(hint); v.setTextColor(AMBER); v.setHintTextColor(0xFF9A7966); v.setTextSize(18); v.setGravity(Gravity.CENTER); v.setTypeface(doto); return v;
+        EditText v=new EditText(this); v.setSingleLine(true); v.setInputType(InputType.TYPE_CLASS_NUMBER); v.setHint(hint); v.setTextColor(AMBER); v.setHintTextColor(ui.muted); v.setBackground(bg(ui.card)); v.setPadding(dp(6),dp(8),dp(6),dp(8)); v.setTextSize(18); v.setGravity(Gravity.CENTER); v.setTypeface(doto); return v;
     }
     private long numberValue(EditText e) { try { return Long.parseLong(e.getText().toString()); } catch(Exception ignored) { return 0; } }
     private void showTimer() {
         content.addView(text("TIMER",19,AMBER)); addSpace(content,14);
         timerDisplay=text("00:00:00",32,AMBER); timerDisplay.setGravity(Gravity.CENTER); content.addView(timerDisplay); addSpace(content,12);
         LinearLayout fields=new LinearLayout(this); EditText h=number("Jam"),m=number("Menit"),s=number("Detik");
+        timerHours=h; timerMinutes=m; timerSeconds=s; h.setText(timerDraft[0]); m.setText(timerDraft[1]); s.setText(timerDraft[2]);
         fields.addView(h,new LinearLayout.LayoutParams(0,-2,1));fields.addView(m,new LinearLayout.LayoutParams(0,-2,1));fields.addView(s,new LinearLayout.LayoutParams(0,-2,1));content.addView(fields);addSpace(content,12);
         content.addView(button("Mulai timer",()->{
             long hours=numberValue(h), minutes=numberValue(m), seconds=numberValue(s);
@@ -294,6 +311,6 @@ public class ClockActivity extends SwipeBackActivity {
         if(timerDisplay!=null){long end=ClockAlarms.prefs(this).getLong("timer_end",0);long seconds=Math.max(0,(end-System.currentTimeMillis()+999)/1000);timerDisplay.setText(String.format(Locale.US,"%02d:%02d:%02d",seconds/3600,(seconds/60)%60,seconds%60));}
         long second=System.currentTimeMillis()/1000;if(worldList!=null&&second!=lastWorldSecond){lastWorldSecond=second;updateWorld();}
     }
-    @Override protected void onResume() { super.onResume(); if(awaitingExactPermission){awaitingExactPermission=false;if(ClockAlarms.canSchedule(this))requestAlerts();} ClockAlarms.restore(this);handler.removeCallbacks(tick);tick.run(); }
+    @Override protected void onResume() { super.onResume(); AppUi current=new AppUi(this); if (ui.dark != current.dark || !ui.choice.equals(current.choice)) { recreate(); return; } if(awaitingExactPermission){awaitingExactPermission=false;if(ClockAlarms.canSchedule(this))requestAlerts();} ClockAlarms.restore(this);handler.removeCallbacks(tick);tick.run(); }
     @Override protected void onPause() { handler.removeCallbacks(tick); super.onPause(); }
 }
