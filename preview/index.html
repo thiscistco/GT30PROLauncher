@@ -171,12 +171,12 @@
     font-weight: 100 900;
   }
   /* Informational home label; preview uses sample data, never reads device battery. */
-  .battery-info { position:absolute; z-index:6; left:calc(8% - 10px); width:84%; bottom:calc(14% + 110px); box-sizing:border-box;
+  .battery-info { position:absolute; z-index:6; left:calc(8% - 5px); width:84%; bottom:calc(14% + 105px); box-sizing:border-box;
     padding:1.5mm 2.2mm; border:0; background:transparent; color:#f1f2e9; pointer-events:none; }
   .battery-info-spacer { height:2.3mm; }
   .battery-info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:2mm; }
   .battery-info-cell { min-width:0; padding-top:.5mm; font:900 2.2mm/1.15 'Doto',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .battery-info-cell:nth-child(even) { transform:translateX(-30px); }
+  .battery-info-cell:nth-child(even) { transform:translateX(-25px); }
   .battery-info-name { display:block; color:#ffcd6a; font:900 1.65mm/1.15 'Doto',monospace; overflow:hidden; text-overflow:ellipsis; }
   @media (prefers-color-scheme:light) {
     .battery-info { color:#17242b; }
