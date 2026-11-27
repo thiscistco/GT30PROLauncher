@@ -300,9 +300,6 @@
   .super-icon-button { width: 100%; height: 12mm; display: grid; place-items: center;
     border: 0; border-radius: 3mm; background: transparent; color: #fff; cursor: pointer; }
   .super-icon-button img { display: block; width: 8mm; height: 8mm; }
-  #openTimetableModule { height:14.3mm; display:flex; flex-direction:column; justify-content:center; gap:.4mm; }
-  #openTimetableModule img { width:6.7mm; height:6.7mm; }
-  #openTimetableModule span { padding:.2mm .5mm; border:1px solid var(--app-border); border-radius:2mm; background:var(--app-control); color:var(--app-text); font:800 1.43mm/1.15 'Doto',monospace; }
   .super-icon-button:focus-visible { outline: 1px solid #fff; outline-offset: -1px; }
   .clock-led { cursor: pointer; }
   .clock-led::before {
@@ -582,17 +579,16 @@
   .timetable-page { position:absolute; inset:0; z-index:10; overflow:hidden; }
   .timetable-page[hidden] { display:none; }
   #timetablePage:not([hidden]) { display:flex; flex-direction:column; box-sizing:border-box; }
-  .tt-title { display:flex; align-items:center; justify-content:space-between; gap:2mm; }
-  .tt-title h2 { margin:0; font-size:3.3mm; }
-  .tt-icon,.tt-actions button { width:7.62mm; height:7.62mm; min-height:0; padding:1.9mm; display:grid; place-items:center; border:1px solid var(--app-border); border-radius:2.5mm; background:var(--app-control); color:var(--app-text); cursor:pointer; }
+  .tt-actions button { width:7.62mm; height:7.62mm; min-height:0; padding:1.9mm; display:grid; place-items:center; border:1px solid var(--app-border); border-radius:2.5mm; background:var(--app-control); color:var(--app-text); cursor:pointer; }
   .tt-hint { color:var(--app-muted); font-size:2mm; line-height:1.5; margin:1.5mm 0; }
   .tt-scroll { flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; }
   .tt-table { border-collapse:separate; border-spacing:.3mm; table-layout:fixed; width:100%; height:100%; min-height:var(--tt-min-height,82.2mm); }
   .tt-table th, .tt-table td { padding:0; text-align:center; vertical-align:middle; }
-  .tt-table thead th { height:5.4mm; font-size:1.8mm; background:var(--app-control); border:1px solid var(--app-border); border-radius:2mm; }
+  .tt-table thead th { height:5.4mm; font-size:1.8mm; color:var(--app-muted); }
   .tt-table th:first-child { width:11mm; }
   .tt-table button { box-sizing:border-box; display:block; width:100%; height:100%; min-height:6mm; max-height:100%; padding:.3mm; border:1px solid var(--app-border); border-radius:2mm; background:var(--app-card); color:var(--app-text); font:800 1.55mm/1.15 'Doto',monospace; overflow:hidden; overflow-wrap:anywhere; white-space:pre-wrap; cursor:pointer; }
-  .tt-table button.tt-time { background:var(--app-control); } .tt-table button.tt-filled, .tt-table button.tt-break { background:var(--app-event); }
+  .tt-table button.tt-filled span { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .tt-table button.tt-time { background:transparent; border-color:transparent; } .tt-table button.tt-filled { color:#142a3a; } .tt-table button.tt-break { background:var(--app-event); }
   .tt-table button.tt-break { font-size:1.8mm; }
   .tt-editor { position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; background:#0008; padding:4mm; }
   .tt-editor[hidden], #ttTimeFields[hidden], #ttCellFields[hidden], .tt-actions button[hidden] { display:none; }
@@ -601,6 +597,11 @@
   .tt-form input { box-sizing:border-box; width:100%; padding:2mm; margin-top:1mm; border:1px solid var(--app-border); border-radius:2mm; background:var(--app-control); color:var(--app-text); font:700 2.6mm 'Doto',monospace; }
   .tt-error { color:#b12626; font-size:2.3mm; } #timetablePage[data-theme="dark"] .tt-error { color:#ffaaaa; }
   .tt-actions { display:flex; justify-content:flex-end; gap:1.2mm; }
+  .tt-colors { border:0; margin:2mm 0; padding:0; font-size:2.3mm; }
+  #ttColors { display:flex; gap:1mm; overflow-x:auto; padding:1mm 0; }
+  #ttColors button { flex:0 0 7mm; width:7mm; height:7mm; padding:0; border:1px solid var(--app-border); border-radius:2mm; color:var(--app-text); background:var(--app-control); font:800 2mm 'Doto',monospace; }
+  #ttColors button[aria-checked="true"] { border:2px solid var(--app-text); }
+  .tt-add-row, #ttAddEmpty { padding:1.5mm; border:1px solid var(--app-border); border-radius:2mm; background:var(--app-control); color:var(--app-text); font:inherit; cursor:pointer; }
 
   /* Clock: one central local-time HUD and a fixed four-icon bottom bar. */
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; padding:2.54mm 3.175mm; }
@@ -843,7 +844,7 @@
                   <button class="super-icon-button" id="openClockModule" type="button" aria-label="Jam"><img src="assets/module-clock.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="super-icon-button" id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets/module-calendar.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg></button>
-                  <button class="super-icon-button" id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"><img src="assets/module-timetable.svg?v=1" alt="" aria-hidden="true"><span aria-hidden="true">Jadwal<br>Mengajar</span></button>
+                  <button class="super-icon-button" id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"><img src="assets/module-timetable.svg?v=1" alt="" aria-hidden="true"></button>
                 </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
@@ -979,14 +980,12 @@
               </section>
               <section class="timetable-page" id="timetablePage" aria-label="Jadwal Mengajar" hidden>
                 <div class="app-top"><button class="app-back" id="timetableBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Jadwal Mengajar</span><div class="app-theme"><button class="app-theme-button" id="timetableTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="timetableThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="timetableThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="timetableThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="timetableThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="timetableThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="timetableThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
-                <div class="tt-title"><h2>JADWAL MENGAJAR</h2><button type="button" id="ttAdd" class="tt-icon" aria-label="Tambah jam" title="Tambah jam"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
-                <p class="tt-hint">Ketuk jam atau sel untuk mengubah.</p>
                 <p id="ttStorage" class="tt-hint" role="status"></p>
-                <div class="tt-scroll" id="ttScroll"><table class="tt-table"><thead><tr><th scope="col">JAM</th><th scope="col" aria-label="Senin">Sen</th><th scope="col" aria-label="Selasa">Sel</th><th scope="col" aria-label="Rabu">Rab</th><th scope="col" aria-label="Kamis">Kam</th><th scope="col" aria-label="Jumat">Jum</th></tr></thead><tbody id="ttRows"></tbody></table><p id="ttEmpty" class="tt-hint">Belum ada jam. Ketuk + untuk menambahkan baris waktu.</p></div>
+                <div class="tt-scroll" id="ttScroll"><table class="tt-table"><thead><tr><th scope="col">JAM</th><th scope="col" aria-label="Senin">Sen</th><th scope="col" aria-label="Selasa">Sel</th><th scope="col" aria-label="Rabu">Rab</th><th scope="col" aria-label="Kamis">Kam</th><th scope="col" aria-label="Jumat">Jum</th></tr></thead><tbody id="ttRows"></tbody></table><p id="ttEmpty" class="tt-hint">Belum ada jam. <button type="button" id="ttAddEmpty">Tambah jam</button></p></div>
                 <div class="tt-editor" id="ttEditor" role="dialog" aria-modal="true" aria-labelledby="ttEditorTitle" hidden><form id="ttForm" class="tt-form"><h3 id="ttEditorTitle"></h3>
-                  <div id="ttTimeFields"><label>Mulai <input id="ttStart" type="time" required></label><label>Selesai <input id="ttEnd" type="time" required></label><label>Nama baris (opsional) <input id="ttLabel" maxlength="30" placeholder="Contoh: Istirahat"></label><p class="tt-hint">Isi nama untuk baris bersama; kosongkan untuk mengisi tiap hari.</p></div>
-                  <div id="ttCellFields" hidden><label>Pelajaran / kegiatan <input id="ttSubject" maxlength="80" placeholder="Contoh: Matematika"></label><label>Kelas / catatan <input id="ttClass" maxlength="80" placeholder="Contoh: X IPA 1"></label></div>
-                  <p id="ttError" class="tt-error" role="alert"></p><div class="tt-actions"><button type="button" id="ttCancel" aria-label="Batal" title="Batal"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button><button type="button" id="ttDelete" aria-label="Hapus jam" title="Hapus jam" hidden><span class="calendar-action-icon alarm-delete-icon" aria-hidden="true"></span></button><button type="submit" aria-label="Simpan" title="Simpan"><span class="calendar-action-icon calendar-save-icon" aria-hidden="true"></span></button></div>
+                  <div id="ttTimeFields"><label>Mulai <input id="ttStart" type="time" required></label><label>Selesai <input id="ttEnd" type="time" required></label><label>Nama baris (opsional) <input id="ttLabel" maxlength="30" placeholder="Contoh: Istirahat"></label><p class="tt-hint">Isi nama untuk baris bersama; kosongkan untuk mengisi tiap hari.</p><button type="button" id="ttAdd" class="tt-add-row">Tambah jam</button></div>
+                  <div id="ttCellFields" hidden><label>Kelas / catatan <input id="ttClass" maxlength="80" placeholder="Contoh: X IPA 1"></label><label>Pelajaran / kegiatan <input id="ttSubject" maxlength="80" placeholder="Contoh: Matematika"></label><fieldset class="tt-colors"><legend>Warna label</legend><div id="ttColors" role="radiogroup" aria-label="Warna label"></div></fieldset></div>
+                  <p id="ttError" class="tt-error" role="alert"></p><div class="tt-actions"><button type="button" id="ttDelete" aria-label="Hapus jadwal" title="Hapus jadwal"><span class="calendar-action-icon alarm-delete-icon" aria-hidden="true"></span></button><button type="button" id="ttCancel" aria-label="Batal" title="Batal"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button><button type="submit" aria-label="Simpan" title="Simpan"><span class="calendar-action-icon calendar-save-icon" aria-hidden="true"></span></button></div>
                 </form></div>
               </section>
               <div class="punch-hole"></div>
@@ -1400,7 +1399,7 @@
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
 <script src="calendar.js?v=17"></script>
-<script src="timetable.js?v=2"></script>
+<script src="timetable.js?v=3"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

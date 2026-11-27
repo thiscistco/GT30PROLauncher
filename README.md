@@ -162,13 +162,16 @@ nilai awal `--°` bukan simulasi suhu nyata. Sebelum data diterima, gambar awan 
 
 ## Jadwal Mengajar
 
-Buka Jadwal Mengajar dari ikon berlabel di grid Super App. Tabel memiliki kolom Senin–Jumat;
+Buka Jadwal Mengajar dari ikon di grid Super App. Tabel memiliki kolom Senin–Jumat;
 dua belas baris jam tersedia sebagai awal, termasuk Istirahat 09.45–10.30 dan
-ISHOMA 11.50–12.50. Ketuk **+** untuk menambahkan jam (format 24 jam).
+ISHOMA 11.50–12.50. Ketuk jam untuk mengubahnya atau menambahkan jam lain (format 24 jam).
 Ketuk jam untuk mengubah atau menghapus baris; menghapus baris juga menghapus
 semua jadwal di dalamnya. Jam harus berakhir pada hari yang sama dan tidak boleh
 bertumpang tindih; urutan otomatis menurut jam mulai. Ketuk sel untuk memasukkan
-pelajaran/kegiatan dan kelas/catatan; kosongkan kedua isian untuk menghapus isi.
+kelas/catatan dan pelajaran/kegiatan; gunakan ikon tempat sampah untuk menghapus isi.
+Warna dapat dipilih per jadwal. Warna otomatis sama untuk pasangan kelas dan
+pelajaran yang sama; warna manual pertama untuk pasangan tersebut dalam urutan
+tabel menjadi acuannya. Warna manual lain tetap dapat berbeda.
 Tabel menyesuaikan layar agar 12 baris dan lima hari terlihat bersamaan; layar
 kecil atau baris tambahan dapat memerlukan gulir vertikal. Nama baris seperti
 Istirahat dapat diubah lewat jam; kosongkan namanya untuk mengisi tiap hari.

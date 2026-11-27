@@ -14,11 +14,10 @@ assert.match(page, /id="openCalendarModule" type="button" aria-label="Kalender">
 assert.equal((page.match(/class="super-icon-button"/g) || []).length, 3, 'clock, calendar and timetable remain');
 assert.match(page, /id="superWeather"/);
 assert.match(page, /id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"/);
-assert.match(page, /<span aria-hidden="true">Jadwal<br>Mengajar<\/span>/);
-assert.match(java, /addTimetableModule\(container, doto\)/);
-assert.match(java, /setContentDescription\("Jadwal Mengajar"\)/);
-assert.match(java, /setText\("Jadwal\\nMengajar"\)/);
-assert.match(java, /new Intent\(this, TimeTableActivity\.class\)/);
+assert.match(page, /id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"><img src="assets\/module-timetable\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
+assert.match(java, /addModule\(container, R\.drawable\.ic_module_timetable, "Jadwal Mengajar", TimeTableActivity\.class\)/);
+assert(!java.includes('addTimetableModule'));
+
 assert.match(xml, /<GridLayout[\s\S]*?android:id="@\+id\/modules_container"[\s\S]*?android:columnCount="4"/);
 assert(!/super_subtitle|modules_subtitle/.test(xml));
 assert.match(java, /addModule\(container, R\.drawable\.ic_module_clock, "Jam", ClockActivity\.class\)/);

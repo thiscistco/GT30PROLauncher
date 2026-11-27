@@ -10,6 +10,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.HorizontalScrollView;
+import android.graphics.drawable.GradientDrawable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -52,11 +54,6 @@ public class TimeTableActivity extends SwipeBackActivity {
         page=new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL); page.setBackgroundColor(ui.canvas);
         page.setOnApplyWindowInsetsListener((v,insets)->{v.setPadding(dp(16),dp(12)+insets.getSystemWindowInsetTop(),dp(16),dp(12)+insets.getSystemWindowInsetBottom());return insets;});
         setContentView(page); page.addView(ui.header(this,font,"Jadwal Mengajar"));
-        LinearLayout title=new LinearLayout(this); title.setGravity(Gravity.CENTER_VERTICAL);
-        TextView heading=text("JADWAL MENGAJAR",16,ui.ink); title.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
-        ImageButton add=new ImageButton(this); add.setImageResource(R.drawable.ic_calendar_add); add.setColorFilter(ui.ink); add.setScaleType(ImageView.ScaleType.FIT_CENTER); add.setPadding(dp(14),dp(14),dp(14),dp(14)); add.setBackground(ui.surface(this,ui.control)); add.setContentDescription("Tambah jam"); add.setTooltipText("Tambah jam"); add.setOnClickListener(v->editTime(-1));
-        title.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48))); page.addView(title);
-        TextView hint=text("Ketuk jam atau sel untuk mengubah.",10,ui.muted); hint.setPadding(0,0,0,dp(4)); page.addView(hint);
         vertical=new ScrollView(this); vertical.setFillViewport(true);
         table=new LinearLayout(this); table.setOrientation(LinearLayout.VERTICAL); vertical.addView(table,new ScrollView.LayoutParams(-1,-2));
         page.addView(vertical,new LinearLayout.LayoutParams(-1,0,1));
@@ -74,14 +71,15 @@ public class TimeTableActivity extends SwipeBackActivity {
     }
     private void render() {
         table.removeAllViews(); LinearLayout head=row();
-        addBox(head,box("JAM",10,ui.ink,ui.control),62,dp(32));
-        for(int d=0;d<DAYS.length;d++) { TextView name=box(SHORT_DAYS[d],10,ui.ink,ui.control); name.setContentDescription(DAYS[d]); addBox(head,name,0,dp(32)); }
+        TextView headTime=box("JAM",10,ui.ink,ui.canvas); headTime.setBackgroundColor(android.graphics.Color.TRANSPARENT); addBox(head,headTime,62,dp(32));
+        for(int d=0;d<DAYS.length;d++) { TextView name=box(SHORT_DAYS[d],10,ui.ink,ui.canvas); name.setBackgroundColor(android.graphics.Color.TRANSPARENT); name.setContentDescription(DAYS[d]); addBox(head,name,0,dp(32)); }
         table.addView(head);
         int rowHeight=Math.max(dp(38),rows.length()==0?dp(38):(viewportHeight-dp(34)-dp(2)*rows.length())/rows.length());
         for(int i=0;i<rows.length();i++) {
             final int index=i; JSONObject data=rows.optJSONObject(i); if(data==null) continue;
             String start=data.optString("start"), end=data.optString("end"), label=data.optString("label","");
             LinearLayout line=row(); TextView time=box(start+"\n"+end,10,ui.ink,ui.control);
+            time.setBackgroundColor(android.graphics.Color.TRANSPARENT);
             time.setContentDescription("Ubah jam " + start + " sampai " + end); time.setOnClickListener(v->editTime(index)); addBox(line,time,62,rowHeight);
             if(!label.isEmpty()) {
                 TextView breakLabel=box(label,11,ui.ink,ui.event); breakLabel.setSingleLine(true); breakLabel.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -91,16 +89,22 @@ public class TimeTableActivity extends SwipeBackActivity {
                 for(int d=0;d<DAYS.length;d++) {
                     final int day=d; JSONObject cell=cells==null?null:cells.optJSONObject(d);
                     String subject=cell==null?"":cell.optString("subject",""); String room=cell==null?"":cell.optString("class","");
-                    String value=subject.isEmpty()?room:room.isEmpty()?subject:subject+"\n"+room;
-                    TextView entry=box(value.isEmpty()?"+":value,value.isEmpty()?16:9,ui.ink,value.isEmpty()?ui.card:ui.event);
-                    entry.setMaxLines(2); entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
-                    entry.setContentDescription(DAYS[d]+", "+start+" sampai "+end+", "+(value.isEmpty()?"kosong":value)+". Ubah jadwal");
+                    String value=room.isEmpty()?subject:subject.isEmpty()?room:room+"\n"+subject;
+                    int color=value.isEmpty()?ui.card:TimeTableData.COLORS[TimeTableData.colorIndex(room,subject,cell.optString("color","auto"),rows)];
+                    LinearLayout entry=new LinearLayout(this); entry.setOrientation(LinearLayout.VERTICAL); entry.setGravity(Gravity.CENTER); entry.setPadding(dp(2),dp(1),dp(2),dp(1)); entry.setBackground(ui.surface(this,color));
+                    if(!room.isEmpty()) entry.addView(cellLine(room));
+                    if(!subject.isEmpty()) entry.addView(cellLine(subject));
+                    entry.setFocusable(true); entry.setContentDescription(DAYS[d]+", "+start+" sampai "+end+", "+(value.isEmpty()?"kosong":value)+". Ubah jadwal");
                     entry.setOnClickListener(v->editCell(index,day)); addBox(line,entry,0,rowHeight);
                 }
             }
             table.addView(line);
         }
-        if(rows.length()==0) { TextView empty=text("Belum ada jam. Ketuk + untuk menambahkan baris waktu.",13,ui.muted); empty.setPadding(dp(8),dp(18),0,0); table.addView(empty); }
+        if(rows.length()==0) { TextView empty=box("Tambah jam",13,ui.ink,ui.control); empty.setContentDescription("Tambah jam"); empty.setOnClickListener(v->editTime(-1)); table.addView(empty); }
+    }
+    private TextView cellLine(String value) {
+        TextView line=text(value,9,0xFF142A3A); line.setGravity(Gravity.CENTER); line.setSingleLine(true); line.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        line.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO); return line;
     }
     private void editTime(int index) {
         if(!storageSafe) return;
@@ -112,10 +116,11 @@ public class TimeTableActivity extends SwipeBackActivity {
         EditText label=field("Nama baris (opsional)",current==null?"":current.optString("label",""));
         label.setFilters(new InputFilter[]{new InputFilter.LengthFilter(30)}); form.addView(label);
         TextView labelHint=text("Isi nama untuk baris bersama; kosongkan untuk mengisi tiap hari.",11,ui.muted); form.addView(labelHint);
+        TextView addRow=box("Tambah jam",12,ui.ink,ui.control); if(index>=0) form.addView(addRow,new LinearLayout.LayoutParams(-1,dp(44)));
         start.setOnClickListener(v->pickTime(times,0,start,"Mulai")); end.setOnClickListener(v->pickTime(times,1,end,"Selesai"));
         AlertDialog.Builder builder=ui.dialog(this).setTitle(index<0?"Tambah jam":"Ubah jam").setView(form).setNegativeButton("Batal",null).setPositiveButton("Simpan",null);
         if(index>=0) builder.setNeutralButton("Hapus",(dialog,w)->confirmDelete(index));
-        AlertDialog dialog=builder.show(); dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
+        AlertDialog dialog=builder.show(); addRow.setOnClickListener(v->{dialog.dismiss();editTime(-1);}); dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
             if(!TimeTableData.validRange(times[0],times[1],rows,index)) { Toast.makeText(this,"Jam selesai harus setelah mulai dan tidak boleh bertabrakan dengan baris lain.",Toast.LENGTH_LONG).show(); return; }
             try { JSONObject item=current==null?new JSONObject():current; item.put("start",times[0]); item.put("end",times[1]); item.put("label",label.getText().toString().trim()); if(current==null){item.put("cells",new JSONArray());rows.put(item);} rows=TimeTableData.sorted(rows); persist(); render(); dialog.dismiss(); }
             catch(Exception e){ Toast.makeText(this,"Jadwal tidak dapat disimpan.",Toast.LENGTH_SHORT).show(); }
@@ -131,15 +136,48 @@ public class TimeTableActivity extends SwipeBackActivity {
     private EditText field(String hint,String value) {
         EditText f=new EditText(this); f.setSingleLine(true); f.setTextSize(16); f.setTypeface(font); f.setTextColor(ui.ink); f.setHintTextColor(ui.muted); f.setHint(hint); f.setText(value); f.setFilters(new InputFilter[]{new InputFilter.LengthFilter(80)}); return f;
     }
+    private ImageButton action(int resource,String description) {
+        ImageButton button=new ImageButton(this); button.setImageResource(resource); button.setColorFilter(ui.ink);
+        button.setScaleType(ImageView.ScaleType.FIT_CENTER); button.setPadding(dp(12),dp(12),dp(12),dp(12));
+        button.setBackground(ui.surface(this,ui.control)); button.setContentDescription(description); button.setTooltipText(description); return button;
+    }
+    private void storeCell(JSONObject row,int day,JSONObject value) throws org.json.JSONException {
+        JSONArray cells=row.optJSONArray("cells"); if(cells==null)cells=new JSONArray(); cells.put(day,value==null?JSONObject.NULL:value); row.put("cells",cells); persist(); render();
+    }
     private void editCell(int index,int day) {
         if(!storageSafe)return;
         JSONObject row=rows.optJSONObject(index); if(row==null)return; JSONArray cells=row.optJSONArray("cells"); JSONObject old=cells==null?null:cells.optJSONObject(day);
-        LinearLayout form=new LinearLayout(this); form.setOrientation(LinearLayout.VERTICAL); form.setPadding(dp(20),dp(8),dp(20),0);
-        EditText subject=field("Pelajaran / kegiatan",old==null?"":old.optString("subject","")); EditText classroom=field("Kelas / catatan",old==null?"":old.optString("class",""));
-        form.addView(subject);form.addView(classroom);
-        ui.dialog(this).setTitle(DAYS[day]+" · "+row.optString("start")+"–"+row.optString("end")).setView(form).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
-            try { JSONArray updated=row.optJSONArray("cells"); if(updated==null)updated=new JSONArray(); JSONObject cell=new JSONObject(); cell.put("subject",subject.getText().toString().trim());cell.put("class",classroom.getText().toString().trim());updated.put(day,cell);row.put("cells",updated);persist();render(); }
+        LinearLayout form=new LinearLayout(this); form.setOrientation(LinearLayout.VERTICAL); form.setPadding(dp(20),dp(12),dp(20),dp(16));
+        TextView heading=text(DAYS[day]+" · "+row.optString("start")+"–"+row.optString("end"),15,ui.ink); form.addView(heading);
+        EditText classroom=field("Kelas / catatan",old==null?"":old.optString("class","")); EditText subject=field("Pelajaran / kegiatan",old==null?"":old.optString("subject",""));
+        form.addView(classroom); form.addView(subject);
+        TextView colorTitle=text("Warna label",12,ui.ink); colorTitle.setPadding(0,dp(12),0,dp(6)); form.addView(colorTitle);
+        HorizontalScrollView paletteScroll=new HorizontalScrollView(this); paletteScroll.setHorizontalScrollBarEnabled(false); LinearLayout palette=new LinearLayout(this); palette.setOrientation(LinearLayout.HORIZONTAL); paletteScroll.addView(palette); form.addView(paletteScroll);
+        final String[] choice={old==null?"auto":old.optString("color","auto")};
+        boolean valid="auto".equals(choice[0]); for(String key:TimeTableData.COLOR_KEYS) if(key.equals(choice[0])) valid=true; if(!valid)choice[0]="auto";
+        TextView[] swatches=new TextView[TimeTableData.COLOR_KEYS.length+1];
+        Runnable updatePalette=()->{
+            for(int i=0;i<swatches.length;i++) {
+                String key=i==0?"auto":TimeTableData.COLOR_KEYS[i-1]; boolean selected=key.equals(choice[0]);
+                int color=i==0?ui.control:TimeTableData.COLORS[i-1]; GradientDrawable bg=ui.surface(this,color); bg.setStroke(dp(selected?3:1),selected?ui.ink:ui.border); swatches[i].setBackground(bg);
+                swatches[i].setContentDescription((i==0?"Warna otomatis":"Warna "+key)+(selected?", dipilih":"")); swatches[i].setSelected(selected);
+            }
+        };
+        for(int i=0;i<swatches.length;i++) {
+            final int option=i; TextView swatch=text(i==0?"A":"",14,i==0?ui.ink:0xFF142A3A); swatch.setGravity(Gravity.CENTER); swatch.setFocusable(true);
+            swatch.setOnClickListener(v->{choice[0]=option==0?"auto":TimeTableData.COLOR_KEYS[option-1];updatePalette.run();}); swatches[i]=swatch;
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(dp(44),dp(44)); p.rightMargin=dp(6); palette.addView(swatch,p);
+        }
+        updatePalette.run();
+        LinearLayout actions=new LinearLayout(this); actions.setGravity(Gravity.END|Gravity.CENTER_VERTICAL); LinearLayout.LayoutParams actionsParams=new LinearLayout.LayoutParams(-1,-2);actionsParams.topMargin=dp(16);form.addView(actions,actionsParams);
+        ImageButton delete=action(R.drawable.ic_alarm_delete,"Hapus jadwal"), cancel=action(R.drawable.ic_calendar_cancel,"Batal"), save=action(R.drawable.ic_calendar_save,"Simpan jadwal");
+        actions.addView(delete,new LinearLayout.LayoutParams(dp(48),dp(48))); LinearLayout.LayoutParams gap=new LinearLayout.LayoutParams(dp(48),dp(48));gap.leftMargin=dp(8);actions.addView(cancel,gap); gap=new LinearLayout.LayoutParams(dp(48),dp(48));gap.leftMargin=dp(8);actions.addView(save,gap);
+        AlertDialog dialog=ui.dialog(this).setView(form).show();
+        cancel.setOnClickListener(v->dialog.dismiss());
+        delete.setOnClickListener(v->ui.dialog(this).setTitle("Hapus jadwal?").setMessage("Jadwal pada sel ini akan dihapus.").setNegativeButton("Batal",null).setPositiveButton("Hapus",(d,w)->{try{storeCell(row,day,null);dialog.dismiss();}catch(Exception e){Toast.makeText(this,"Jadwal tidak dapat dihapus.",Toast.LENGTH_SHORT).show();}}).show());
+        save.setOnClickListener(v->{
+            try { JSONObject cell=new JSONObject(); cell.put("class",classroom.getText().toString().trim()); cell.put("subject",subject.getText().toString().trim()); cell.put("color",choice[0]); storeCell(row,day,cell); dialog.dismiss(); }
             catch(Exception e){ Toast.makeText(this,"Jadwal tidak dapat disimpan.",Toast.LENGTH_SHORT).show(); }
-        }).show();
+        });
     }
 }

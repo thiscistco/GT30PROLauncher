@@ -47,7 +47,7 @@ public class SuperAppActivity extends SwipeBackActivity {
         weatherView.setOpensDetails(true);
         weatherView.setContentDescription("Buka Cuaca");
         weatherView.setOnClickListener(v -> startActivity(new Intent(this, WeatherActivity.class)));
-        addTimetableModule(container, doto);
+        addModule(container, R.drawable.ic_module_timetable, "Jadwal Mengajar", TimeTableActivity.class);
         container.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
             if (r - l != oldR - oldL) sizeGridCells(container);
         });
@@ -59,22 +59,6 @@ public class SuperAppActivity extends SwipeBackActivity {
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (weather != null) weather.permissionResult(requestCode);
-    }
-
-    private void addTimetableModule(GridLayout grid, Typeface font) {
-        android.widget.LinearLayout tile = new android.widget.LinearLayout(this);
-        tile.setOrientation(android.widget.LinearLayout.VERTICAL); tile.setGravity(android.view.Gravity.CENTER);
-        tile.setClickable(true); tile.setFocusable(true); tile.setContentDescription("Jadwal Mengajar");
-        tile.setOnClickListener(v -> startActivity(new Intent(this, TimeTableActivity.class)));
-        ImageView icon = new ImageView(this); icon.setImageResource(R.drawable.ic_module_timetable);
-        icon.setColorFilter(ui.ink); icon.setScaleType(ImageView.ScaleType.FIT_CENTER); icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        tile.addView(icon, new android.widget.LinearLayout.LayoutParams(dp(42),dp(42)));
-        TextView label = new TextView(this); label.setText("Jadwal\nMengajar"); label.setGravity(android.view.Gravity.CENTER);
-        label.setTextSize(9); label.setTextColor(ui.ink); label.setTypeface(font); label.setFontVariationSettings("'wght' 800");
-        label.setBackground(ui.surface(this,ui.control)); label.setPadding(dp(3),dp(1),dp(3),dp(1));
-        label.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        tile.addView(label, new android.widget.LinearLayout.LayoutParams(-2,-2));
-        GridLayout.LayoutParams params = new GridLayout.LayoutParams(); params.width=1; params.height=dp(90); grid.addView(tile,params);
     }
 
     private void addModule(GridLayout grid, int icon, String name, Class<?> activity) {

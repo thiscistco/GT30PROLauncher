@@ -49,6 +49,23 @@ final class TimeTableData {
         }
         return new SeedResult(sorted(result),skipped);
     }
+    static final String[] COLOR_KEYS={"biru","hijau","kuning","merah","ungu","jingga"};
+    static final int[] COLORS={0xFFBBDDF7,0xFFBFE9CE,0xFFF4E3A4,0xFFF6C7CA,0xFFDCCCF4,0xFFF6D4B4};
+    private static String normalized(String value) { return value==null?"":value.trim().replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT); }
+    static int colorIndex(String classroom,String subject,String selected,JSONArray rows) {
+        for(int i=0;i<COLOR_KEYS.length;i++) if(COLOR_KEYS[i].equals(selected)) return i;
+        String c=normalized(classroom), s=normalized(subject);
+        if(!c.isEmpty() || !s.isEmpty()) for(int r=0;r<rows.length();r++) {
+            JSONObject row=rows.optJSONObject(r); JSONArray cells=row==null?null:row.optJSONArray("cells");
+            if(cells==null)continue;
+            for(int d=0;d<cells.length();d++) { JSONObject cell=cells.optJSONObject(d); if(cell==null)continue;
+                if(c.equals(normalized(cell.optString("class",""))) && s.equals(normalized(cell.optString("subject","")))) {
+                    String color=cell.optString("color",""); for(int i=0;i<COLOR_KEYS.length;i++) if(COLOR_KEYS[i].equals(color)) return i;
+                }
+            }
+        }
+        return Integer.remainderUnsigned((c+"\u0000"+s).hashCode(),COLOR_KEYS.length);
+    }
     static JSONArray sorted(JSONArray rows) {
         java.util.ArrayList<JSONObject> list=new java.util.ArrayList<>();
         for (int i=0;i<rows.length();i++) { JSONObject row=rows.optJSONObject(i); if(row!=null) list.add(row); }

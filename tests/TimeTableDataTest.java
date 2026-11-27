@@ -24,6 +24,11 @@ public class TimeTableDataTest {
     JSONArray oldBreak=new JSONArray().put(new JSONObject().put("start","09:45").put("end","10:30").put("cells",new JSONArray()));
     check(TimeTableData.seed(oldBreak).rows.optJSONObject(4).optString("label").equals("Istirahat"),"empty exact break labeled");
     check(!oldBreak.optJSONObject(0).has("label"),"seed does not mutate source");
+    check(TimeTableData.colorIndex("X IPA 1","Matematika","auto",new JSONArray())==5,"stable automatic color");
+    check(TimeTableData.colorIndex(" X  IPA 1 "," MATEMATIKA ","auto",new JSONArray())==5,"normalization");
+    JSONArray linked=new JSONArray().put(new JSONObject().put("cells",new JSONArray().put(new JSONObject().put("class","X IPA 1").put("subject","Matematika").put("color","hijau"))));
+    check(TimeTableData.colorIndex("x ipa 1","matematika","auto",linked)==1,"auto follows existing manual color");
+    check(TimeTableData.colorIndex("x ipa 1","matematika","ungu",linked)==4,"explicit color overrides auto");
     System.out.println("Time Table: validation, adjacent slots, sorting and cell preservation: OK");
   }
 }
