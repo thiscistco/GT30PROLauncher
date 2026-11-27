@@ -9,6 +9,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 final class CalendarEventLogic {
+    static final int MAX_REMINDER_MINUTES = 999 * 1440;
+    static boolean validReminder(int minutes) { return minutes >= -1 && minutes <= MAX_REMINDER_MINUTES; }
+    static String reminderLabel(int minutes) {
+        if (minutes == 0) return "Saat mulai";
+        if (minutes % 1440 == 0) return (minutes / 1440) + " hari sebelum";
+        if (minutes % 60 == 0) return (minutes / 60) + " jam sebelum";
+        return minutes + " menit sebelum";
+    }
     static final class Occurrence {
         final JSONObject event; final LocalDate date;
         Occurrence(JSONObject e, LocalDate d) { event=e; date=d; }

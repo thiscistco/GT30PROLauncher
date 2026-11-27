@@ -23,10 +23,10 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
   Tanggal di homescreen dapat diketuk untuk langsung membuka Kalender; tombol
   kembali mengembalikan ke homescreen. Kalender memakai font Doto; tema dapat
   dipilih lewat ikon titik: Sistem (layar berhuruf A, default mengikuti perangkat),
-  Terang (matahari), atau Gelap (bulan). Ketuk tanggal untuk melihat detail
+  Terang (matahari), atau Gelap (lingkaran). Ketuk tanggal untuk melihat detail
   libur dan memilih tanggal acara baru; tombol tambah di kanan bulan membuat acara.
-  Agenda mingguan menampilkan seluruh acara Senin–Minggu yang terlihat, urut
-  tanggal dan waktu (acara tanpa waktu terakhir pada hari itu). Agenda bulanan
+  Agenda mingguan menampilkan seluruh acara dan libur/peringatan Senin–Minggu
+  yang terlihat, termasuk yang sudah lewat. Acara urut tanggal dan waktu (acara tanpa waktu terakhir pada hari itu). Agenda bulanan
   hanya menampilkan acara hari ini, walaupun bulan atau tanggal lain dipilih. Kalender
   terbuka satu minggu, panah bawah membuka tampilan bulan; swipe pada kisi
   berpindah minggu atau bulan sesuai tampilan. Ketuk nama bulan untuk navigasi
@@ -42,7 +42,8 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
   Pengulangan khusus adalah setiap 1–999 hari, minggu, bulan atau tahun; tanggal
   yang tidak ada pada bulan/tahun berikutnya memakai hari terakhir bulan tersebut,
   dan kembali ke tanggal semula jika ada. Penghapusan menghapus seluruh rangkaian.
-  Pengingat Android mendukung saat mulai, 10 menit, 1 jam, atau 1 hari sebelumnya;
+  Pengingat Android mendukung saat mulai, 10 menit, 1 jam, 1 hari sebelumnya,
+  atau 1–999 menit, jam, atau hari sesuai pilihan;
   memerlukan izin notifikasi, dan dapat terlambat tanpa izin alarm tepat waktu.
   Pengingat dilewatkan jika waktunya sudah lewat dan dijadwalkan kembali setelah
   restart atau perubahan waktu/zona. Android dapat membatasi pengingat, misalnya

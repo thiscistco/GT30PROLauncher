@@ -12,5 +12,7 @@ java = (root / 'app/src/main/java/com/gt30pro/launcher/WeatherIcons.java').read_
 for name, symbol in [('light', 'SUN')]:
     expected = ','.join('"' + row + '"' for row in mod.ICONS[name])
     assert f'String[] {symbol} = {{{expected}}}' in java
-assert sum(row.count('#') for row in mod.ICONS['dark']) >= 30
+assert sum(row.count('#') for row in mod.ICONS['dark']) >= 32
+assert all(row == row[::-1] for row in mod.ICONS['dark'])
+assert mod.ICONS['dark'] == mod.ICONS['dark'][::-1]
 print('Calendar theme dot icons: reproducible, Android/preview parity and Doto style: OK')

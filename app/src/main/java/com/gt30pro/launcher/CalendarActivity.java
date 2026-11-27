@@ -327,7 +327,7 @@ public class CalendarActivity extends SwipeBackActivity {
                     if (!CalendarEventLogic.validRange(date,time,e.getString("endDate"),e.getString("endTime")) ||
                         !(type.equals("Pribadi") || type.equals("Pekerjaan") || type.equals("Keluarga") || type.equals("Lainnya")) ||
                         !(repeat.equals("none") || repeat.equals("day") || repeat.equals("week") || repeat.equals("month") || repeat.equals("year")) ||
-                        interval < 1 || interval > 999 || !(reminder == -1 || reminder == 0 || reminder == 10 || reminder == 60 || reminder == 1440)) throw new IllegalArgumentException();
+                        interval < 1 || interval > 999 || !CalendarEventLogic.validReminder(reminder)) throw new IllegalArgumentException();
                 }
             }
             return events;
@@ -398,7 +398,7 @@ public class CalendarActivity extends SwipeBackActivity {
         for (int i = 0; i < events.length(); i++) {
             JSONObject event = events.optJSONObject(i);
             if (event == null) continue;
-            String prefix = showDate ? date.getDayOfMonth() + " · " : "";
+            String prefix = showDate ? dateLabel(date) + " · " : "";
             page.addView(text(prefix + holidayText(event), 13, "libur".equals(event.optString("type")) ? weekend : observance));
             space(5);
         }
@@ -413,8 +413,8 @@ public class CalendarActivity extends SwipeBackActivity {
         LinearLayout top = new LinearLayout(this); top.setGravity(Gravity.CENTER_VERTICAL);
         ImageButton back = actionIcon(R.drawable.ic_calendar_back, "Kembali", this::finish);
         top.addView(back,new LinearLayout.LayoutParams(dp(48),dp(48)));
-        TextView year = text(String.valueOf(selected.getYear()), 17, ink);
-        year.setContentDescription("Tahun " + selected.getYear()); top.addView(year);
+        TextView year = text("Kalender " + selected.getYear(), 20, ink);
+        year.setContentDescription("Kalender, tahun " + selected.getYear()); top.addView(year);
         top.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
         ImageButton theme = themeButton(themeChoice, false);
         theme.setBackgroundColor(Color.TRANSPARENT);
@@ -431,7 +431,8 @@ public class CalendarActivity extends SwipeBackActivity {
         LinearLayout nav = new LinearLayout(this); nav.setGravity(Gravity.CENTER_VERTICAL);
         nav.addView(month,new LinearLayout.LayoutParams(-2,dp(48)));
         nav.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
-        nav.addView(actionIcon(R.drawable.ic_calendar_add,"Tambah acara",this::addEvent),new LinearLayout.LayoutParams(dp(48),dp(48)));
+        ImageButton add = actionIcon(R.drawable.ic_calendar_add,"Tambah acara",this::addEvent);
+        add.setBackground(bg(controlColor)); nav.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
         page.addView(nav); space(8);
         MonthGrid grid = new MonthGrid(); page.addView(grid);
         LinearLayout weekdays = new LinearLayout(this);
@@ -490,7 +491,17 @@ public class CalendarActivity extends SwipeBackActivity {
         agenda.addView(agendaTitle, new LinearLayout.LayoutParams(0,-2,1));
         agenda.addView(button("Hari ini", () -> { selected = LocalDate.now(); render(); }));
         page.addView(agenda); space(10);
-        addHolidayEntries(selected, false);
+        if (expanded) addHolidayEntries(selected, false);
+        else {
+            LocalDate first=CalendarDates.weekStart(selected);
+            boolean headingAdded=false;
+            for (int day=0;day<7;day++) {
+                LocalDate date=first.plusDays(day);
+                if (!CalendarDates.inRange(date) || holidaysFor(date).length()==0) continue;
+                if (!headingAdded) { page.addView(text("LIBUR & PERINGATAN MINGGU TERPILIH",12,muted)); space(4); headingAdded=true; }
+                addHolidayEntries(date,true);
+            }
+        }
         space(4);
         TextView agendaHeading = text(expanded ? "ACARA HARI INI" : "ACARA MINGGU TERPILIH", 12, muted);
         page.addView(agendaHeading); space(8);
@@ -519,7 +530,7 @@ public class CalendarActivity extends SwipeBackActivity {
                     details="\nSetiap " + e.optInt("interval",1) + " " + unitLabel;
                 }
                 int reminder=e.optInt("reminder",-1);
-                if (reminder>=0) details += (details.isEmpty()?"\n":" · ") + (reminder==0?"Saat mulai":reminder==10?"10 menit sebelum":reminder==60?"1 jam sebelum":"1 hari sebelum");
+                if (reminder>=0) details += (details.isEmpty()?"\n":" · ") + CalendarEventLogic.reminderLabel(reminder);
             }
             TextView label = text(when + "\n" + title + (type.isEmpty()?"":" · " + type) + details, 14, ink);
             row.addView(label, new LinearLayout.LayoutParams(0, -2, 1));
@@ -558,12 +569,19 @@ public class CalendarActivity extends SwipeBackActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); spinner.setAdapter(adapter);
         return spinner;
     }
+    private void formRow(LinearLayout form, String label, View field) {
+        LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL);
+        TextView caption=text(label,12,ink); caption.setPadding(0,0,dp(8),0);
+        row.addView(caption,new LinearLayout.LayoutParams(0,-2,0.38f));
+        row.addView(field,new LinearLayout.LayoutParams(0,-2,0.62f));
+        form.addView(row);
+    }
     private void dateTimeFields(LinearLayout form, String label, LocalDateTime[] value, int index) {
-        form.addView(text(label, 14, ink));
-        LinearLayout row=new LinearLayout(this);
+        LinearLayout fields=new LinearLayout(this); fields.setOrientation(LinearLayout.VERTICAL);
         TextView date=button(value[index].toLocalDate().toString(), () -> {});
-        TextView time=button(value[index].toLocalTime().toString(), () -> {});
-        date.setContentDescription("Tanggal " + label); time.setContentDescription("Waktu " + label);
+        TextView time=button(String.format(Locale.ROOT,"%02d:%02d",value[index].getHour(),value[index].getMinute()), () -> {});
+        date.setContentDescription(label); time.setContentDescription(index==0 ? "Waktu mulai" : "Waktu selesai");
+        date.setTextSize(12); time.setTextSize(12); date.setPadding(dp(2),dp(6),dp(2),dp(6));
         date.setOnClickListener(v -> {
             LocalDateTime d=value[index];
             DatePickerDialog picker=new DatePickerDialog(this, dark ? android.R.style.Theme_Material_Dialog_Alert : android.R.style.Theme_Material_Light_Dialog_Alert,
@@ -576,7 +594,13 @@ public class CalendarActivity extends SwipeBackActivity {
             new TimePickerDialog(this, dark ? android.R.style.Theme_Material_Dialog_Alert : android.R.style.Theme_Material_Light_Dialog_Alert,
                 (view,h,m) -> { value[index]=value[index].withHour(h).withMinute(m); time.setText(String.format(Locale.ROOT,"%02d:%02d",h,m)); }, d.getHour(),d.getMinute(),true).show();
         });
-        row.addView(date,new LinearLayout.LayoutParams(0,-2,1)); row.addView(time,new LinearLayout.LayoutParams(0,-2,1)); form.addView(row);
+        fields.addView(date,new LinearLayout.LayoutParams(-1,-2)); fields.addView(time,new LinearLayout.LayoutParams(-1,-2)); formRow(form,label,fields);
+    }
+    private void dialogIconButton(AlertDialog dialog, int which, int drawable, String description) {
+        android.widget.Button button=dialog.getButton(which); Drawable icon=getDrawable(drawable).mutate();
+        icon.setTint(ink); icon.setBounds(0,0,dp(24),dp(24)); button.setText("");
+        button.setCompoundDrawables(icon,null,null,null); button.setGravity(Gravity.CENTER); button.setMinWidth(dp(48)); button.setMinHeight(dp(48));
+        button.setContentDescription(description); button.setTooltipText(description);
     }
     private void offerExactReminderPermission() {
         if (Build.VERSION.SDK_INT < 31 || CalendarReminders.exact(this)) return;
@@ -607,30 +631,38 @@ public class CalendarActivity extends SwipeBackActivity {
     private void addEvent() {
         AlertDialog.Builder builder=dialog(); android.content.Context ctx=builder.getContext();
         LinearLayout form = new LinearLayout(this); form.setOrientation(LinearLayout.VERTICAL); form.setPadding(dp(20), dp(8), dp(20), dp(8));
-        form.addView(text("Nama acara",14,ink));
-        EditText title = new EditText(ctx); title.setTypeface(doto); title.setSingleLine(true); title.setHint("Nama acara");
-        title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(80)}); form.addView(title);
-        form.addView(text("Jenis acara",14,ink));
-        String[] types={"Pribadi","Pekerjaan","Keluarga","Lainnya"}; Spinner type=choices(ctx,types); type.setContentDescription("Jenis acara"); form.addView(type);
+        EditText title = new EditText(ctx); title.setTypeface(doto); title.setSingleLine(true); title.setHint("Nama acara"); title.setContentDescription("Nama acara");
+        title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(80)}); formRow(form,"Nama acara",title);
+        String[] types={"Pribadi","Pekerjaan","Keluarga","Lainnya"}; Spinner type=choices(ctx,types); type.setContentDescription("Jenis acara"); formRow(form,"Jenis acara",type);
         LocalDateTime[] values={selected.atTime(9,0),selected.atTime(10,0)};
-        dateTimeFields(form,"Dimulai",values,0); dateTimeFields(form,"Selesai",values,1);
-        form.addView(text("Pengulangan",14,ink));
-        Spinner repeat=choices(ctx,new String[]{"Tidak berulang","Setiap hari","Setiap minggu","Setiap bulan","Setiap tahun","Khusus"}); repeat.setContentDescription("Pengulangan"); form.addView(repeat);
+        dateTimeFields(form,"Tanggal mulai",values,0); dateTimeFields(form,"Tanggal selesai",values,1);
+        Spinner repeat=choices(ctx,new String[]{"Tidak","Harian","Mingguan","Bulanan","Tahunan","Khusus"}); repeat.setContentDescription("Ulangi"); formRow(form,"Ulangi",repeat);
         LinearLayout custom=new LinearLayout(this); custom.setGravity(Gravity.CENTER_VERTICAL);
-        custom.addView(text("Setiap",14,ink)); EditText interval=new EditText(ctx); interval.setInputType(InputType.TYPE_CLASS_NUMBER); interval.setText("1"); interval.setContentDescription("Interval pengulangan"); interval.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
-        custom.addView(interval,new LinearLayout.LayoutParams(dp(60),-2));
-        Spinner unit=choices(ctx,new String[]{"hari","minggu","bulan","tahun"}); unit.setContentDescription("Satuan pengulangan"); custom.addView(unit,new LinearLayout.LayoutParams(0,-2,1)); form.addView(custom); custom.setVisibility(View.GONE);
+        EditText interval=new EditText(ctx); interval.setInputType(InputType.TYPE_CLASS_NUMBER); interval.setText("1"); interval.setContentDescription("Interval pengulangan"); interval.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
+        custom.addView(interval,new LinearLayout.LayoutParams(dp(52),-2));
+        Spinner unit=choices(ctx,new String[]{"hari","minggu","bulan","tahun"}); unit.setContentDescription("Satuan pengulangan"); custom.addView(unit,new LinearLayout.LayoutParams(0,-2,1));
+        LinearLayout customRow=new LinearLayout(this); customRow.setOrientation(LinearLayout.VERTICAL); formRow(customRow,"Setiap",custom); form.addView(customRow); customRow.setVisibility(View.GONE);
         repeat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) { custom.setVisibility(pos==5 ? View.VISIBLE : View.GONE); }
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) { customRow.setVisibility(pos==5 ? View.VISIBLE : View.GONE); }
             public void onNothingSelected(AdapterView<?> parent) { }
         });
-        form.addView(text("Pengingat perangkat",14,ink));
-        int[] reminders={-1,0,10,60,1440}; Spinner reminder=choices(ctx,new String[]{"Tidak ada","Saat dimulai","10 menit sebelumnya","1 jam sebelumnya","1 hari sebelumnya"}); reminder.setContentDescription("Pengingat perangkat"); form.addView(reminder);
+        int[] reminders={-1,0,10,60,1440}; Spinner reminder=choices(ctx,new String[]{"Tidak","Saat dimulai","10 menit","1 jam","1 hari","Khusus"}); reminder.setContentDescription("Pengingat"); formRow(form,"Pengingat",reminder);
+        LinearLayout customReminder=new LinearLayout(this); customReminder.setGravity(Gravity.CENTER_VERTICAL);
+        EditText reminderAmount=new EditText(ctx); reminderAmount.setInputType(InputType.TYPE_CLASS_NUMBER); reminderAmount.setText("1"); reminderAmount.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)}); reminderAmount.setContentDescription("Jumlah waktu pengingat");
+        customReminder.addView(reminderAmount,new LinearLayout.LayoutParams(dp(52),-2));
+        Spinner reminderUnit=choices(ctx,new String[]{"menit","jam","hari"}); reminderUnit.setContentDescription("Satuan waktu pengingat"); customReminder.addView(reminderUnit,new LinearLayout.LayoutParams(0,-2,1));
+        LinearLayout reminderRow=new LinearLayout(this); reminderRow.setOrientation(LinearLayout.VERTICAL); formRow(reminderRow,"Sebelum",customReminder); form.addView(reminderRow); reminderRow.setVisibility(View.GONE);
+        reminder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) { reminderRow.setVisibility(pos==5 ? View.VISIBLE : View.GONE); }
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
         form.addView(text("Pengulangan khusus: setiap N hari, minggu, bulan, atau tahun. Hapus menghapus seluruh rangkaian.",12,muted));
         ScrollView body=new ScrollView(ctx); body.addView(form);
         AlertDialog dialog = builder.setTitle("Tambah acara").setView(body).setNegativeButton("Batal", null).setPositiveButton("Simpan", null).create();
         dialog.setOnShowListener(ignored -> {
             styleDialog(dialog);
+            dialogIconButton(dialog, AlertDialog.BUTTON_NEGATIVE, R.drawable.ic_calendar_cancel, "Batal");
+            dialogIconButton(dialog, AlertDialog.BUTTON_POSITIVE, R.drawable.ic_calendar_save, "Simpan");
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
                 String name=title.getText().toString().trim();
                 if (!CalendarDates.validTitle(name)) { title.setError("Isi nama acara (maks. 80 karakter)"); return; }
@@ -640,7 +672,12 @@ public class CalendarActivity extends SwipeBackActivity {
                 String[] units={"day","week","month","year"}; int position=repeat.getSelectedItemPosition();
                 int n=1; if (position==5) { try { n=Integer.parseInt(interval.getText().toString()); } catch(Exception ex) { n=0; } if(n<1 || n>999) { interval.setError("Gunakan 1–999"); return; } }
                 String frequency=position==0 ? "none" : units[position==5 ? unit.getSelectedItemPosition() : position-1];
-                int before=reminders[reminder.getSelectedItemPosition()];
+                int before;
+                if (reminder.getSelectedItemPosition()==5) {
+                    int count; try { count=Integer.parseInt(reminderAmount.getText().toString()); } catch (Exception ex) { count=0; }
+                    if (count<1 || count>999) { reminderAmount.setError("Gunakan 1–999"); return; }
+                    int[] factors={1,60,1440}; before=count*factors[reminderUnit.getSelectedItemPosition()];
+                } else before=reminders[reminder.getSelectedItemPosition()];
                 JSONArray events=readEvents();
                 try {
                     JSONObject event = new JSONObject(); event.put("id",UUID.randomUUID().toString()); event.put("title",name); event.put("type",types[type.getSelectedItemPosition()]);

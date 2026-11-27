@@ -24,8 +24,9 @@ final class CalendarReminders {
         for (int i=0;i<all.length();i++) { JSONObject e=all.optJSONObject(i); if (e!=null && id.equals(e.optString("id"))) return e; }
         return null;
     }
-    static PendingIntent intent(Context c, String id) {
-        Intent i = new Intent(c, CalendarReminderReceiver.class).setAction(ACTION).setData(Uri.parse("gt30calendar://reminder/" + Uri.encode(id))).putExtra("id", id);
+    static PendingIntent intent(Context c, String id) { return intent(c,id,0); }
+    static PendingIntent intent(Context c, String id, long start) {
+        Intent i = new Intent(c, CalendarReminderReceiver.class).setAction(ACTION).setData(Uri.parse("gt30calendar://reminder/" + Uri.encode(id))).putExtra("id", id).putExtra("start",start);
         return PendingIntent.getBroadcast(c, 0, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
     static void cancel(Context c, String id) {
@@ -35,7 +36,7 @@ final class CalendarReminders {
     static long nextReminder(JSONObject e, long now) {
         int minutes=e.optInt("reminder", -1);
         String time=e.optString("time");
-        if (minutes < 0 || minutes > 10080 || time.isEmpty()) return 0;
+        if (minutes < 0 || !CalendarEventLogic.validReminder(minutes) || time.isEmpty()) return 0;
         try {
             ZoneId zone=ZoneId.systemDefault();
             LocalDate start=LocalDate.parse(e.getString("date"));
@@ -56,10 +57,12 @@ final class CalendarReminders {
         cancelAlarm(c,id);
         long when=nextReminder(event,System.currentTimeMillis()); if (when == 0) return;
         AlarmManager m=(AlarmManager)c.getSystemService(Context.ALARM_SERVICE);
+        long start=when + event.optInt("reminder")*60000L;
+        PendingIntent alarm=intent(c,id,start);
         try {
-            if (exact(c)) m.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,when,intent(c,id));
-            else m.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,when,intent(c,id));
-        } catch (SecurityException ex) { m.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,when,intent(c,id)); }
+            if (exact(c)) m.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,when,alarm);
+            else m.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,when,alarm);
+        } catch (SecurityException ex) { m.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,when,alarm); }
     }
     static void cancelAlarm(Context c,String id) { ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE)).cancel(intent(c,id)); }
     static void restore(Context c) {

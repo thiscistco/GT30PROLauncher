@@ -409,7 +409,7 @@
   .calendar-page { --cal-bg:#f4f7fa; --cal-card:#fff; --cal-text:#142a3a; --cal-muted:#405465; --cal-control:#e3eaf0; --cal-day:#dce5ed; --cal-select:#304355; --cal-selected-text:#fff; --cal-weekend:#b3263b; --cal-selected-weekend:#ff9ea8; --cal-border:#cbd6df; --cal-event:#e5ecf2; --cal-observe:#9b5700; background:var(--cal-bg); color:var(--cal-text); }
   .calendar-page[data-theme="dark"] { color-scheme:dark; --cal-bg:#101820; --cal-card:#19252f; --cal-text:#f5f8fa; --cal-muted:#c7d3dd; --cal-control:#2a3b49; --cal-day:#344957; --cal-select:#dce8f0; --cal-selected-text:#172a38; --cal-weekend:#ff9faa; --cal-selected-weekend:#a6152b; --cal-border:#516776; --cal-event:#263743; --cal-observe:#ffc077; }
   .calendar-top { display:flex; align-items:center; justify-content:space-between; gap:2mm; margin-bottom:2mm; }
-  .calendar-year { margin-right:auto; color:var(--cal-text); font:800 3mm 'Doto', monospace; font-variation-settings:'wght' 800; }
+  .calendar-heading { margin-right:auto; color:var(--cal-text); font:800 3.6mm 'Doto', monospace; font-variation-settings:'wght' 800; white-space:nowrap; }
   .calendar-page { font-weight:800; font-variation-settings:'wght' 800; }
   .calendar-page .clock-action, .calendar-day { font-weight:800; font-variation-settings:'wght' 800; }
   .calendar-theme { position:relative; }
@@ -418,7 +418,7 @@
   .calendar-theme-icon { display:block; width:3.81mm; height:3.81mm; background:currentColor; mask-size:contain; mask-repeat:no-repeat; mask-position:center; -webkit-mask-size:contain; -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; }
   .calendar-theme-system { mask-image:url('assets/calendar-theme-system.svg?v=1'); -webkit-mask-image:url('assets/calendar-theme-system.svg?v=1'); }
   .calendar-theme-light { mask-image:url('assets/calendar-theme-light.svg?v=1'); -webkit-mask-image:url('assets/calendar-theme-light.svg?v=1'); }
-  .calendar-theme-dark { mask-image:url('assets/calendar-theme-dark.svg?v=2'); -webkit-mask-image:url('assets/calendar-theme-dark.svg?v=2'); }
+  .calendar-theme-dark { mask-image:url('assets/calendar-theme-dark.svg?v=3'); -webkit-mask-image:url('assets/calendar-theme-dark.svg?v=3'); }
   .calendar-theme-menu { position:absolute; top:100%; right:0; z-index:3; display:flex; gap:1mm; padding:1mm; border:1px solid var(--cal-border); border-radius:3mm; background:var(--cal-card); box-shadow:0 1mm 2mm #0002; }
   .calendar-theme-menu[hidden] { display:none; }
   .calendar-theme-option { background:var(--cal-control); }
@@ -427,7 +427,7 @@
   .calendar-card { background:var(--cal-card); }
   .calendar-page .clock-action { color:var(--cal-text); background:var(--cal-control); border-color:var(--cal-border); }
   .calendar-nav { justify-content:flex-start; }
-  .calendar-nav .calendar-month { flex:0 1 auto; text-align:left; padding:2mm 3mm; border-radius:9mm; }
+  .calendar-nav .calendar-month { flex:0 1 auto; text-align:left; padding:2mm 3mm; border-radius:2.5mm; }
   .calendar-month-menu { display:flex; gap:1mm; margin:1mm 0 2mm; }
   .calendar-month-menu[hidden] { display:none; }
   .calendar-month-menu .clock-action { white-space:normal; font-size:2.3mm; flex:1; }
@@ -455,6 +455,17 @@
   .calendar-page .calendar-icon-button { display:grid; place-items:center; flex:none; width:7.62mm; height:7.62mm; min-height:7.62mm; padding:0; border:0; border-radius:2mm; background:transparent; color:var(--cal-text); cursor:pointer; }
   .calendar-page .calendar-icon-button:focus-visible { outline:1px solid var(--cal-text); outline-offset:-1px; }
   .calendar-action-icon { display:block; width:3.81mm; height:3.81mm; background:currentColor; mask-size:contain; mask-repeat:no-repeat; mask-position:center; -webkit-mask-size:contain; -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; }
+  .calendar-page #calendarAdd { background:var(--cal-control); border:1px solid var(--cal-border); border-radius:2.5mm; }
+  .calendar-form-grid { display:grid; grid-template-columns:minmax(0, 36%) minmax(0, 1fr); align-items:center; gap:1.5mm 2mm; }
+  .calendar-form-grid > label, .calendar-form-grid > span { min-width:0; font-size:2.5mm; overflow-wrap:anywhere; }
+  .calendar-form-grid input, .calendar-form-grid select { min-width:0; width:100%; box-sizing:border-box; }
+  .calendar-form-grid .calendar-fields { min-width:0; display:grid; gap:1mm; }
+  .calendar-form-grid .calendar-custom-fields { min-width:0; display:grid; grid-template-columns:minmax(0, 40%) minmax(0, 1fr); gap:1mm; }
+  .calendar-form-grid [hidden] { display:none; }
+  .calendar-form-actions { justify-content:flex-end; }
+  .calendar-form-actions > .calendar-icon-button { flex:0 0 7.62mm; background:var(--cal-control); border:1px solid var(--cal-border); }
+  .calendar-cancel-icon { mask-image:url('assets/calendar-cancel.svg?v=1'); -webkit-mask-image:url('assets/calendar-cancel.svg?v=1'); }
+  .calendar-save-icon { mask-image:url('assets/calendar-save.svg?v=1'); -webkit-mask-image:url('assets/calendar-save.svg?v=1'); }
   .calendar-back-icon { mask-image:url('assets/calendar-back.svg?v=1'); -webkit-mask-image:url('assets/calendar-back.svg?v=1'); }
   .calendar-add-icon { mask-image:url('assets/calendar-add.svg?v=1'); -webkit-mask-image:url('assets/calendar-add.svg?v=1'); }
   .calendar-expand-icon { mask-image:url('assets/calendar-expand.svg?v=1'); -webkit-mask-image:url('assets/calendar-expand.svg?v=1'); }
@@ -685,7 +696,7 @@
               </section>
               <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>
                 <div class="calendar-top"><button class="calendar-icon-button" id="calendarBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button>
-                  <span class="calendar-year" id="calendarYear" aria-label="Tahun"></span>
+                  <span class="calendar-heading">Kalender <span id="calendarYear" aria-label="Tahun"></span></span>
                   <div class="calendar-theme"><button class="calendar-theme-button" id="calendarTheme" type="button" aria-label="Tema: Sistem. Pilih tema kalender" aria-expanded="false" aria-controls="calendarThemeMenu" title="Pilih tema kalender"><span class="calendar-theme-icon calendar-theme-system" id="calendarThemeIcon" aria-hidden="true"></span></button>
                     <div class="calendar-theme-menu" id="calendarThemeMenu" role="group" aria-label="Pilihan tema kalender" hidden>
                       <button class="calendar-theme-option" id="calendarThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button>
@@ -708,18 +719,19 @@
                   <div class="calendar-agenda-head"><div><span class="calendar-kicker" id="calendarDayLabel">TANGGAL DIPILIH</span><h3 id="calendarSelected"></h3></div><button class="clock-action" id="calendarToday" type="button">Hari ini</button></div>
                   <div id="calendarHolidayDetails" aria-live="polite"></div>
                   <form class="alarm-form" id="calendarForm" hidden>
-                    <label>Nama acara <input id="calendarTitle" type="text" maxlength="80" required></label>
-                    <label>Jenis acara <select id="calendarType"><option>Pribadi</option><option>Pekerjaan</option><option>Keluarga</option><option>Lainnya</option></select></label>
-                    <label>Mulai tanggal <input id="calendarStartDate" type="date" min="1900-01-01" max="2100-12-31" required></label>
-                    <label>Mulai waktu <input id="calendarTime" type="time" required></label>
-                    <label>Selesai tanggal <input id="calendarEndDate" type="date" min="1900-01-01" max="2100-12-31" required></label>
-                    <label>Selesai waktu <input id="calendarEndTime" type="time" required></label>
-                    <label>Pengulangan <select id="calendarRepeat"><option value="none">Tidak berulang</option><option value="day">Setiap hari</option><option value="week">Setiap minggu</option><option value="month">Setiap bulan</option><option value="year">Setiap tahun</option><option value="custom">Khusus</option></select></label>
-                    <div id="calendarCustomRepeat" hidden><label>Setiap <input id="calendarInterval" type="number" min="1" max="999" value="1"> <select id="calendarUnit"><option value="day">hari</option><option value="week">minggu</option><option value="month">bulan</option><option value="year">tahun</option></select></label></div>
-                    <label>Pengingat perangkat <select id="calendarReminder"><option value="-1">Tidak ada</option><option value="0">Saat dimulai</option><option value="10">10 menit sebelumnya</option><option value="60">1 jam sebelumnya</option><option value="1440">1 hari sebelumnya</option></select></label>
+                    <div class="calendar-form-grid">
+                      <label for="calendarTitle">Nama acara</label><input id="calendarTitle" type="text" maxlength="80" required>
+                      <label for="calendarType">Jenis acara</label><select id="calendarType"><option>Pribadi</option><option>Pekerjaan</option><option>Keluarga</option><option>Lainnya</option></select>
+                      <label for="calendarStartDate">Tanggal mulai</label><div class="calendar-fields"><input id="calendarStartDate" type="date" min="1900-01-01" max="2100-12-31" required><input id="calendarTime" type="time" aria-label="Waktu mulai" required></div>
+                      <label for="calendarEndDate">Tanggal selesai</label><div class="calendar-fields"><input id="calendarEndDate" type="date" min="1900-01-01" max="2100-12-31" required><input id="calendarEndTime" type="time" aria-label="Waktu selesai" required></div>
+                      <label for="calendarRepeat">Ulangi</label><select id="calendarRepeat"><option value="none">Tidak</option><option value="day">Harian</option><option value="week">Mingguan</option><option value="month">Bulanan</option><option value="year">Tahunan</option><option value="custom">Khusus</option></select>
+                      <label id="calendarCustomRepeatLabel" for="calendarInterval" hidden>Setiap</label><div class="calendar-custom-fields" id="calendarCustomRepeat" hidden><input id="calendarInterval" aria-label="Interval pengulangan" type="number" min="1" max="999" value="1"><select id="calendarUnit" aria-label="Satuan pengulangan"><option value="day">hari</option><option value="week">minggu</option><option value="month">bulan</option><option value="year">tahun</option></select></div>
+                      <label for="calendarReminder">Pengingat</label><select id="calendarReminder"><option value="-1">Tidak</option><option value="0">Saat dimulai</option><option value="10">10 menit</option><option value="60">1 jam</option><option value="1440">1 hari</option><option value="custom">Khusus</option></select>
+                      <label id="calendarCustomReminderLabel" for="calendarReminderAmount" hidden>Sebelum</label><div class="calendar-custom-fields" id="calendarCustomReminder" hidden><input id="calendarReminderAmount" aria-label="Jumlah waktu pengingat" type="number" min="1" max="999" value="1"><select id="calendarReminderUnit" aria-label="Satuan waktu pengingat"><option value="1">menit</option><option value="60">jam</option><option value="1440">hari</option></select></div>
+                    </div>
                     <p class="clock-muted">Preview hanya menyimpan pilihan; notifikasi latar belakang tersedia pada aplikasi Android. Menghapus acara berulang menghapus seluruh rangkaian.</p>
                     <p class="clock-muted" id="calendarError" role="alert" hidden></p>
-                    <div class="clock-row"><button class="clock-action" id="calendarCancel" type="button">Batal</button><button class="clock-action" type="submit">Simpan</button></div>
+                    <div class="clock-row calendar-form-actions"><button class="calendar-icon-button" id="calendarCancel" type="button" aria-label="Batal" title="Batal"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button><button class="calendar-icon-button" id="calendarSave" type="submit" aria-label="Simpan" title="Simpan"><span class="calendar-action-icon calendar-save-icon" aria-hidden="true"></span></button></div>
                   </form>
                   <h3 class="calendar-agenda-label" id="calendarAgendaHeading">ACARA MINGGU TERPILIH</h3>
                   <div id="calendarEvents"></div>
@@ -1020,7 +1032,7 @@
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=11"></script>
+<script src="calendar.js?v=12"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

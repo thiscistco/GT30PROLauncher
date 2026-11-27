@@ -14,6 +14,7 @@ public class CalendarReminderReceiver extends BroadcastReceiver {
         if (!CalendarReminders.ACTION.equals(intent.getAction())) return;
         String id=intent.getStringExtra("id"); if (id == null) return;
         JSONObject event=CalendarReminders.find(c,id); if (event == null || event.optInt("reminder",-1)<0) return;
+        long start=intent.getLongExtra("start",0);
         CalendarReminders.schedule(c,event);
         NotificationManager manager=(NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
         String channel="calendar_events";
@@ -21,7 +22,7 @@ public class CalendarReminderReceiver extends BroadcastReceiver {
         Intent open=new Intent(c,CalendarActivity.class);
         PendingIntent tap=PendingIntent.getActivity(c,0,open,PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification notification=new Notification.Builder(c,channel).setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(event.optString("title")).setContentText("Acara akan dimulai")
+                .setContentTitle(event.optString("title")).setContentText(start>0 ? "Mulai " + android.text.format.DateFormat.getDateFormat(c).format(new java.util.Date(start)) + " " + android.text.format.DateFormat.getTimeFormat(c).format(new java.util.Date(start)) : "Pengingat acara")
                 .setContentIntent(tap).setAutoCancel(true).setCategory(Notification.CATEGORY_EVENT).build();
         try { manager.notify(id,0,notification); } catch (SecurityException ignored) { }
     }

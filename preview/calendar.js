@@ -75,11 +75,19 @@
     return null;
   }
   function addDays(key, days) { var d=asDate(fromKey(key)); d.setDate(d.getDate()+days); return dateKey(fromDate(d)); }
+  var maxReminderMinutes=999*1440;
+  function validReminder(value) { return Number.isInteger(value) && value >= -1 && value <= maxReminderMinutes; }
+  function reminderLabel(value) {
+    if (value === 0) return 'Saat mulai';
+    if (value % 1440 === 0) return value/1440 + ' hari sebelum';
+    if (value % 60 === 0) return value/60 + ' jam sebelum';
+    return value + ' menit sebelum';
+  }
   function validEvent(e) {
     if (!e || typeof e.id !== 'string' || !e.id.length || !validDate(e.date) || !validTitle(e.title) || typeof e.time !== 'string' || !validTime(e.time)) return false;
     if (!('endDate' in e)) return true; // v1 legacy record, including untimed events
     return validRange(e.date,e.time,e.endDate,e.endTime) && ['Pribadi','Pekerjaan','Keluarga','Lainnya'].includes(e.type) &&
-      ['none','day','week','month','year'].includes(e.repeat) && Number.isInteger(e.interval) && e.interval >= 1 && e.interval <= 999 && [-1,0,10,60,1440].includes(e.reminder);
+      ['none','day','week','month','year'].includes(e.repeat) && Number.isInteger(e.interval) && e.interval >= 1 && e.interval <= 999 && validReminder(e.reminder);
   }
   function occurrences(records, first, last) {
     var found=[];
@@ -100,6 +108,13 @@
   }
   function agendaEvents(records, selected, actualToday, expanded) { return agendaOccurrences(records, selected, actualToday, expanded).map(function (o) { return o.event; }); }
   function holidaysFor(key) { return holidayData && holidayData.entries && holidayData.entries[key] || []; }
+  function weekHolidayEntries(date) {
+    var result=[];
+    weekDays(date).filter(Boolean).forEach(function (day) {
+      holidaysFor(dateKey(day)).forEach(function (entry) { result.push({date:day,entry:entry}); });
+    });
+    return result;
+  }
   function holidayText(entry) {
     var kind = entry.type === 'libur' ? 'Libur nasional' : entry.type === 'cuti' ? 'Cuti bersama' : 'Peringatan (bukan libur nasional)';
     return kind + ' · ' + entry.name;
@@ -178,9 +193,13 @@
       byId('calendarSelected').textContent = label(selected);
       var dayLabel = byId('calendarDayLabel'); if (dayLabel) dayLabel.textContent = selectedKey === todayKey ? 'HARI INI' : 'TANGGAL DIPILIH';
       var holidayDetails = byId('calendarHolidayDetails'); holidayDetails.replaceChildren();
-      holidaysFor(selectedKey).forEach(function (entry) {
-        var line = doc.createElement('p'); line.className = 'calendar-holiday-detail' + (entry.type === 'libur' ? ' holiday' : '');
-        line.textContent = holidayText(entry); holidayDetails.appendChild(line);
+      var holidayItems = expanded ? holidaysFor(selectedKey).map(function (entry) { return {date:selected,entry:entry}; }) : weekHolidayEntries(selected);
+      if (!expanded && holidayItems.length) {
+        var heading=doc.createElement('p'); heading.className='calendar-kicker'; heading.textContent='LIBUR & PERINGATAN MINGGU TERPILIH'; holidayDetails.appendChild(heading);
+      }
+      holidayItems.forEach(function (item) {
+        var line = doc.createElement('p'); line.className = 'calendar-holiday-detail' + (item.entry.type === 'libur' ? ' holiday' : '');
+        line.textContent = (expanded ? '' : label(item.date) + ' · ') + holidayText(item.entry); holidayDetails.appendChild(line);
       });
       var supported = holidayData && holidayData.years.indexOf(selected.year) !== -1;
       var availableYears = holidayData && holidayData.years ? holidayData.years.join(', ') : 'tidak tersedia';
@@ -257,7 +276,7 @@
         var details='';
         if (event.endDate) {
           if (event.repeat !== 'none') details='\nSetiap ' + event.interval + ' ' + {day:'hari',week:'minggu',month:'bulan',year:'tahun'}[event.repeat];
-          if (event.reminder >= 0) details += (details ? ' · ' : '\n') + ({0:'Saat mulai',10:'10 menit sebelum',60:'1 jam sebelum',1440:'1 hari sebelum'})[event.reminder];
+          if (event.reminder >= 0) details += (details ? ' · ' : '\n') + reminderLabel(event.reminder);
         }
         name.textContent = when + '\n' + event.title + (event.type ? ' · ' + event.type : '') + details;
         var remove = doc.createElement('button'); remove.type = 'button'; remove.className = 'clock-action'; remove.textContent = 'Hapus';
@@ -306,9 +325,10 @@
     byId('calendarToday').addEventListener('click', function () { selected = today(); discardForm(); render(); });
     byId('calendarAdd').addEventListener('click', function () {
       form.hidden = !form.hidden; error.hidden = true;
-      if (!form.hidden) { byId('calendarStartDate').value=dateKey(selected); byId('calendarEndDate').value=dateKey(selected); byId('calendarTime').value='09:00'; byId('calendarEndTime').value='10:00'; byId('calendarRepeat').value='none'; byId('calendarInterval').value='1'; byId('calendarCustomRepeat').hidden=true; byId('calendarTitle').focus(); }
+      if (!form.hidden) { byId('calendarStartDate').value=dateKey(selected); byId('calendarEndDate').value=dateKey(selected); byId('calendarTime').value='09:00'; byId('calendarEndTime').value='10:00'; byId('calendarRepeat').value='none'; byId('calendarInterval').value='1'; byId('calendarCustomRepeat').hidden=true; byId('calendarCustomRepeatLabel').hidden=true; byId('calendarReminder').value='-1'; byId('calendarCustomReminder').hidden=true; byId('calendarCustomReminderLabel').hidden=true; byId('calendarReminderAmount').value='1'; byId('calendarTitle').focus(); }
     });
-    byId('calendarRepeat').addEventListener('change', function () { byId('calendarCustomRepeat').hidden=this.value !== 'custom'; });
+    byId('calendarRepeat').addEventListener('change', function () { byId('calendarCustomRepeat').hidden=byId('calendarCustomRepeatLabel').hidden=this.value !== 'custom'; });
+    byId('calendarReminder').addEventListener('change', function () { byId('calendarCustomReminder').hidden=byId('calendarCustomReminderLabel').hidden=this.value !== 'custom'; });
     byId('calendarCancel').addEventListener('click', function () { form.hidden = true; error.hidden = true; });
     form.addEventListener('submit', function (event) {
       event.preventDefault();
@@ -316,9 +336,12 @@
       var start=byId('calendarStartDate').value, end=byId('calendarEndDate').value, endTime=byId('calendarEndTime').value;
       var choice=byId('calendarRepeat').value, interval=choice==='custom' ? Number(byId('calendarInterval').value) : 1;
       var repeat=choice==='custom' ? byId('calendarUnit').value : choice;
-      var type=byId('calendarType').value, reminder=Number(byId('calendarReminder').value);
-      if (!validTitle(title) || !validRange(start,time,end,endTime) || !['none','day','week','month','year'].includes(repeat) || !Number.isInteger(interval) || interval<1 || interval>999 || !['Pribadi','Pekerjaan','Keluarga','Lainnya'].includes(type) || ![-1,0,10,60,1440].includes(reminder)) {
-        error.textContent = 'Isi nama, waktu mulai dan selesai yang valid (maksimum 366 hari), dan interval pengulangan 1–999.'; error.hidden = false; return;
+      var type=byId('calendarType').value, reminderChoice=byId('calendarReminder').value;
+      var amount=Number(byId('calendarReminderAmount').value), factor=Number(byId('calendarReminderUnit').value);
+      var customValid=reminderChoice!=='custom' || (Number.isInteger(amount) && amount>=1 && amount<=999 && [1,60,1440].includes(factor));
+      var reminder=reminderChoice==='custom' ? amount*factor : Number(reminderChoice);
+      if (!validTitle(title) || !validRange(start,time,end,endTime) || !['none','day','week','month','year'].includes(repeat) || !Number.isInteger(interval) || interval<1 || interval>999 || !['Pribadi','Pekerjaan','Keluarga','Lainnya'].includes(type) || !customValid || !validReminder(reminder)) {
+        error.textContent = 'Isi nama, waktu mulai dan selesai yang valid (maksimum 366 hari), interval pengulangan dan pengingat khusus 1–999.'; error.hidden = false; return;
       }
       var id;
       do { id = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2); }
@@ -331,5 +354,5 @@
     render();
   }
   return {daysInMonth:daysInMonth, leadingDays:leadingDays, shiftMonth:shiftMonth, dateKey:dateKey,
-    validTime:validTime, validTitle:validTitle, validDate:validDate, validRange:validRange, nextOccurrence:nextOccurrence, occurrences:occurrences, agendaEvents:agendaEvents, holidaysFor:holidaysFor, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
+    validTime:validTime, validTitle:validTitle, validDate:validDate, validRange:validRange, validReminder:validReminder, reminderLabel:reminderLabel, nextOccurrence:nextOccurrence, occurrences:occurrences, agendaEvents:agendaEvents, holidaysFor:holidaysFor, weekHolidayEntries:weekHolidayEntries, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
 });

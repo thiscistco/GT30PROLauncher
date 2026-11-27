@@ -29,6 +29,12 @@ public class CalendarEventLogicTest {
         e.put("reminder",1440); long prev=ZonedDateTime.parse("2026-12-30T08:30:00Z[UTC]").toInstant().toEpochMilli();
         ok(CalendarReminders.nextReminder(e,prev)==ZonedDateTime.parse("2026-12-30T09:00:00Z[UTC]").toInstant().toEpochMilli(),"previous-day reminder");
         e.put("repeat","none");ok(CalendarReminders.nextReminder(e,after)==0,"past one-off not replayed");
+        ok(CalendarEventLogic.validReminder(999*1440) && !CalendarEventLogic.validReminder(999*1440+1) && !CalendarEventLogic.validReminder(-2),"custom reminder range");
+        ok(CalendarEventLogic.reminderLabel(17).equals("17 menit sebelum") && CalendarEventLogic.reminderLabel(180).equals("3 jam sebelum") && CalendarEventLogic.reminderLabel(14400).equals("10 hari sebelum"),"custom reminder labels");
+        e.put("repeat","week").put("reminder",14400);
+        long farNow=ZonedDateTime.parse("2026-12-01T00:00:00Z[UTC]").toInstant().toEpochMilli();
+        long farExpected=ZonedDateTime.parse("2026-12-21T09:00:00Z[UTC]").toInstant().toEpochMilli();
+        ok(CalendarReminders.nextReminder(e,farNow)==farExpected,"custom ten-day reminder");
         e.put("reminder",-1);ok(CalendarReminders.nextReminder(e,now)==0,"disabled reminder");
         System.out.println("Android calendar occurrences, range, legacy and reminder timing: OK");
     }

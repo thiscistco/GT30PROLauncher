@@ -25,8 +25,8 @@ class Element {
 const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
 function createUI(openMonth=true){
  const ids = {};
- for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel','calendarExpand','calendarYear','calendarAgendaHeading','calendarStartDate','calendarEndDate','calendarEndTime','calendarType','calendarRepeat','calendarCustomRepeat','calendarInterval','calendarUnit','calendarReminder']) ids[id]=new Element();
- ids.calendarType.value='Pribadi'; ids.calendarUnit.value='day'; ids.calendarReminder.value='-1'; ids.calendarRepeat.value='none'; ids.calendarInterval.value='1';
+ for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel','calendarExpand','calendarYear','calendarAgendaHeading','calendarStartDate','calendarEndDate','calendarEndTime','calendarType','calendarRepeat','calendarCustomRepeat','calendarInterval','calendarUnit','calendarReminder','calendarCustomRepeatLabel','calendarCustomReminder','calendarCustomReminderLabel','calendarReminderAmount','calendarReminderUnit']) ids[id]=new Element();
+ ids.calendarReminderUnit.value='1'; ids.calendarReminderAmount.value='1'; ids.calendarType.value='Pribadi'; ids.calendarUnit.value='day'; ids.calendarReminder.value='-1'; ids.calendarRepeat.value='none'; ids.calendarInterval.value='1';
  ids.calendarThemeMenu.hidden=true; ids.calendarMonthMenu.hidden=true; ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
  const media={matches:true,addEventListener(type,fn){this.change=fn;}};
@@ -56,7 +56,7 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=11"/);
+assert.match(html,/src="calendar\.js\?v=12"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
@@ -198,3 +198,16 @@ formUi=createUI(false);assert.match(formUi.calendarEvents.children[0].children[0
 console.log('Calendar repeat, multi-day, validation, form persistence and series deletion: OK');
 
 assert.equal(calendar.occurrences([{...recurring,repeat:'none',endTime:'00:00'}],'2027-01-01','2027-01-01').length,0);
+
+assert.equal(calendar.validReminder(999*1440),true); assert.equal(calendar.validReminder(999*1440+1),false); assert.equal(calendar.validReminder(-2),false);
+assert.equal(calendar.reminderLabel(15),'15 menit sebelum'); assert.equal(calendar.reminderLabel(180),'3 jam sebelum'); assert.equal(calendar.reminderLabel(14400),'10 hari sebelum');
+storage.clear(); let customUi=createUI(false); customUi.calendarAdd.fire('click'); customUi.calendarTitle.value='Khusus';
+customUi.calendarReminder.value='custom';customUi.calendarReminder.fire('change');assert(!customUi.calendarCustomReminder.hidden);assert(!customUi.calendarCustomReminderLabel.hidden);
+customUi.calendarReminderAmount.value='10';customUi.calendarReminderUnit.value='1440';customUi.calendarForm.fire('submit');
+assert.equal(JSON.parse(storage.get(key))[0].reminder,14400); assert.match(customUi.calendarEvents.children[0].children[0].textContent,/10 hari sebelum/);
+let customReload=createUI(false);assert.match(customReload.calendarEvents.children[0].children[0].textContent,/10 hari sebelum/);
+let badUi=createUI(false);badUi.calendarAdd.fire('click');badUi.calendarTitle.value='Invalid';badUi.calendarReminder.value='custom';badUi.calendarReminderAmount.value='1000';badUi.calendarReminderUnit.value='60';badUi.calendarForm.fire('submit');assert(!badUi.calendarError.hidden);assert.equal(JSON.parse(storage.get(key)).length,1);
+assert.match(html,/Tanggal mulai/);assert.match(html,/Tanggal selesai/);assert.match(html,/id="calendarCancel"[^>]*aria-label="Batal"/);assert.match(html,/id="calendarSave"[^>]*aria-label="Simpan"/);assert.match(html,/calendar-heading">Kalender/);
+const weeklyHolidays=calendar.weekHolidayEntries({year:2026,month:8,day:18});assert(weeklyHolidays.some(h=>calendar.dateKey(h.date)==='2026-08-17' && h.entry.type==='libur'));
+assert(!calendar.weekHolidayEntries({year:2026,month:8,day:24}).some(h=>calendar.dateKey(h.date)==='2026-08-17'));
+console.log('Calendar past-week holidays, custom reminder and accessible aligned form: OK');
