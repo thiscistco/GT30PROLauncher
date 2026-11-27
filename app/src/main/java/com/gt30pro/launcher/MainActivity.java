@@ -31,7 +31,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Homescreen minimalis — hanya wallpaper (sesuai preview), tanpa ikon/dock/widget.
+ * Homescreen minimalis — wallpaper dan lapisan kaca transparan di bawah indikator.
  *
  * Akses melalui gesture:
  *   - Swipe ke atas  -> laci aplikasi (semua aplikasi)
@@ -103,6 +103,8 @@ public class MainActivity extends BottomSwipeActivity {
         amberGlow = findViewById(R.id.amber_glow);
         amberGlow.load();
         amberGlow.setVisibility(View.INVISIBLE);
+        ImageView glass = findViewById(R.id.screen_glass);
+        glass.setImageBitmap(Wallpapers.loadScreenGlass(this));
 
         // Label indikator baterai (font Doto, putih, kecil, agak transparan) di portal USB Type-C
         batteryLed = new TextView(this);

@@ -15,8 +15,8 @@ ANDROID_JAR="${ANDROID_JAR:-$TC/android-platforms/android-35/android.jar}"
 APKSIGN_LIB="${APKSIGN_LIB:-$TC/npm/apk_sign_ts-1.0.1}"
 
 PKG="com.gt30pro.launcher"
-VERSION_NAME="0.1.144"
-VERSION_CODE=145
+VERSION_NAME="0.1.145"
+VERSION_CODE=146
 MIN_SDK=26
 TARGET_SDK=35
 
@@ -107,7 +107,7 @@ data = open(apk, 'rb').read()
 print("  APK Sig Block 42 (v2/v3):", "OK" if b'APK Sig Block 42' in data else "TIDAK ADA")
 with zipfile.ZipFile(apk) as z:
     names = z.namelist()
-    checks = ['classes.dex', 'AndroidManifest.xml', 'resources.arsc', 'META-INF/MANIFEST.MF', 'assets/wallpaper_gt30pro.png', 'assets/wallpaper_amber_glow.png', 'assets/circuit_paths.json']
+    checks = ['classes.dex', 'AndroidManifest.xml', 'resources.arsc', 'META-INF/MANIFEST.MF', 'assets/wallpaper_gt30pro.png', 'assets/wallpaper_amber_glow.png', 'assets/home_screen_glass.png', 'assets/circuit_paths.json']
     for f in checks:
         print("  %-32s %s" % (f + ":", "OK" if f in names else "HILANG"))
     sigs = [n for n in names if n.startswith('META-INF/') and n.rsplit('.', 1)[-1] in ('RSA', 'DSA', 'EC')]
