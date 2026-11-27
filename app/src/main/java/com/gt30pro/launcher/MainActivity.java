@@ -113,15 +113,15 @@ public class MainActivity extends BottomSwipeActivity {
         screenGlass.setElevation(8f * getResources().getDisplayMetrics().density);
         updateScreenGlass();
 
-        // Label indikator baterai (font Doto, putih, kecil, agak transparan) di portal USB Type-C
+        // Angka baterai Doto; posisi ikon pengisian dihitung terpisah.
         batteryLed = new TextView(this);
         batteryLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        batteryLed.setTextColor(0xFFE9F0F5);
+        batteryLed.setTextColor(0xFFAABAC5);
         batteryLed.setAlpha(1f);
-        batteryLed.setScaleX(1.2f);
-        batteryLed.setScaleY(1.2f);
-        batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CE9F0F5);
+        batteryLed.setScaleX(1.5f);
+        batteryLed.setScaleY(1.5f);
+        batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CAABAC5);
         batteryLed.setLetterSpacing(0.06f);
         batteryLed.setFontVariationSettings("'wght' 700");
         batteryLed.setText("85");
@@ -232,16 +232,16 @@ public class MainActivity extends BottomSwipeActivity {
     }
 
     // Wallpaper is centered with centerCrop, just like CSS background-size: cover.
-    private float homeIndicatorShift(FrameLayout root) {
-        return 1470f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f);
+    private float wallpaperScale(FrameLayout root) {
+        return Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f);
     }
 
     private void updateBatteryOffset(FrameLayout root, TextView batteryBox) {
         if (root.getWidth() <= 0) return;
         float pixelsPerMm = root.getWidth() / 70.9f;
         float cssPixel = pixelsPerMm * 25.4f / 96f;
-        batteryBox.setTranslationX(cssPixel);
-        batteryBox.setTranslationY(cssPixel - homeIndicatorShift(root));
+        batteryBox.setTranslationX(cssPixel + 200f * wallpaperScale(root));
+        batteryBox.setTranslationY(cssPixel - 1470f * wallpaperScale(root));
         if (batteryBolt == null || batteryBox.getBottom() <= 0) return;
         int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
         int boltHeight = Math.max(1, Math.round(BatteryBoltView.HEIGHT_MM * pixelsPerMm));
@@ -274,7 +274,7 @@ public class MainActivity extends BottomSwipeActivity {
         params.leftMargin = Math.round(left);
         params.topMargin = Math.round(top);
         clockBox.setTranslationX(left - params.leftMargin);
-        clockBox.setTranslationY(top - params.topMargin - homeIndicatorShift(root));
+        clockBox.setTranslationY(top - params.topMargin - 1720f * wallpaperScale(root));
         clockBox.setScale(pixelsPerMm);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
@@ -533,12 +533,12 @@ public class MainActivity extends BottomSwipeActivity {
                 chargeAnim = null;
             }
             if (batteryLed != null) {
-                batteryLed.setTextColor(light ? 0xFF263840 : 0xFFE9F0F5);
-                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44263840 : 0x8CE9F0F5);
+                batteryLed.setTextColor(light ? 0xFF263840 : 0xFFAABAC5);
+                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44263840 : 0x8CAABAC5);
                 batteryLed.setAlpha(1f);
             }
             if (batteryBolt != null) {
-                batteryBolt.setColor(light ? 0xFF263840 : 0xFFE9F0F5);
+                batteryBolt.setColor(light ? 0xFF263840 : 0xFFAABAC5);
                 batteryBolt.setAlpha(1f);
                 batteryBolt.setVisibility(View.INVISIBLE);
             }

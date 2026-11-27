@@ -39,11 +39,12 @@ assert 'screenGlass.setElevation(8f * getResources().getDisplayMetrics().density
 assert 'clockBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
 assert 'dateBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
 assert 'weatherBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
-assert '1470f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f)' in main
-assert 'clockBox.setTranslationY(top - params.topMargin - homeIndicatorShift(root))' in main
-assert 'batteryBox.setTranslationY(cssPixel - homeIndicatorShift(root))' in main
+assert 'Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f)' in main
+assert 'clockBox.setTranslationY(top - params.topMargin - 1720f * wallpaperScale(root))' in main
+assert 'batteryBox.setTranslationY(cssPixel - 1470f * wallpaperScale(root))' in main
+assert 'batteryBox.setTranslationX(cssPixel + 200f * wallpaperScale(root))' in main
 assert 'clockBox.setScaleX(1.2f)' in main and 'clockBox.setScaleY(1.2f)' in main
-assert 'batteryLed.setScaleX(1.2f)' in main and 'batteryLed.setScaleY(1.2f)' in main
+assert 'batteryLed.setScaleX(1.5f)' in main and 'batteryLed.setScaleY(1.5f)' in main
 assert 'light ? .55f : 1.4f' in main and 'ColorMatrixColorFilter' in main
 assert 'batteryLed.setLayerType(View.LAYER_TYPE_SOFTWARE, brightness)' in main
 assert main.index('updateScreenGlass();') < main.index('homeRoot.addView(clockBox')
@@ -76,8 +77,8 @@ weather=(root/'app/src/main/java/com/gt30pro/launcher/WeatherView.java').read_te
 assert '0xFFFFCD6A' in clock
 assert '0xFFEEFFFF' in date and '0xFF151F23' in date
 assert 'color = 0xFFFFCD6A' in weather
-assert 'light ? 0xFF263840 : 0xFFE9F0F5' in main
-assert 'color: #e9f0f5' in html and 'color: #aabac5' in html and 'color: #ffcd6a' in html
+assert 'light ? 0xFF263840 : 0xFFAABAC5' in main
+assert 'color: #aabac5' in html and 'color: #ffcd6a' in html
 assert 'color:#263840' in html and 'color:#ffcd6a' in html
 for selector in ('.clock-led > span:not(.clock-sep)', '.date-led #homeDateWeekday', '.home-weather', '.battery-led'):
     assert selector in html.split('@media (prefers-color-scheme: light)',1)[1].split('\n  }',1)[0]

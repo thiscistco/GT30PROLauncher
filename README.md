@@ -42,12 +42,13 @@ aplikasi bawaan baru tersedia di `docs/app-ui.md`.
 - **Homescreen minimalis** — wallpaper render GT 30 Pro dengan jam, tanggal,
   baterai, animasi jalur dan ikon cuaca dengan suhu (sesuai preview). Di atas
   wallpaper terdapat lapisan kaca putih (mode terang) atau hitam (mode gelap)
-  dengan transparansi 25%. Di mode gelap, indikator utama putih keabu-abuan
-  dan aksen jam/cuaca amber; di mode terang, indikator gunmetal tetap gelap.
+  dengan transparansi 25%. Baterai tidak mengisi daya memakai warna gunmetal
+  mengikuti mode terang/gelap; saat mengisi daya, warnanya amber.
   Indikator non-gunmetal memakai warna inti cahaya jalur (#FFCD6A). Label hari/bulan memakai warna sekunder. Ikon dan label berada di
   balik kaca; lapisan ini tidak menghalangi sentuhan atau mengubah wallpaper asli.
-  Jam dan angka baterai digeser ke atas setara 1.470 piksel gambar wallpaper dan
-  diperbesar 20%. Ikon pengisian diperbesar dan dinaikkan agar terlihat utuh.
+  Jam digeser naik 1.720 piksel gambar dan diperbesar 20%. Angka baterai
+  digeser naik 1.470 piksel, ke kanan 200 piksel gambar, dan diperbesar 50%
+  dari ukuran awal. Ikon pengisian tetap di bawah.
   Indikator dibuat lebih kontras, walaupun kaca tetap mengurangi keterlihatannya.
   Preview memungkinkan perbandingan posisi kaca di atas atau di bawah indikator.
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
