@@ -39,7 +39,7 @@ assert 'screenGlass.setElevation(8f * getResources().getDisplayMetrics().density
 assert 'clockBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
 assert 'dateBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
 assert 'weatherBox.setElevation(4f * getResources().getDisplayMetrics().density)' in main
-assert '1220f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f)' in main
+assert '1470f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f)' in main
 assert 'clockBox.setTranslationY(top - params.topMargin - homeIndicatorShift(root))' in main
 assert 'batteryBox.setTranslationY(cssPixel - homeIndicatorShift(root))' in main
 assert 'clockBox.setScaleX(1.2f)' in main and 'clockBox.setScaleY(1.2f)' in main

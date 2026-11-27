@@ -233,7 +233,7 @@ public class MainActivity extends BottomSwipeActivity {
 
     // Wallpaper is centered with centerCrop, just like CSS background-size: cover.
     private float homeIndicatorShift(FrameLayout root) {
-        return 1220f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f);
+        return 1470f * Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f);
     }
 
     private void updateBatteryOffset(FrameLayout root, TextView batteryBox) {
