@@ -8,6 +8,8 @@ spec=importlib.util.spec_from_file_location('voice_icon',root/'tools/generate_vo
 generator=importlib.util.module_from_spec(spec); spec.loader.exec_module(generator)
 path,expected=generator.generate()
 assert path.read_text(encoding='utf8')==expected
+svg,svg_expected=generator.generate_svg()
+assert svg.read_text(encoding='utf8')==svg_expected
 assert len(generator.ROWS)==13 and all(len(row)==13 for row in generator.ROWS)
 icon=ET.parse(path).getroot()
 ns='{http://schemas.android.com/apk/res/android}'

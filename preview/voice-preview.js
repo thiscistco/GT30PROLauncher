@@ -1,0 +1,18 @@
+/* Icon preview only: this page never activates the microphone or simulates listening. */
+(function () {
+  'use strict';
+  var button=document.getElementById('homeVoice');
+  var status=document.getElementById('voicePreviewStatus');
+  if (!button || !status) return;
+  button.addEventListener('click',function () {
+    status.textContent='Preview tidak mengakses mikrofon. Di APK, ketuk ikon untuk perintah suara lalu ucapkan “yo”. Tekan lama untuk pilihan suara.';
+  });
+  var pages=['drawerPage','superPage','clockPage','calendarPage','weatherPage','timetablePage','pathDraw']
+    .map(function (id) { return document.getElementById(id); }).filter(Boolean);
+  function update() { button.hidden=pages.some(function (page) { return !page.hidden; }); }
+  update();
+  if (typeof MutationObserver !== 'undefined') {
+    var observer=new MutationObserver(update);
+    pages.forEach(function (page) { observer.observe(page,{attributes:true,attributeFilter:['hidden']}); });
+  }
+})();
