@@ -6,12 +6,12 @@ import android.graphics.Typeface;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /** Read-only home label. Android may omit or not support individual properties. */
 final class BatteryInfoView extends LinearLayout {
-    private final TextView title;
     private final TextView[] names=new TextView[15], values=new TextView[15];
     private final LinearLayout[] cells=new LinearLayout[15];
     private static final String[] LABELS={"LEVEL","STATUS","SUMBER","KONDISI","SUHU","TEGANGAN",
@@ -20,17 +20,18 @@ final class BatteryInfoView extends LinearLayout {
         super(c); setOrientation(VERTICAL); setPadding(dp(12),dp(8),dp(12),dp(8));
         setClickable(false); setFocusable(false); setBackground(null);
         Typeface doto=Typeface.createFromAsset(c.getAssets(),"fonts/Doto.ttf");
-        title=new TextView(c); title.setText("INFO BATERAI"); title.setTextSize(11); title.setTypeface(doto); title.setFontVariationSettings("'wght' 800");
-        title.setLetterSpacing(.08f); addView(title);
+        // Keep the old heading's height so all data rows stay in their existing positions.
+        TextView spacer=new TextView(c); spacer.setText(" "); spacer.setTextSize(11); spacer.setTypeface(doto); spacer.setFontVariationSettings("'wght' 800");
+        spacer.setLetterSpacing(.08f); spacer.setVisibility(View.INVISIBLE); addView(spacer);
         for(int row=0;row<8;row++) {
             LinearLayout line=new LinearLayout(c); line.setOrientation(HORIZONTAL);
             for(int col=0;col<2;col++) {
                 int index=row*2+col; if(index>=LABELS.length) break;
                 LinearLayout cell=new LinearLayout(c); cell.setOrientation(VERTICAL); cells[index]=cell;
                 cell.setPadding(0,dp(3),col==0?dp(6):0,0);
-                TextView name=new TextView(c); name.setText(LABELS[index]); name.setTextSize(9); name.setTypeface(doto); name.setFontVariationSettings("'wght' 700");
+                TextView name=new TextView(c); name.setText(LABELS[index]); name.setTextSize(9); name.setTypeface(doto); name.setFontVariationSettings("'wght' 900");
                 name.setSingleLine(true); name.setEllipsize(TextUtils.TruncateAt.END);
-                TextView value=new TextView(c); value.setText(BatteryInfoFormat.UNKNOWN); value.setTextSize(12); value.setTypeface(doto); value.setFontVariationSettings("'wght' 700"); value.setSingleLine(true); value.setEllipsize(TextUtils.TruncateAt.END);
+                TextView value=new TextView(c); value.setText(BatteryInfoFormat.UNKNOWN); value.setTextSize(12); value.setTypeface(doto); value.setFontVariationSettings("'wght' 900"); value.setSingleLine(true); value.setEllipsize(TextUtils.TruncateAt.END);
                 names[index]=name; values[index]=value; cell.addView(name); cell.addView(value); line.addView(cell,new LayoutParams(0,LayoutParams.WRAP_CONTENT,1));
             }
             addView(line,new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
@@ -42,7 +43,6 @@ final class BatteryInfoView extends LinearLayout {
     }
     private int dp(float value) { return Math.round(value*getResources().getDisplayMetrics().density); }
     void setLightGlass(boolean light) {
-        title.setTextColor(light?0xFF6A4000:0xFFFFCD6A);
         for(int i=0;i<names.length;i++) { names[i].setTextColor(0xFFFFCD6A); values[i].setTextColor(light?0xFF17242B:0xFFF1F2E9); }
     }
     private static int property(BatteryManager b,int id) {
