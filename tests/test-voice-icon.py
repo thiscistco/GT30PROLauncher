@@ -36,21 +36,22 @@ home=(java/'MainActivity.java').read_text()
 assert 'VoiceController.setButtonColor(voiceButton,dark ?' in home
 assert 'mic.setElevation(4f*' in home
 assert 'new FrameLayout.LayoutParams(micSize,micSize,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL)' in home
-assert 'Math.round(root.getHeight() - top + pixelsPerMm)' in home
-assert 'voiceButton.setTranslationX(cssPixel)' in home
+assert 'Math.round(root.getHeight() - top + pixelsPerMm + 10f * cssPixel)' in home
+assert 'voiceButton.setTranslationX(-24f * cssPixel)' in home
 assert 'if (voiceParams.bottomMargin != margin)' in home
 assert 'micParams.topMargin' not in home and 'micParams.rightMargin' not in home
-# The position uses the bolt's original coordinates, not the shifted battery text,
-# with a 1mm gap between the touch target and bolt even when not charging.
+# Relative to v0.1.189, move only the voice target by 25 preview pixels left
+# and 10 preview pixels up, including when the charging bolt is hidden.
 for width,height in ((269,597),(720,1600),(1080,2400),(1224,2720)):
     mm=width/70.9; css=mm*25.4/96
     text_bottom=height-round(height*.012)
     bolt_top=text_bottom-2.75*css-2*mm
-    voice_bottom=height-round(height-bolt_top+mm)
-    assert abs((bolt_top-voice_bottom)-mm)<.51
-    bolt_center=width/2+css
-    voice_center=width/2+css
-    assert abs(voice_center-bolt_center)<1e-9
+    previous_bottom=height-round(height-bolt_top+mm)
+    voice_bottom=height-round(height-bolt_top+mm+10*css)
+    assert abs((previous_bottom-voice_bottom)-10*css)<1.01
+    previous_center=width/2+css
+    voice_center=width/2-24*css
+    assert abs((previous_center-voice_center)-25*css)<1e-9
 assert 'VoiceController.button' in (java/'AppUi.java').read_text()
 assert 'VoiceController.button' in (java/'CalendarActivity.java').read_text()
 print('Voice icon generation, click/long-click, state, theme and lifecycle wiring: OK')

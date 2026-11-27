@@ -264,8 +264,8 @@
   .weather-widget .weather-temp { position: absolute; top: 68%; left: 0; width: 100%; text-align: center; line-height: 1; font-size: 3.025mm; }
   .home-weather { position: absolute; z-index: 6; left: calc(49% - 2px); bottom: calc(6% + 460px); transform: translateX(-50%) scale(0.9); width: 11mm; height: 13.75mm; color: #ffcd6a; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
   .home-weather .weather-temp { top: calc(68% - 5px); }
-  /* 48dp target: align with the unshifted charging bolt and keep a 1mm gap. */
-  .home-voice { position:absolute; z-index:6; bottom:calc(1.2% + 2.75px + 3mm); left:calc(50% + 1px); transform:translateX(-50%); width:8.3mm; height:8.3mm;
+  /* 48dp target: 25px left and 10px above the previous bolt-aligned position. */
+  .home-voice { position:absolute; z-index:6; bottom:calc(1.2% + 12.75px + 3mm); left:calc(50% - 24px); transform:translateX(-50%); width:8.3mm; height:8.3mm;
     display:flex; align-items:center; justify-content:center; padding:2.075mm; border:0; border-radius:2.1mm;
     color:#142a3a; background:transparent; cursor:pointer; }
   .home-voice[hidden] { display:none; }
@@ -1020,7 +1020,7 @@
           </div>
         </div>
 
-        <p class="voice-preview-note" id="voicePreviewStatus" role="status">Ikon suara ada di atas ikon pengisian daya, di balik kaca. Ketuk untuk info.</p>
+        <p class="voice-preview-note" id="voicePreviewStatus" role="status">Ikon suara ada di kiri atas ikon pengisian daya, di balik kaca. Ketuk untuk info.</p>
         <div class="ruler-box">
           <div class="ruler-title">Penggaris 10 cm · skala nyata</div>
           <div class="ruler"></div>
