@@ -64,6 +64,7 @@ public class ClockActivity extends SwipeBackActivity {
     private HorizontalScrollView tabsScroll;
     private FrameLayout stage;
     private ClockHudView hud;
+    private View tabIndicator;
     private ScrollView panelScroll;
     private long lastHudSecond = -1;
     private TextView timerDisplay, stopwatchDisplay;
@@ -116,11 +117,14 @@ public class ClockActivity extends SwipeBackActivity {
         tabsScroll = new HorizontalScrollView(this); tabsScroll.setHorizontalScrollBarEnabled(false); tabsScroll.setFillViewport(true);
         tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); tabs.setGravity(Gravity.CENTER);
         tabs.setPadding(0,dp(8),0,0); tabsScroll.addView(tabs,new FrameLayout.LayoutParams(-1,-1));
+        tabIndicator=new View(this); tabIndicator.setBackground(ui.iconGlass(this,true)); tabIndicator.setVisibility(View.INVISIBLE);
+        stage.addView(tabIndicator,new FrameLayout.LayoutParams(dp(48),dp(48),Gravity.TOP|Gravity.LEFT));
         stage.addView(tabsScroll,new FrameLayout.LayoutParams(-1,dp(64),Gravity.TOP));
+        tabsScroll.setOnScrollChangeListener((v,x,y,oldX,oldY) -> positionTabIndicator(false));
         featureHeader=new LinearLayout(this); featureHeader.setGravity(Gravity.CENTER_VERTICAL);
         FrameLayout.LayoutParams headerParams=new FrameLayout.LayoutParams(-1,dp(48),Gravity.TOP); headerParams.leftMargin=dp(16); headerParams.rightMargin=dp(16);
         stage.addView(featureHeader,headerParams);
-        stage.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,oright,ob) -> positionTabs());
+        stage.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,oright,ob) -> { positionTabs(); tabs.post(() -> positionTabIndicator(false)); });
         setContentView(root);
         showTab(tab);
         String action=getIntent().getStringExtra("voice_action");
@@ -191,8 +195,8 @@ public class ClockActivity extends SwipeBackActivity {
             item.setImageResource(TAB_ICONS[i]);
             item.setScaleType(ImageView.ScaleType.FIT_CENTER);
             item.setPadding(dp(12), dp(12), dp(12), dp(12));
-            item.setBackground(bg(i == selected ? ui.selected : ui.control));
-            item.setColorFilter(i == selected ? ui.selectedText : ui.ink);
+            item.setBackground(ui.iconGlass(this,false));
+            item.setColorFilter(ui.ink);
             item.setContentDescription(TAB_NAMES[i]);
             item.setTooltipText(TAB_NAMES[i]);
             item.setSelected(i == selected);
@@ -205,7 +209,19 @@ public class ClockActivity extends SwipeBackActivity {
         positionTabs();
         panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE);
         if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else if (selected == 3) showStopwatch();
+        if(selected<0) { tabIndicator.animate().cancel(); tabIndicator.setVisibility(View.INVISIBLE); }
+        else tabs.post(() -> { if(tab==selected) positionTabIndicator(true); });
         updateLive();
+    }
+    private void positionTabIndicator(boolean animate) {
+        if(tabIndicator==null || tab<0 || tab>=tabs.getChildCount()) return;
+        View target=tabs.getChildAt(tab); int[] childPos=new int[2],stagePos=new int[2];
+        target.getLocationInWindow(childPos); stage.getLocationInWindow(stagePos);
+        float x=childPos[0]-stagePos[0], y=childPos[1]-stagePos[1];
+        boolean visible=tabIndicator.getVisibility()==View.VISIBLE;
+        tabIndicator.animate().cancel(); tabIndicator.setVisibility(View.VISIBLE);
+        if(animate && visible && android.animation.ValueAnimator.areAnimatorsEnabled()) tabIndicator.animate().x(x).y(y).setDuration(240).start();
+        else { tabIndicator.setX(x); tabIndicator.setY(y); }
     }
     @Override public void onBackPressed() { if (tab == 0 && alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE) { closeAlarmEditor(); } else if (tab != -1) showTab(-1); else super.onBackPressed(); }
     private void requestAlerts() {
@@ -235,7 +251,7 @@ public class ClockActivity extends SwipeBackActivity {
         heading.addView(text("ALARM",19,AMBER),new LinearLayout.LayoutParams(0,-2,1));
         ImageButton add=new ImageButton(this); add.setImageResource(R.drawable.ic_calendar_add); add.setColorFilter(ui.ink);
         add.setScaleType(ImageView.ScaleType.FIT_CENTER); add.setPadding(dp(18),dp(18),dp(18),dp(18));
-        add.setBackground(bg(ui.control)); add.setContentDescription("Tambah alarm"); add.setTooltipText("Tambah alarm");
+        add.setBackground(ui.iconGlass(this,false)); add.setContentDescription("Tambah alarm"); add.setTooltipText("Tambah alarm");
         add.setOnClickListener(v -> editAlarm(null)); heading.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
         content.addView(heading);
         alarmEditor=new LinearLayout(this); alarmEditor.setOrientation(LinearLayout.VERTICAL); alarmEditor.setVisibility(View.GONE); content.addView(alarmEditor); addSpace(content, 12);
@@ -303,7 +319,7 @@ public class ClockActivity extends SwipeBackActivity {
     }
     private ImageButton alarmOption(int icon, String description, Runnable action) {
         ImageButton v=new ImageButton(this); v.setImageResource(icon); v.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        v.setPadding(dp(12),dp(12),dp(12),dp(12)); v.setBackground(bg(ui.control)); v.setColorFilter(ui.ink);
+        v.setPadding(dp(12),dp(12),dp(12),dp(12)); v.setBackground(ui.iconGlass(this,false)); v.setColorFilter(ui.ink);
         v.setContentDescription(description); v.setTooltipText(description); v.setOnClickListener(w -> action.run()); return v;
     }
     private void updateSoundDescription() {

@@ -4,14 +4,14 @@ import java.util.Locale;
 
 /** Formats only reported Android battery properties; never infers battery health or capacity. */
 final class BatteryInfoFormat {
-    static final String UNKNOWN="Tidak tersedia";
+    static final String UNKNOWN="-";
     private static String number(String format,double value) { return String.format(Locale.US,format,value).replace('.',','); }
     static String status(int value) {
         switch(value) { case 2: return "Mengisi"; case 3: return "Digunakan"; case 4: return "Tidak mengisi"; case 5: return "Penuh"; default: return UNKNOWN; }
     }
     static String source(int value) {
         if(value<0) return UNKNOWN;
-        if(value==0) return "Tidak terhubung";
+        if(value==0) return "-";
         String s="";
         if((value&1)!=0) s="AC";
         if((value&2)!=0) s+=(s.isEmpty()?"":" + ")+"USB";
@@ -53,7 +53,7 @@ final class BatteryInfoFormat {
         String s=value.replaceAll("[\\p{Cntrl}]", " ").trim();
         return s.isEmpty() ? UNKNOWN : s.substring(0,Math.min(s.length(),32));
     }
-    static String present(int value) { return value==1 ? "Ya" : value==0 ? "Tidak" : UNKNOWN; }
-    static String low(int value) { return value==1 ? "Ya" : value==0 ? "Tidak" : UNKNOWN; }
+    static String present(int value) { return value==1 ? "Ya" : value==0 ? "-" : UNKNOWN; }
+    static String low(int value) { return value==1 ? "Ya" : value==0 ? "-" : UNKNOWN; }
     private BatteryInfoFormat() { }
 }

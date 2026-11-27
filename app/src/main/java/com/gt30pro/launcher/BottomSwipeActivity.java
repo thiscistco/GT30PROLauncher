@@ -10,7 +10,7 @@ public abstract class BottomSwipeActivity extends Activity {
     private boolean candidate, intercepting;
 
     private final VoiceVolumeShortcut volumeShortcut=new VoiceVolumeShortcut();
-    @Override protected void onResume() { super.onResume(); VoiceController.resume(this); }
+    @Override protected void onResume() { super.onResume(); VoiceController.resume(this); VoiceController.attachFloatingButton(this); }
     @Override protected void onPause() { VoiceController.pause(this); super.onPause(); }
     @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(request,permissions,results); VoiceController.permissionResult(this,request);

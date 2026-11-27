@@ -2,10 +2,12 @@
 (function () {
   'use strict';
   var button=document.getElementById('homeVoice');
+  var fab=document.getElementById('appVoiceFab');
   var status=document.getElementById('voicePreviewStatus');
   if (!button || !status) return;
   var demoTimer;
   function stopDemo() { clearTimeout(demoTimer); button.classList.remove('voice-demo'); }
+  if (fab) fab.addEventListener('click', function () { var message='Simulasi saja: preview tidak mengakses mikrofon atau menjalankan perintah suara.'; status.textContent=message; window.alert(message); });
   button.addEventListener('click',function () {
     status.textContent='Simulasi animasi saja: preview tidak mengakses mikrofon. Di APK, ketuk ikon untuk perintah suara lalu ucapkan “yo”. Tekan lama untuk pilihan suara.';
     stopDemo(); button.classList.add('voice-demo'); demoTimer=setTimeout(stopDemo,2400);

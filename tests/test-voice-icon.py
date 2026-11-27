@@ -62,6 +62,8 @@ for width,height in ((269,597),(720,1600),(1080,2400),(1224,2720)):
     previous_center=width/2-39*css
     voice_center=width/2-40*css
     assert abs((previous_center-voice_center)-css)<1e-9
-assert 'VoiceController.button' in (java/'AppUi.java').read_text()
-assert 'VoiceController.button' in (java/'CalendarActivity.java').read_text()
+assert 'VoiceController.button' not in (java/'AppUi.java').read_text()
+assert 'VoiceController.button' not in (java/'CalendarActivity.java').read_text()
+assert 'VoiceController.attachFloatingButton(this)' in (java/'BottomSwipeActivity.java').read_text()
+assert 'Gravity.BOTTOM|android.view.Gravity.RIGHT' in ctl and 'voice_fab' in ctl and 'a instanceof MainActivity' in ctl
 print('Voice icon generation, click/long-click, state, theme and lifecycle wiring: OK')

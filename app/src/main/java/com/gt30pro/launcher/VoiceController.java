@@ -49,6 +49,19 @@ final class VoiceController {
         b.setOnLongClickListener(v -> { menu(a); return true; });
         setButtonColor(b,color); return b;
     }
+    /** One floating control on each launcher-owned page; home retains its original icon. */
+    static void attachFloatingButton(BottomSwipeActivity a) {
+        if (a instanceof MainActivity) return;
+        android.widget.FrameLayout content=a.findViewById(android.R.id.content);
+        if (content==null || content.findViewWithTag("voice_fab")!=null) return;
+        ImageButton button=button(a,new AppUi(a).ink); button.setTag("voice_fab");
+        int size=Math.round(56*a.getResources().getDisplayMetrics().density);
+        int margin=Math.round(16*a.getResources().getDisplayMetrics().density);
+        android.widget.FrameLayout.LayoutParams params=new android.widget.FrameLayout.LayoutParams(size,size,android.view.Gravity.BOTTOM|android.view.Gravity.RIGHT);
+        params.rightMargin=margin; params.bottomMargin=margin;
+        button.setElevation(12*a.getResources().getDisplayMetrics().density);
+        content.addView(button,params);
+    }
     static void setButtonColor(ImageButton b,int color) { buttons.put(b,color); updateButton(b,color); }
     static void refreshButtons() {
         for (java.util.Map.Entry<ImageButton,Integer> entry : buttons.entrySet()) updateButton(entry.getKey(),entry.getValue());
@@ -73,8 +86,9 @@ final class VoiceController {
                 : mode==VoiceCommands.TYPING ? (lightInk ? 0xFF9CE9FF : 0xFF005B7C) : color;
         b.setColorFilter(tint);
         android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();
-        bg.setCornerRadius(12*b.getResources().getDisplayMetrics().density);
-        bg.setColor(home ? android.graphics.Color.TRANSPARENT : mode==VoiceCommands.COMMAND ? 0x33E79A24 : mode==VoiceCommands.TYPING ? 0x33379DC0 : android.graphics.Color.TRANSPARENT);
+        bg.setCornerRadius((home ? 12 : 36)*b.getResources().getDisplayMetrics().density);
+        bg.setColor(home ? android.graphics.Color.TRANSPARENT : mode==VoiceCommands.COMMAND ? 0xE6D1A55A : mode==VoiceCommands.TYPING ? 0xE68EC3D2 : lightInk ? 0xE6384A56 : 0xE6E3ECF1);
+        if (!home) bg.setStroke(Math.max(1,Math.round(b.getResources().getDisplayMetrics().density)), lightInk ? 0xFF8DA3B2 : 0xFF8295A0);
         b.setBackground(bg); b.setSelected(mode==VoiceCommands.COMMAND);
         String label=mode==VoiceCommands.COMMAND ? "Hentikan perintah suara" : "Aktifkan perintah suara";
         String state=mode==VoiceCommands.TYPING ? ". Mode mengetik aktif" : "";

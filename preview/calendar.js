@@ -294,6 +294,7 @@
       byId('calendarPrev').disabled = atMin; byId('calendarNext').disabled = atMax;
       byId('calendarPrev').textContent = expanded ? 'Bulan sebelumnya' : 'Minggu sebelumnya';
       byId('calendarNext').textContent = expanded ? 'Bulan berikutnya' : 'Minggu berikutnya';
+      grid.setAttribute('data-expanded',String(expanded));
       var toggle = byId('calendarExpand');
       toggle.setAttribute('aria-expanded', String(expanded));
       toggle.setAttribute('aria-label', expanded ? 'Tampilkan satu minggu' : 'Tampilkan satu bulan');
@@ -357,9 +358,14 @@
       if (marqueeObserver) marqueeNodes.forEach(function (item) { marqueeObserver.observe(item.box); });
       scheduleMarqueeMeasure();
     }
-    function changePeriod(delta) { selected = expanded ? shiftMonth(selected, delta) : shiftWeek(selected, delta); discardForm(); render(); }
+    function animateGrid(kind) {
+      if (typeof grid.animate !== 'function' || (win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+      grid.animate([{opacity:0,transform:kind===2?'translateY(-8px)':'translateX('+(kind*20)+'px)'},{opacity:1,transform:'translate(0,0)'}],{duration:220,easing:'ease-out'});
+    }
+    function changePeriod(delta) { selected = expanded ? shiftMonth(selected, delta) : shiftWeek(selected, delta); discardForm(); render(); animateGrid(delta); }
+    function toggleExpanded() { expanded=!expanded; closeMonthMenu(); render(); animateGrid(2); }
     win.calendarOnOpen = function () { selected = today(); expanded = false; discardForm(); closeThemeMenu(); closeMonthMenu(); render(); if (updater) updater.refresh(true); };
-    byId('calendarExpand').addEventListener('click', function () { expanded = !expanded; closeMonthMenu(); render(); });
+    byId('calendarExpand').addEventListener('click', toggleExpanded);
     byId('calendarRefresh').addEventListener('click', function () { if (updater) updater.refresh(true); });
     var monthMenu = byId('calendarMonthMenu'), monthButton=byId('calendarMonth');
     var holdTimer=null, holdOrigin=null, suppressMonthClick=false;
@@ -405,7 +411,8 @@
     });
     grid.addEventListener('pointermove', function (e) {
       if (!gesture || e.pointerId !== gesture.id) return;
-      if (!gesture.moving && swipeDirection(e.clientX-gesture.x,e.clientY-gesture.y,gesture.width*(36/445))) {
+      var dx=e.clientX-gesture.x, dy=e.clientY-gesture.y;
+      if (!gesture.moving && (swipeDirection(dx,dy,gesture.width*(36/445)) || (!expanded && dy>=gesture.width*(36/445) && dy>Math.abs(dx)*1.5))) {
         gesture.moving = true;
         if (grid.setPointerCapture) try { grid.setPointerCapture(e.pointerId); } catch (ignored) {}
       }
@@ -413,9 +420,11 @@
     });
     grid.addEventListener('pointerup', function (e) {
       if (!gesture || e.pointerId !== gesture.id) return;
-      var direction = gesture.moving ? swipeDirection(e.clientX-gesture.x,e.clientY-gesture.y,gesture.width*(48/445)) : 0;
+      var dx=e.clientX-gesture.x, dy=e.clientY-gesture.y;
+      var direction = gesture.moving ? swipeDirection(dx,dy,gesture.width*(48/445)) : 0;
+      var expand = gesture.moving && !expanded && dy>=gesture.width*(48/445) && dy>Math.abs(dx)*1.5;
       if (gesture.moving) { suppressClick = true; win.setTimeout(function () { suppressClick = false; }, 0); }
-      gesture = null; if (direction) { closeMonthMenu(); changePeriod(direction); }
+      gesture = null; if (direction) { closeMonthMenu(); changePeriod(direction); } else if (expand) toggleExpanded();
     });
     grid.addEventListener('pointercancel', function () { gesture = null; });
     grid.addEventListener('click', function (e) { if (suppressClick) { e.preventDefault(); e.stopPropagation(); suppressClick = false; } }, true);

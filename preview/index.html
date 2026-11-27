@@ -131,7 +131,7 @@
     z-index: 2;
   }
   /* Only the bare home intercepts vertical swipes; internal pages keep scrolling. */
-  .screen:not(:has(.super-page:not([hidden]), .clock-page:not([hidden]), .weather-page:not([hidden]), .timetable-page:not([hidden]), .drawer-page:not([hidden]), .system-panel-preview:not([hidden]))) { touch-action:none; }
+  .screen:not(:has(.super-page:not([hidden]), .clock-page:not([hidden]), .calendar-page:not([hidden]), .weather-page:not([hidden]), .timetable-page:not([hidden]), .drawer-page:not([hidden]), .system-panel-preview:not([hidden]))) { touch-action:none; }
   .system-panel-preview { position:absolute; inset:0; z-index:11; padding:8mm 5mm; background:#17212a; color:#f4f7fa; overflow-y:auto; font:700 3mm/1.5 'Doto',monospace; }
   .system-panel-preview[hidden] { display:none; }
   .system-panel-preview button { font:inherit; color:inherit; background:#334653; border:0; padding:2mm 4mm; border-radius:2mm; }
@@ -220,7 +220,7 @@
   @media (prefers-reduced-motion: reduce) { .battery-led.charging { animation: none; } }
   .clock-led {
     position: absolute;
-    left: calc(35.7% - 0.5px);
+    left: calc(35.7% - 1.5px);
     transform: translate(calc(-50% + var(--clock-right, 0px)), calc(0px - var(--clock-shift, 0px))) scale(1.14);
     bottom: calc(6% + 0.55px);
     font-family: 'Doto', monospace;
@@ -293,6 +293,9 @@
   .home-voice.voice-demo .home-voice-bar:nth-child(5) { animation-delay:-.3s; }
   @keyframes voice-wave-demo { from { transform:scaleY(.55); } to { transform:scaleY(1); } }
   @media (prefers-reduced-motion: reduce) { .home-voice.voice-demo .home-voice-bar { animation:none; } }
+  .app-voice-fab { display:none; position:absolute; right:4mm; bottom:4mm; z-index:13; width:10mm; height:10mm; border:1px solid #9aacb8; border-radius:50%; background:rgba(52,70,82,.92); color:#f5f8fa; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 .8mm 2mm #0006; }
+  .screen:has(.super-page:not([hidden]), .clock-page:not([hidden]), .calendar-page:not([hidden]), .weather-page:not([hidden]), .timetable-page:not([hidden]), .drawer-page:not([hidden])):not(:has(#pathDraw:not([hidden]))) .app-voice-fab { display:flex; }
+  .app-voice-fab img { width:5mm; height:5mm; filter:brightness(0) invert(1); }
   .voice-preview-note { max-width:70.9mm; color:#c3cad4; font:600 11px/1.4 'Doto',monospace; text-align:center; }
   .super-weather { width: 100%; height: auto; }
   .super-weather svg { width: 8mm; height: 8mm; top: 50%; transform:translateY(-50%); left: calc(50% - 4mm); }
@@ -508,6 +511,7 @@
   .calendar-month-menu[hidden] { display:none; }
   .calendar-month-menu .clock-action { white-space:normal; font-size:2.3mm; flex:1; }
   .calendar-grid { touch-action:pan-y; }
+  .calendar-grid[data-expanded="false"] { touch-action:none; }
   .calendar-day { color:var(--cal-text); }
   .calendar-day.selected { color:var(--cal-selected-text); }
   .calendar-day:focus-visible { outline-color:var(--cal-text); }
@@ -611,8 +615,7 @@
   #clockPage .clock-tabs button, #clockPage .clock-action { color:var(--app-text); background:var(--app-control); border-color:var(--app-border); }
   #clockPage .clock-tabs button.active { background:var(--app-selected); color:var(--app-selected-text); }
   #clockPage .clock-tabs button img, #superPage .super-icon-button img { filter:brightness(0); }
-  #clockPage .clock-tabs button.active img, #clockPage[data-theme="dark"] .clock-tabs button:not(.active) img, #superPage[data-theme="dark"] .super-icon-button img { filter:brightness(0) invert(1); }
-  #clockPage[data-theme="dark"] .clock-tabs button.active img { filter:brightness(0); }
+  #clockPage[data-theme="dark"] .clock-tabs button img, #superPage[data-theme="dark"] .super-icon-button img { filter:brightness(0) invert(1); }
   #clockPage .clock-section h3, #clockPage .clock-display { color:var(--app-text); }
   #clockPage .clock-muted, #drawerPage p { color:var(--app-muted); }
   #clockPage .alarm-form, #clockPage .clock-entry { background:var(--app-card); color:var(--app-text); border-color:var(--app-border); }
@@ -661,6 +664,18 @@
   #clockPage .app-top { flex:none; }
   .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
   .clock-stage:has([data-clock-panel="alarm"]:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])), .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
+  /* Glass-inspired controls: translucent layers, border and soft highlight. */
+  :is(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage) :is(.calendar-icon-button,.app-back,.app-theme-button,.clock-action,.weather-refresh-icon,.super-icon-button,.super-weather) {
+    background:linear-gradient(145deg,rgba(245,252,255,.28),rgba(128,158,174,.12)); border:1px solid rgba(149,177,192,.5); box-shadow:inset 0 1px 0 rgba(255,255,255,.35); backdrop-filter:blur(5px); border-radius:2.5mm;
+  }
+  #clockPage .clock-tabs::before { content:""; position:absolute; width:7.62mm; height:7.62mm; top:2mm; left:calc(50% - 3.81mm); border-radius:2.5mm; background:linear-gradient(145deg,rgba(190,225,240,.75),rgba(104,144,164,.45)); border:1px solid rgba(184,215,229,.7); box-shadow:inset 0 1px 0 #fff8,0 .5mm 1mm #0003; opacity:0; pointer-events:none; transition:transform .24s ease,opacity .18s ease; }
+  #clockPage .clock-tabs[data-selected]::before { opacity:1; }
+  #clockPage .clock-tabs[data-selected="alarm"]::before { transform:translateX(-12.615mm); }
+  #clockPage .clock-tabs[data-selected="world"]::before { transform:translateX(-4.205mm); }
+  #clockPage .clock-tabs[data-selected="timer"]::before { transform:translateX(4.205mm); }
+  #clockPage .clock-tabs[data-selected="stopwatch"]::before { transform:translateX(12.615mm); }
+  #clockPage .clock-tabs button, #clockPage .clock-tabs button.active { position:relative; z-index:1; background:linear-gradient(145deg,rgba(245,252,255,.28),rgba(128,158,174,.12)); border:1px solid rgba(149,177,192,.5); backdrop-filter:blur(4px); }
+  @media (prefers-reduced-motion:reduce) { #clockPage .clock-tabs::before { transition:none; } }
   .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
@@ -864,6 +879,7 @@
               <div class="wallpaper" id="wallpaper"></div>
               <canvas class="amber-glow" id="amberGlow" aria-hidden="true"></canvas>
               <canvas class="path-draw" id="pathDraw" aria-label="Area menggambar jalur animasi" hidden></canvas>
+              <button class="app-voice-fab" id="appVoiceFab" type="button" aria-label="Perintah suara · info preview" title="Perintah suara · info preview"><img src="assets/voice-command.svg?v=3" alt=""></button>
               <button class="home-voice" id="homeVoice" type="button" aria-label="Ikon perintah suara. Ketuk untuk info preview" aria-describedby="voicePreviewStatus" title="Perintah suara: info preview"><span class="home-voice-icon" aria-hidden="true"><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span></span></button>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>
@@ -880,13 +896,15 @@
                 <div class="battery-info-spacer" aria-hidden="true"></div>
                 <div class="battery-info-grid">
                   <div class="battery-info-cell"><span class="battery-info-name">LEVEL</span>85%</div><div class="battery-info-cell"><span class="battery-info-name">STATUS</span><span id="previewBatteryStatus">Digunakan</span></div>
-                  <div class="battery-info-cell"><span class="battery-info-name">SUMBER</span><span id="previewBatterySource">Tidak terhubung</span></div><div class="battery-info-cell"><span class="battery-info-name">KONDISI</span>Baik</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">SUMBER</span><span id="previewBatterySource">-</span></div><div class="battery-info-cell"><span class="battery-info-name">KONDISI</span>Baik</div>
                   <div class="battery-info-cell"><span class="battery-info-name">SUHU</span>31,2 °C</div><div class="battery-info-cell"><span class="battery-info-name">TEGANGAN</span>3,950 V</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">ARUS SAAT INI</span>Tidak tersedia</div><div class="battery-info-cell"><span class="battery-info-name">ARUS RATA-RATA</span>Tidak tersedia</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">MUATAN TERSISA</span>Tidak tersedia</div><div class="battery-info-cell"><span class="battery-info-name">ENERGI TERSISA</span>Tidak tersedia</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">SIKLUS</span>Tidak tersedia</div><div class="battery-info-cell"><span class="battery-info-name">TEKNOLOGI</span>Li-ion</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">BATERAI TERDETEKSI</span>Ya</div><div class="battery-info-cell"><span class="battery-info-name">BATERAI RENDAH</span>Tidak</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">PERKIRAAN PENUH</span>Tidak tersedia</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">ARUS SAAT INI</span>-</div><div class="battery-info-cell"><span class="battery-info-name">ARUS RATA-RATA</span>-</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">MUATAN TERSISA</span>-</div><div class="battery-info-cell"><span class="battery-info-name">SIKLUS</span>-</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">BATERAI TERDETEKSI</span>Ya</div><div class="battery-info-cell"><span class="battery-info-name">BATERAI RENDAH</span>-</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">PERKIRAAN PENUH</span>-</div><div class="battery-info-cell"><span class="battery-info-name">PERANGKAT</span>Contoh GT30</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">ANDROID</span>15</div><div class="battery-info-cell"><span class="battery-info-name">CPU</span>ABI arm64-v8a</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">CORE CPU</span>8</div><div class="battery-info-cell"><span class="battery-info-name">RAM TERSEDIA</span>4,0 / 8,0 GiB</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">PENYIMPANAN TERSEDIA</span>80,0 / 128,0 GiB</div>
                 </div>
               </section>
               <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen"><span class="battery-value">85</span><svg class="battery-bolt" viewBox="0 0 5 7" preserveAspectRatio="none" aria-hidden="true">
@@ -980,7 +998,7 @@
                   <div class="clock-feature-header" data-clock-header="world"><h3>JAM DUNIA</h3><button class="clock-action clock-world-choose" id="previewCitiesButton" type="button" aria-label="Pilih kota" title="Pilih kota" aria-expanded="false" aria-controls="previewCities"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
                   <div class="clock-feature-header" data-clock-header="timer"><h3>TIMER</h3><button class="clock-action clock-control" id="previewTimerStart" type="button" aria-label="Mulai timer" title="Mulai timer"><span class="calendar-action-icon clock-action-play" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewTimerCancel" type="button" aria-label="Batalkan timer" title="Batalkan timer"><span class="calendar-action-icon clock-action-stop" aria-hidden="true"></span></button></div>
                   <div class="clock-feature-header" data-clock-header="stopwatch"><h3>STOPWATCH</h3><button class="clock-action clock-control" id="previewStopwatchStart" type="button" aria-label="Mulai stopwatch" title="Mulai stopwatch"><span class="calendar-action-icon clock-action-play" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewLap" type="button" aria-label="Catat lap" title="Catat lap"><span class="calendar-action-icon clock-action-lap" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewReset" type="button" aria-label="Reset stopwatch" title="Reset stopwatch"><span class="calendar-action-icon clock-action-reset" aria-hidden="true"></span></button></div>
-                <nav class="clock-tabs" aria-label="Fitur jam">
+                <nav class="clock-tabs" id="clockTabs" aria-label="Fitur jam">
                   <button data-clock-tab="alarm" type="button" aria-label="Alarm" aria-pressed="false" title="Alarm"><img src="assets/clock-alarm.svg?v=3" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="world" type="button" aria-label="Jam Dunia" aria-pressed="false" title="Jam Dunia"><img src="assets/clock-world.svg?v=3" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="timer" type="button" aria-label="Timer" aria-pressed="false" title="Timer"><img src="assets/clock-timer.svg?v=3" alt="" aria-hidden="true"></button>
@@ -1096,7 +1114,7 @@
       <span>Preview memakai simulasi, bukan RAM perangkat. RAM lebih tinggi = cahaya lebih cepat.</span>
     </div>
     <label class="charging-toggle"><input type="checkbox" id="chargeToggle" checked> Simulasi pengisian daya</label>
-    <p class="animation-status">Informasi baterai di preview adalah simulasi, bukan data baterai perangkat.</p>
+    <p class="animation-status">Informasi baterai dan perangkat di preview adalah simulasi, bukan data perangkat.</p>
 
     <section class="path-editor" aria-label="Gambar jalur animasi">
       <h2>Gambar jalur animasi</h2>
@@ -1137,7 +1155,7 @@
     function sync() {
       battery.classList.toggle('charging', toggle.checked);
       document.getElementById('previewBatteryStatus').textContent = toggle.checked ? 'Mengisi' : 'Digunakan';
-      document.getElementById('previewBatterySource').textContent = toggle.checked ? 'AC (contoh)' : 'Tidak terhubung';
+      document.getElementById('previewBatterySource').textContent = toggle.checked ? 'AC (contoh)' : '-';
       battery.setAttribute('aria-label', toggle.checked ? 'Baterai 85 persen, pengisian daya' : 'Baterai 85 persen');
     }
     toggle.addEventListener('change', sync);
@@ -1303,6 +1321,7 @@
     var activeClockTab = null;
     function selectClockTab(name) {
       activeClockTab = name;
+      if (name === null) byId('clockTabs').removeAttribute('data-selected'); else byId('clockTabs').setAttribute('data-selected',name);
       byId('clockPanelScroll').hidden = name === null;
       document.querySelectorAll('[data-clock-tab]').forEach(function (b) {
         var active = b.getAttribute('data-clock-tab') === name;

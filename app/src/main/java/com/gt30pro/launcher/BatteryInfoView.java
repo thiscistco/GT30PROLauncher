@@ -12,10 +12,11 @@ import android.widget.TextView;
 
 /** Read-only home label. Android may omit or not support individual properties. */
 final class BatteryInfoView extends LinearLayout {
-    private final TextView[] names=new TextView[15], values=new TextView[15];
-    private final LinearLayout[] cells=new LinearLayout[15];
+    private final TextView[] names=new TextView[LABELS.length], values=new TextView[LABELS.length];
+    private final LinearLayout[] cells=new LinearLayout[LABELS.length];
     private static final String[] LABELS={"LEVEL","STATUS","SUMBER","KONDISI","SUHU","TEGANGAN",
-            "ARUS SAAT INI","ARUS RATA-RATA","MUATAN TERSISA","ENERGI TERSISA","SIKLUS","TEKNOLOGI","BATERAI TERDETEKSI","BATERAI RENDAH","PERKIRAAN PENUH"};
+            "ARUS SAAT INI","ARUS RATA-RATA","MUATAN TERSISA","SIKLUS","BATERAI TERDETEKSI","BATERAI RENDAH","PERKIRAAN PENUH",
+            "PERANGKAT","ANDROID","CPU","CORE CPU","RAM TERSEDIA","PENYIMPANAN TERSEDIA"};
     BatteryInfoView(Context c) {
         super(c); setOrientation(VERTICAL); setPadding(dp(12),dp(8),dp(12),dp(8));
         setClickable(false); setFocusable(false); setBackground(null);
@@ -23,7 +24,7 @@ final class BatteryInfoView extends LinearLayout {
         // Keep the old heading's height so all data rows stay in their existing positions.
         TextView spacer=new TextView(c); spacer.setText(" "); spacer.setTextSize(11); spacer.setTypeface(doto); spacer.setFontVariationSettings("'wght' 800");
         spacer.setLetterSpacing(.08f); spacer.setVisibility(View.INVISIBLE); addView(spacer);
-        for(int row=0;row<8;row++) {
+        for(int row=0;row<(LABELS.length+1)/2;row++) {
             LinearLayout line=new LinearLayout(c); line.setOrientation(HORIZONTAL);
             for(int col=0;col<2;col++) {
                 int index=row*2+col; if(index>=LABELS.length) break;
@@ -49,13 +50,32 @@ final class BatteryInfoView extends LinearLayout {
         if(b==null) return Integer.MIN_VALUE;
         try { return b.getIntProperty(id); } catch(RuntimeException e) { return Integer.MIN_VALUE; }
     }
-    private static long longProperty(BatteryManager b,int id) {
-        if(b==null) return Long.MIN_VALUE;
-        try { return b.getLongProperty(id); } catch(RuntimeException e) { return Long.MIN_VALUE; }
-    }
     private static long timeToFull(BatteryManager b) {
         if(b==null || Build.VERSION.SDK_INT<28) return -1;
         try { return b.computeChargeTimeRemaining(); } catch(RuntimeException e) { return -1; }
+    }
+    private static String clean(String value) {
+        if(value==null || value.trim().isEmpty() || "unknown".equalsIgnoreCase(value.trim())) return BatteryInfoFormat.UNKNOWN;
+        return value.replaceAll("[\\p{Cntrl}]", " ").trim();
+    }
+    private static String cpu() {
+        if(Build.VERSION.SDK_INT>=31 && Build.SOC_MODEL!=null && !"unknown".equalsIgnoreCase(Build.SOC_MODEL)) return clean(Build.SOC_MODEL);
+        return Build.SUPPORTED_ABIS!=null && Build.SUPPORTED_ABIS.length>0 ? "ABI " + clean(Build.SUPPORTED_ABIS[0]) : BatteryInfoFormat.UNKNOWN;
+    }
+    private String memory() {
+        try { android.app.ActivityManager am=(android.app.ActivityManager)getContext().getSystemService(Context.ACTIVITY_SERVICE);
+            if(am==null) return BatteryInfoFormat.UNKNOWN;
+            android.app.ActivityManager.MemoryInfo m=new android.app.ActivityManager.MemoryInfo(); am.getMemoryInfo(m);
+            return size(m.availMem)+" / "+size(m.totalMem);
+        } catch(RuntimeException e) { return BatteryInfoFormat.UNKNOWN; }
+    }
+    private String storage() {
+        try { android.os.StatFs fs=new android.os.StatFs(getContext().getFilesDir().getAbsolutePath()); return size(fs.getAvailableBytes())+" / "+size(fs.getTotalBytes()); }
+        catch(RuntimeException e) { return BatteryInfoFormat.UNKNOWN; }
+    }
+    private static String size(long bytes) {
+        if(bytes<0) return BatteryInfoFormat.UNKNOWN;
+        return String.format(java.util.Locale.US,"%.1f GiB",bytes/1073741824.0).replace('.',',');
     }
     void update(Intent battery) {
         if(battery==null) return;
@@ -72,9 +92,9 @@ final class BatteryInfoView extends LinearLayout {
             BatteryInfoFormat.current(property(b,BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)),
             BatteryInfoFormat.current(property(b,BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)),
             BatteryInfoFormat.charge(property(b,BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)),
-            BatteryInfoFormat.energy(longProperty(b,BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER)),
-            BatteryInfoFormat.cycles(cycles), BatteryInfoFormat.technology(battery.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY)),
-            BatteryInfoFormat.present(present), BatteryInfoFormat.low(low), BatteryInfoFormat.timeToFull(timeToFull(b))};
+            BatteryInfoFormat.cycles(cycles), BatteryInfoFormat.present(present), BatteryInfoFormat.low(low), BatteryInfoFormat.timeToFull(timeToFull(b)),
+            clean(Build.MANUFACTURER + " " + Build.MODEL), clean(Build.VERSION.RELEASE), cpu(),
+            String.valueOf(Runtime.getRuntime().availableProcessors()), memory(), storage()};
         for(int i=0;i<data.length;i++) values[i].setText(data[i]);
     }
 }

@@ -4,7 +4,7 @@ const main=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.
 const view=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/BatteryInfoView.java','utf8');
 assert(!html.includes('INFO BATERAI · SIMULASI'));
 assert(!view.includes('setText("INFO BATERAI")'));
-assert.match(html,/Informasi baterai di preview adalah simulasi/);
+assert.match(html,/Informasi baterai dan perangkat di preview adalah simulasi/);
 assert.match(html,/\.battery-info-spacer \{ height:2\.3mm; \}/);
 assert.match(view,/spacer\.setVisibility\(View\.INVISIBLE\)/);
 assert.match(html,/Informasi baterai, data simulasi preview/);
@@ -12,7 +12,7 @@ assert.match(html,/\.battery-info \{[^}]*z-index:6;[^}]*bottom:calc\(14% \+ 97px
 assert.match(html,/\.battery-info \{[^}]*pointer-events:none/);
 assert.match(html,/\.battery-info-cell:nth-child\(even\) \{ transform:translateX\(-25px\); \}/);
 assert.match(view,/for\(int i=1;i<cells\.length;i\+=2\) cells\[i\]\.setTranslationX\(-25f\*cssPixel\)/);
-for(const label of ['LEVEL','STATUS','SUMBER','KONDISI','SUHU','TEGANGAN','ARUS SAAT INI','ARUS RATA-RATA','MUATAN TERSISA','ENERGI TERSISA','SIKLUS','TEKNOLOGI','BATERAI TERDETEKSI','BATERAI RENDAH','PERKIRAAN PENUH']) {
+for(const label of ['LEVEL','STATUS','SUMBER','KONDISI','SUHU','TEGANGAN','ARUS SAAT INI','ARUS RATA-RATA','MUATAN TERSISA','SIKLUS','BATERAI TERDETEKSI','BATERAI RENDAH','PERKIRAAN PENUH','PERANGKAT','ANDROID','CPU','CORE CPU','RAM TERSEDIA','PENYIMPANAN TERSEDIA']) {
  assert(html.includes('>'+label+'</span>'),label); assert(view.includes('"'+label+'"'),label);
 }
 assert(!html.includes('navigator.getBattery('));
@@ -55,5 +55,7 @@ assert.match(html,/\.battery-info-cell \{[^}]*'Doto',monospace/);
 assert.match(html,/\.battery-info-name \{[^}]*'Doto',monospace/);
 assert.match(view,/Build.VERSION.SDK_INT>=34.*EXTRA_CYCLE_COUNT/);
 assert.match(view,/BatteryManager\.BATTERY_PROPERTY_CURRENT_NOW/);
-assert.match(view,/BatteryManager\.BATTERY_PROPERTY_ENERGY_COUNTER/);
+assert(!view.includes('ENERGI TERSISA') && !view.includes('TEKNOLOGI'));
+assert.match(view,/getMemoryInfo\(m\)/); assert.match(view,/Build\.SOC_MODEL/); assert.match(view,/getAvailableBytes\(\)/);
+assert.match(fs.readFileSync('app/src/main/java/com/gt30pro/launcher/BatteryInfoFormat.java','utf8'),/UNKNOWN="-"/);
 console.log('Battery info: simulated preview, home placement, fields, live updates and unavailable properties OK');

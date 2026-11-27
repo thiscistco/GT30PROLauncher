@@ -66,6 +66,7 @@ public class CalendarActivity extends SwipeBackActivity {
     private LinearLayout page;
     private LocalDate selected = LocalDate.now();
     private boolean storageWritable = true, expanded = false;
+    private int calendarAnimation;
     private static final Object HOLIDAY_CACHE_LOCK = new Object();
     private JSONObject holidays;
     private long holidaysCheckedAt, holidayLastAttempt;
@@ -249,7 +250,7 @@ public class CalendarActivity extends SwipeBackActivity {
         ImageButton button = new ImageButton(this); button.setImageResource(themeIcon(value));
         button.setColorFilter(selected ? selectedText : ink); button.setScaleType(ImageView.ScaleType.FIT_CENTER);
         button.setPadding(dp(12),dp(12),dp(12),dp(12));
-        button.setBackground(selected ? bg(selectionColor) : bg(controlColor));
+        button.setBackground(new AppUi(this).iconGlass(this,selected));
         String label = "dark".equals(value) ? "Gelap" : "light".equals(value) ? "Terang" : "Ikuti perangkat";
         button.setContentDescription("Tema " + label + (selected ? ", dipilih" : ""));
         button.setTooltipText("Tema " + label);
@@ -272,7 +273,8 @@ public class CalendarActivity extends SwipeBackActivity {
         }
         popup.showAsDropDown(anchor, 0, 0, Gravity.END);
     }
-    private void changePeriod(int direction) { selected = expanded ? CalendarDates.shiftMonth(selected, direction) : CalendarDates.shiftWeek(selected, direction); render(); }
+    private void changePeriod(int direction) { selected = expanded ? CalendarDates.shiftMonth(selected, direction) : CalendarDates.shiftWeek(selected, direction); calendarAnimation=direction; render(); }
+    private void toggleExpanded() { expanded=!expanded; calendarAnimation=2; render(); }
     private void chooseMonth() {
         showDialog(dialog().setTitle(MONTHS[selected.getMonthValue()-1] + " " + selected.getYear())
                 .setItems(new String[]{expanded ? "Bulan sebelumnya" : "Minggu sebelumnya", expanded ? "Bulan berikutnya" : "Minggu berikutnya", "Hari ini"}, (d, choice) -> {
@@ -281,23 +283,33 @@ public class CalendarActivity extends SwipeBackActivity {
                 }).setNegativeButton("Batal", null).create());
     }
     private final class MonthGrid extends LinearLayout {
-        private float downX, downY; private boolean horizontal, cancelled;
+        private float downX, downY; private boolean horizontal, vertical, cancelled;
         MonthGrid() { super(CalendarActivity.this); setOrientation(VERTICAL); setClickable(true); setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO); }
         @Override public boolean onInterceptTouchEvent(MotionEvent e) {
-            int action = e.getActionMasked();
-            if (action == MotionEvent.ACTION_DOWN) { downX=e.getX(); downY=e.getY(); horizontal=false; cancelled=false; }
-            if (action == MotionEvent.ACTION_POINTER_DOWN || action == MotionEvent.ACTION_CANCEL) cancelled=true;
-            if (action == MotionEvent.ACTION_MOVE && !cancelled && CalendarSwipe.direction(e.getX()-downX,e.getY()-downY,dp(36)) != 0) {
-                horizontal=true; getParent().requestDisallowInterceptTouchEvent(true); return true;
+            int action=e.getActionMasked();
+            if(action==MotionEvent.ACTION_DOWN) {
+                downX=e.getX(); downY=e.getY(); horizontal=false; vertical=false; cancelled=false;
+                if(!expanded) getParent().requestDisallowInterceptTouchEvent(true);
+            }
+            if(action==MotionEvent.ACTION_POINTER_DOWN || action==MotionEvent.ACTION_CANCEL) { cancelled=true; getParent().requestDisallowInterceptTouchEvent(false); }
+            if(action==MotionEvent.ACTION_MOVE && !cancelled) {
+                float dx=e.getX()-downX, dy=e.getY()-downY;
+                if(CalendarSwipe.direction(dx,dy,dp(36))!=0) { horizontal=true; getParent().requestDisallowInterceptTouchEvent(true); return true; }
+                if(!expanded && CalendarSwipe.expand(dx,dy,dp(36))) { vertical=true; getParent().requestDisallowInterceptTouchEvent(true); return true; }
+                if(dy < -dp(12) && Math.abs(dy)>Math.abs(dx)*1.5f) getParent().requestDisallowInterceptTouchEvent(false);
             }
             return super.onInterceptTouchEvent(e);
         }
         @Override public boolean onTouchEvent(MotionEvent e) {
-            if (!horizontal) return super.onTouchEvent(e);
-            if (e.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN || e.getActionMasked() == MotionEvent.ACTION_CANCEL) { cancelled=true; return true; }
-            if (e.getActionMasked() == MotionEvent.ACTION_UP) {
-                int direction = cancelled ? 0 : CalendarSwipe.direction(e.getX()-downX,e.getY()-downY,dp(48));
-                horizontal=false; if (direction != 0) changePeriod(direction); return true;
+            if(!horizontal && !vertical) return super.onTouchEvent(e);
+            if(e.getActionMasked()==MotionEvent.ACTION_POINTER_DOWN || e.getActionMasked()==MotionEvent.ACTION_CANCEL) { cancelled=true; return true; }
+            if(e.getActionMasked()==MotionEvent.ACTION_UP) {
+                float dx=e.getX()-downX,dy=e.getY()-downY;
+                int direction=cancelled || !horizontal ? 0 : CalendarSwipe.direction(dx,dy,dp(48));
+                boolean expand=!cancelled && vertical && !expanded && CalendarSwipe.expand(dx,dy,dp(48));
+                horizontal=false; vertical=false;
+                if(direction!=0) changePeriod(direction); else if(expand) toggleExpanded();
+                return true;
             }
             return true;
         }
@@ -398,7 +410,7 @@ public class CalendarActivity extends SwipeBackActivity {
     private ImageButton actionIcon(int resource, String description, Runnable click) {
         ImageButton action = new ImageButton(this); action.setImageResource(resource); action.setColorFilter(ink);
         action.setScaleType(ImageView.ScaleType.FIT_CENTER); action.setPadding(dp(12),dp(12),dp(12),dp(12));
-        action.setBackgroundColor(Color.TRANSPARENT); action.setContentDescription(description); action.setTooltipText(description);
+        action.setBackground(new AppUi(this).iconGlass(this,false)); action.setContentDescription(description); action.setTooltipText(description);
         action.setOnClickListener(v -> click.run()); return action;
     }
     private TextView singleLine(String value, int size, int color, boolean bold) {
@@ -444,9 +456,8 @@ public class CalendarActivity extends SwipeBackActivity {
         TextView year = text("Kalender " + selected.getYear(), 20, ink);
         year.setContentDescription("Kalender, tahun " + selected.getYear()); top.addView(year);
         top.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
-        top.addView(VoiceController.button(this,ink),new LinearLayout.LayoutParams(dp(48),dp(48)));
         ImageButton theme = themeButton(themeChoice, false);
-        theme.setBackgroundColor(Color.TRANSPARENT);
+        theme.setBackground(new AppUi(this).iconGlass(this,false));
         theme.setContentDescription("Tema: " + themeLabel() + ". Pilih tema aplikasi");
         theme.setTooltipText("Pilih tema aplikasi");
         theme.setOnClickListener(this::chooseTheme);
@@ -473,9 +484,15 @@ public class CalendarActivity extends SwipeBackActivity {
         nav.addView(month,new LinearLayout.LayoutParams(-2,dp(48)));
         nav.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
         ImageButton add = actionIcon(R.drawable.ic_calendar_add,"Tambah acara",this::addEvent);
-        add.setBackground(bg(controlColor)); nav.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        add.setBackground(new AppUi(this).iconGlass(this,false)); nav.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
         page.addView(nav); space(8);
         MonthGrid grid = new MonthGrid(); page.addView(grid);
+        if(calendarAnimation!=0 && android.animation.ValueAnimator.areAnimatorsEnabled()) {
+            grid.setAlpha(0f);
+            if(calendarAnimation==2) grid.setTranslationY(-dp(12)); else grid.setTranslationX(calendarAnimation*dp(24));
+            grid.animate().alpha(1f).translationX(0f).translationY(0f).setDuration(220).start();
+        }
+        calendarAnimation=0;
         LinearLayout weekdays = new LinearLayout(this);
         for (int col = 0; col < WEEKDAYS.length; col++) {
             TextView title = text(WEEKDAYS[col], 12, col >= 5 ? weekend : ink); title.setFontVariationSettings("'wght' 900"); title.setGravity(Gravity.CENTER);
@@ -520,7 +537,7 @@ public class CalendarActivity extends SwipeBackActivity {
             }
             grid.addView(week);
         }
-        ImageButton expand = actionIcon(R.drawable.ic_calendar_expand, expanded ? "Tampilkan satu minggu" : "Tampilkan satu bulan", () -> { expanded = !expanded; render(); });
+        ImageButton expand = actionIcon(R.drawable.ic_calendar_expand, expanded ? "Tampilkan satu minggu" : "Tampilkan satu bulan", this::toggleExpanded);
         expand.setRotation(expanded ? 180f : 0f);
         LinearLayout toggleRow = new LinearLayout(this); toggleRow.setGravity(Gravity.CENTER);
         toggleRow.addView(expand,new LinearLayout.LayoutParams(dp(48),dp(48))); page.addView(toggleRow);

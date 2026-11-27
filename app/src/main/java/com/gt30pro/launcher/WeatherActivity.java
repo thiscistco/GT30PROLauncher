@@ -42,7 +42,7 @@ public class WeatherActivity extends SwipeBackActivity {
         TextView title = text("CUACA SAAT INI", 16, WHITE); header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
         ImageButton refresh = new ImageButton(this); refresh.setImageResource(R.drawable.ic_weather_refresh);
         refresh.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER); refresh.setPadding(dp(12),dp(12),dp(12),dp(12));
-        refresh.setBackground(ui.surface(this, ui.control)); refresh.setColorFilter(ui.ink); refresh.setContentDescription("Aktifkan / perbarui cuaca");
+        refresh.setBackground(ui.iconGlass(this,false)); refresh.setColorFilter(ui.ink); refresh.setContentDescription("Aktifkan / perbarui cuaca");
         refresh.setOnClickListener(v -> weather.requestFromUser()); header.addView(refresh,new LinearLayout.LayoutParams(dp(48),dp(48)));
         location = text("LOKASI SAAT INI · PERKIRAAN", 11, MUTED); add(page,location,0,4,0,0);
         LinearLayout top = new LinearLayout(this); top.setGravity(Gravity.CENTER_VERTICAL); top.setPadding(dp(14),dp(14),dp(14),dp(14)); top.setBackground(new WeatherSkyDrawable(this)); top.setClipToOutline(true); add(page,top,0,14,0,0);

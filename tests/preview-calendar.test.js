@@ -155,7 +155,17 @@ assert.equal(weekly.calendarExpand.attrs['aria-expanded'],'false');assert.equal(
 const first=weekly.calendarSelected.textContent;
 weekly.calendarNext.fire('click');assert.notEqual(weekly.calendarSelected.textContent,first);
 weekly.calendarPrev.fire('click');assert.equal(weekly.calendarSelected.textContent,first);
-weekly.calendarExpand.fire('click');assert.equal(weekly.calendarExpand.attrs['aria-expanded'],'true');assert(weekly.calendarGrid.children.length>14);
+// A downward drag expands, while a cancelled multi-touch gesture must not.
+let animations=[]; weekly._win.matchMedia=q=>q.includes('reduced-motion') ? {matches:false} : weekly._media; weekly.calendarGrid.animate=(frames,options)=>animations.push({frames,options});
+let pointer={pointerId:4,isPrimary:true,button:0,clientX:180,clientY:100,cancelable:true};
+weekly.calendarGrid.fire('pointerdown',pointer); weekly.calendarGrid.fire('pointerdown',{...pointer,pointerId:5,isPrimary:false});
+weekly.calendarGrid.fire('pointermove',{...pointer,clientY:180}); weekly.calendarGrid.fire('pointerup',{...pointer,clientY:180});
+assert.equal(weekly.calendarExpand.attrs['aria-expanded'],'false');
+weekly.calendarGrid.fire('pointerdown',pointer); weekly.calendarGrid.fire('pointermove',{...pointer,clientY:180}); weekly.calendarGrid.fire('pointerup',{...pointer,clientY:180});
+assert.equal(weekly.calendarExpand.attrs['aria-expanded'],'true');assert(weekly.calendarGrid.children.length>14); assert.equal(animations.length,1); assert.match(animations[0].frames[0].transform,/translateY/);
+weekly.calendarNext.fire('click'); assert.equal(animations.length,2); assert.match(animations[1].frames[0].transform,/translateX/);
+weekly.calendarPrev.fire('click');
+weekly._win.matchMedia=q=>({matches:true}); const beforeReduced=animations.length; weekly.calendarNext.fire('click'); assert.equal(animations.length,beforeReduced); weekly.calendarPrev.fire('click');
 weekly.calendarExpand.fire('click');assert.equal(weekly.calendarGrid.children.length,14);assert.equal(weekly.calendarSelected.textContent,first);
 assert.match(html,/id="calendarAdd"[^>]*aria-label="Tambah acara"/);
 assert.match(html,/id="calendarBack"[^>]*aria-label="Kembali"/);

@@ -340,7 +340,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxWidth = Math.max(1, Math.round(HomeClockView.WIDTH_MM * pixelsPerMm));
         int boxHeight = Math.max(1, Math.round(HomeClockView.HEIGHT_MM * pixelsPerMm));
         // Keep the content (not its glow padding) anchored to the preview position.
-        float left = width * .357f - .5f * cssPixel - boxWidth / 2f
+        float left = width * .357f - 1.5f * cssPixel - boxWidth / 2f
                 + 750f * wallpaperScale(root);
         float bottom = height * .06f + .55f * cssPixel;
         float top = height - bottom - boxHeight + HomeClockView.GLOW_PAD_MM * pixelsPerMm;

@@ -16,7 +16,7 @@ for activity in ('ClockActivity','WeatherActivity','SuperAppActivity','AppDrawer
     assert 'extends SwipeBackActivity' in src and 'ui.choice.equals(current.choice)' in src, activity
 assert 'AppUi palette = new AppUi(this)' in (java/'CalendarActivity.java').read_text()
 clock=(java/'ClockActivity.java').read_text()
-for word in ('clock_tab','timer_draft','ClockAlarms.schedule','showWorld','showTimer','showStopwatch','setColorFilter(i == selected ? ui.selectedText : ui.ink)'):
+for word in ('clock_tab','timer_draft','ClockAlarms.schedule','showWorld','showTimer','showStopwatch','setColorFilter(ui.ink)'):
     assert word in clock,word
 for prefix in ('clock','weather','super','drawer','timetable'):
     for suffix in ('Page','Theme','ThemeIcon','ThemeMenu','ThemeSystem','ThemeLight','ThemeDark'):
@@ -28,4 +28,10 @@ assert 'prefers-color-scheme: dark' in js
 for css in ('--app-bg:#f4f7fa','--app-bg:#101820','--app-text:#142a3a','--app-text:#f5f8fa','--app-control:#e3eaf0','--app-control:#2a3b49'):
     assert css in html, css
 assert 'home-screen-glass' not in html
+assert 'iconGlass(Context c, boolean selected)' in ui and 'GradientDrawable.Orientation.TOP_BOTTOM' in ui
+for activity in ('ClockActivity','CalendarActivity','WeatherActivity','SuperAppActivity','TimeTableActivity'):
+    assert 'iconGlass(' in (java/(activity+'.java')).read_text(), activity
+assert 'positionTabIndicator(true)' in clock and 'ValueAnimator.areAnimatorsEnabled()' in clock
+assert 'data-selected="alarm"' in html and 'prefers-reduced-motion:reduce' in html
+assert 'id="appVoiceFab"' in html and '.calendar-page:not([hidden])' in html
 print('Shared app theme, header, palettes, clock state, preview and glass-free homescreen: OK')

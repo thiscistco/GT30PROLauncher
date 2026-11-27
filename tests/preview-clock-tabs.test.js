@@ -45,14 +45,14 @@ const buttons = names.map(name => ({
 }));
 for (const b of buttons) b.classList.toggle = (name, active) => {if(name==='active') b.active=active;};
 const panels = names.map(name => ({name, hidden:true, getAttribute(){return this.name}}));
-const hud={hidden:false}, scroll={hidden:true,scrollTop:12}, window={};
+const hud={hidden:false}, scroll={hidden:true,scrollTop:12}, window={}, bar={attrs:{},setAttribute(k,v){this.attrs[k]=v},removeAttribute(k){delete this.attrs[k]}};
 const document = {querySelectorAll: selector => selector==='[data-clock-tab]' ? buttons : panels};
-const byId = id => id==='clockHud' ? hud : scroll;
+const byId = id => id==='clockHud' ? hud : id==='clockTabs' ? bar : scroll;
 const init = html.match(/var activeClockTab = null;[\s\S]*?(?=    function updateHud\(\))/);
 assert(init);vm.runInNewContext(init[0], {document,byId,window,updateHud(){}});
 assert.equal(hud.hidden,false);assert.equal(scroll.hidden,true);
 for (let i=0; i<4; i++) {
-  buttons[i].click();assert(!hud.hidden);assert(!scroll.hidden);
+  buttons[i].click();assert(!hud.hidden);assert(!scroll.hidden);assert.equal(bar.attrs['data-selected'],names[i]);
   buttons.forEach((b,j)=>{assert.equal(b.active, i===j);assert.equal(b.attrs['aria-pressed'], i===j?'true':'false');});
   panels.forEach((p,j)=>assert.equal(p.hidden, i!==j));
 }

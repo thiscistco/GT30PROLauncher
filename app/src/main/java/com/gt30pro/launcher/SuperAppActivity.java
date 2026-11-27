@@ -80,6 +80,7 @@ public class SuperAppActivity extends SwipeBackActivity {
         addModule(container, R.drawable.ic_module_calendar, "Kalender", CalendarActivity.class);
         weatherView = new WeatherView(this, false);
         weatherView.setIconColor(ui.ink);
+        weatherView.setBackground(ui.iconGlass(this,false));
         GridLayout.LayoutParams weatherParams = new GridLayout.LayoutParams();
         weatherParams.width = 1; weatherParams.height = dp(76);
         container.addView(weatherView, weatherParams);
@@ -109,7 +110,7 @@ public class SuperAppActivity extends SwipeBackActivity {
         button.setColorFilter(ui.ink);
         button.setScaleType(ImageView.ScaleType.FIT_CENTER);
         button.setPadding(dp(13), dp(13), dp(13), dp(13));
-        button.setBackgroundColor(Color.TRANSPARENT);
+        button.setBackground(ui.iconGlass(this,false));
         button.setContentDescription(name);
         button.setOnClickListener(v -> startActivity(new Intent(this, activity)));
         GridLayout.LayoutParams params = new GridLayout.LayoutParams();

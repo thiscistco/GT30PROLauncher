@@ -38,6 +38,13 @@ final class AppUi {
     GradientDrawable surface(Context c, int color) {
         GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(c,12)); d.setStroke(dp(c,1),border); return d;
     }
+    /** Frosted-looking translucent placeholder; no screen capture or platform blur. */
+    GradientDrawable iconGlass(Context c, boolean selected) {
+        int top=dark ? (selected ? 0xCC7893A4 : 0x88728A9A) : (selected ? 0xDD91AAB8 : 0xAAF8FCFF);
+        int bottom=dark ? (selected ? 0xCC344D5D : 0x88314958) : (selected ? 0xDDB2CAD5 : 0xAAB8CFDB);
+        GradientDrawable d=new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{top,bottom});
+        d.setCornerRadius(dp(c,12)); d.setStroke(dp(c,1),dark ? 0xAAADC5D2 : 0xAA7B98A7); return d;
+    }
     void window(Activity activity) {
         activity.getWindow().setStatusBarColor(canvas); activity.getWindow().setNavigationBarColor(canvas);
         activity.getWindow().getDecorView().setSystemUiVisibility(dark ? 0 : View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
@@ -67,7 +74,7 @@ final class AppUi {
     private ImageButton icon(Activity a, int resource, String description) {
         ImageButton button = new ImageButton(a); button.setImageResource(resource); button.setColorFilter(ink);
         button.setScaleType(ImageView.ScaleType.FIT_CENTER); button.setPadding(dp(a,12),dp(a,12),dp(a,12),dp(a,12));
-        button.setBackgroundColor(Color.TRANSPARENT); button.setContentDescription(description); button.setTooltipText(description); return button;
+        button.setBackground(iconGlass(a,false)); button.setContentDescription(description); button.setTooltipText(description); return button;
     }
     /** Same dot-matrix arrow and 48 dp touch target as Calendar. */
     ImageButton backButton(Activity a) {
@@ -81,7 +88,6 @@ final class AppUi {
         TextView label=new TextView(a); label.setText(title); label.setTextSize(20); label.setTextColor(ink);
         label.setTypeface(font); label.setFontVariationSettings("'wght' 800"); label.setSingleLine(true); label.setEllipsize(android.text.TextUtils.TruncateAt.END);
         row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
-        if (a instanceof BottomSwipeActivity) row.addView(VoiceController.button((BottomSwipeActivity)a,ink),new LinearLayout.LayoutParams(dp(a,48),dp(a,48)));
         ImageButton theme=icon(a,themeIcon(choice),"Tema aplikasi: " + ("dark".equals(choice) ? "Gelap" : "light".equals(choice) ? "Terang" : "Ikuti perangkat"));
         row.addView(theme,new LinearLayout.LayoutParams(dp(a,48),dp(a,48)));
         theme.setOnClickListener(v -> {
@@ -90,7 +96,7 @@ final class AppUi {
             for (String value : new String[]{"system","light","dark"}) {
                 boolean active=value.equals(choice); String name="system".equals(value)?"Ikuti perangkat":"light".equals(value)?"Terang":"Gelap";
                 ImageButton option=icon(a,themeIcon(value),"Tema " + name + (active ? ", dipilih" : ""));
-                option.setColorFilter(active?selectedText:ink); option.setBackground(surface(a,active?selected:control)); option.setSelected(active);
+                option.setColorFilter(active?selectedText:ink); option.setBackground(iconGlass(a,active)); option.setSelected(active);
                 LinearLayout.LayoutParams size=new LinearLayout.LayoutParams(dp(a,48),dp(a,48)); size.setMargins(dp(a,2),0,dp(a,2),0); choices.addView(option,size);
                 option.setOnClickListener(w -> { popup.dismiss(); if (!value.equals(choice)) { a.getSharedPreferences("calendar_appearance",Context.MODE_PRIVATE).edit().putString("theme",value).apply(); a.recreate(); } });
             }
