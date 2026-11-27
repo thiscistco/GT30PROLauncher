@@ -214,3 +214,6 @@ Label informasi homescreen diturunkan 10 px berdasarkan skala preview; posisi da
 
 ### Penyesuaian v0.1.216
 Angka jam dan menit digeser 0,5 px ke kanan tanpa memindahkan titik. Setelah titik terakhir memudar, titik pertama langsung memulai siklus berikutnya. Informasi perangkat disusun: perangkat, Android, RAM, penyimpanan di kiri; CPU dan CPU core di kanan.
+
+### Penyesuaian v0.1.217
+Label informasi homescreen diturunkan 20 px berdasarkan skala preview; posisi elemen lainnya tetap.
