@@ -11,8 +11,10 @@ assert(!page.includes('Aplikasi di dalam launcher'));
 assert(!page.includes('super-card-text'));
 assert.match(page, /id="openClockModule" type="button" aria-label="Jam"><img src="assets\/module-clock\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
 assert.match(page, /id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets\/module-calendar\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
-assert.equal((page.match(/class="super-icon-button"/g) || []).length, 3, 'clock, calendar and timetable remain');
+assert.equal((page.match(/class="super-icon-button"/g) || []).length, 4, 'clock, calendar, timetable and settings remain');
 assert.match(page, /id="superWeather"/);
+assert.match(page, /id="openSettingsModule"/);
+assert.match(java, /addModule\(container, R\.drawable\.ic_module_settings, "Setelan", LauncherSettingsActivity\.class\)/);
 assert.match(page, /id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"/);
 assert.match(page, /id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"><img src="assets\/module-timetable\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
 assert.match(java, /addModule\(container, R\.drawable\.ic_module_timetable, "Jadwal Mengajar", TimeTableActivity\.class\)/);
@@ -28,7 +30,7 @@ assert.match(java, /params\.height = dp\(76\)/);
 assert.match(java, /int cellWidth = Math\.max\(1, width \/ 4\)/);
 assert.match(java, /params\.width = cellWidth/);
 assert.match(java, /sizeGridCells\(container\)/);
-for (const name of ['clock','calendar','timetable']) {
+for (const name of ['clock','calendar','timetable','settings']) {
  const svg = fs.readFileSync(`preview/assets/module-${name}.svg`, 'utf8');
  const vector = fs.readFileSync(`app/src/main/res/drawable/ic_module_${name}.xml`, 'utf8');
  assert.match(svg, /fill="#ffffff"/); assert.match(vector, /android:fillColor="#FFFFFF"/);

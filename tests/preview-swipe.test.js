@@ -16,11 +16,11 @@ class Element {
   getBoundingClientRect() { return { left: 0, top: 0, bottom: 1000, right: 445, width: 445, height: 1000 }; }
 }
 const ids = ['chargeToggle','batteryLed','previewBatteryStatus','previewBatterySource','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
-  'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
+  'superPage','superGrid','previewSettings','openSettingsModule','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
   'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','timetablePage','timetableBack','openTimetableModule','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.weatherPage.hidden = true; elements.superPage.hidden = true;
-elements.timetablePage.hidden = true; elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
+elements.previewSettings.hidden = true; elements.timetablePage.hidden = true; elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
 const screen = new Element(), separator = new Element(), doc = new Element();
 doc.getElementById = id => elements[id];
 doc.querySelector = selector => selector === '.screen' ? screen : separator;
@@ -31,6 +31,10 @@ function swipe(x1, y1, x2, y2) {
 }
 elements.tabSuper.fire('click');
 assert.strictEqual(elements.superPage.hidden, false);
+elements.openSettingsModule.fire('click');
+assert.strictEqual(elements.previewSettings.hidden,false); assert.strictEqual(elements.superGrid.hidden,true);
+swipe(440, 100, 360, 100); assert.strictEqual(elements.previewSettings.hidden,true); assert.strictEqual(elements.superGrid.hidden,false);
+assert.strictEqual(elements.superPage.hidden,false);
 swipe(440, 100, 360, 100);
 assert.strictEqual(elements.superPage.hidden, true, 'right edge goes back to home');
 elements.tabSuper.fire('click');

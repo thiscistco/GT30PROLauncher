@@ -331,6 +331,11 @@
   .calendar-event button { flex: none; }
   .super-back { border: 0; background: none; color: #9aa3b0; font: inherit; font-size: 3mm; min-height: 12mm; cursor: pointer; }
   .super-page h2 { margin-top: 2mm; font-size: 6.5mm; color: #eceff4; }
+  .preview-settings { overflow-y:auto; max-height:75%; color:var(--app-text); font:600 2.7mm/1.5 'Doto',monospace; }
+  .preview-settings[hidden] { display:none; }
+  .preview-settings h3 { margin:4mm 0 1mm; }
+  .preview-settings p { margin:1mm 0 2mm; }
+  .super-grid[hidden] { display:none; }
   .super-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 5mm; }
   .super-icon-button { width: 100%; height: 12mm; display: grid; place-items: center;
     border: 0; border-radius: 3mm; background: transparent; color: #fff; cursor: pointer; }
@@ -887,11 +892,19 @@
               </section>
               <section class="super-page" id="superPage" aria-label="Super App" hidden>
                 <div class="app-top"><button class="app-back" id="superBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Super App</span><div class="app-theme"><button class="app-theme-button" id="superTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="superThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="superThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="superThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="superThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="superThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="superThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
-                <div class="super-grid" aria-label="Aplikasi bawaan">
+                <div class="super-grid" id="superGrid" aria-label="Aplikasi bawaan">
                   <button class="super-icon-button" id="openClockModule" type="button" aria-label="Jam"><img src="assets/module-clock.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="super-icon-button" id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets/module-calendar.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg></button>
                   <button class="super-icon-button" id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"><img src="assets/module-timetable.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button class="super-icon-button" id="openSettingsModule" type="button" aria-label="Setelan"><img src="assets/module-settings.svg?v=1" alt="" aria-hidden="true"></button>
+                </div>
+                <div class="preview-settings" id="previewSettings" hidden>
+                  <h3>Setelan · preview</h3>
+                  <p>Di Android tersedia pilihan launcher, lampu jalur, izin aplikasi, voice command, voice typing dan setelan text-to-speech. Preview tidak mengubah setelan perangkat atau mengaktifkan mikrofon.</p>
+                  <h3>Voice command dan typing</h3><p>Ucapkan yo buka super app untuk membuka daftar aplikasi bawaan; yo selesai menghentikan voice command. Pengenalan khusus suara pemilik belum tersedia; suara orang lain juga dapat memicu perintah.</p>
+                  <h3>Output suara</h3><p>Jawaban suara tersedia untuk acara kalender minggu ini dengan suara Indonesia offline di Android; belum untuk semua perintah.</p>
+                  <h3>Bantuan AI lokal</h3><p>AI lokal belum terintegrasi. Belum ada model yang dapat diunduh melalui launcher ini.</p>
                 </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
@@ -1128,12 +1141,17 @@
     var calendarOrigin = document.getElementById('openCalendarModule');
     var homeDate = document.getElementById('homeDate'), calendarReturn = calendarOrigin;
     var superPage = document.getElementById('superPage');
+    var previewSettings = document.getElementById('previewSettings');
+    var settingsOrigin = document.getElementById('openSettingsModule');
+    var superGrid = document.getElementById('superGrid');
+    function closeSettings() { previewSettings.hidden=true; superGrid.hidden=false; settingsOrigin.focus(); }
     var drawerPage = document.getElementById('drawerPage');
     var drawerBack = document.getElementById('drawerBack');
     var homeTab = document.getElementById('tabHome');
     var superTab = document.getElementById('tabSuper');
     var clockOrigin = clockLed;
     function setTab(superActive) {
+      previewSettings.hidden = true; superGrid.hidden = false;
       page.hidden = true;
       calendarPage.hidden = true;
       weatherPage.hidden = true;
@@ -1148,7 +1166,8 @@
     }
     homeTab.addEventListener('click', function () { setTab(false); });
     superTab.addEventListener('click', function () { setTab(true); });
-    document.getElementById('superBack').addEventListener('click', function () { setTab(false); homeTab.focus(); });
+    document.getElementById('superBack').addEventListener('click', function () { if (!previewSettings.hidden) closeSettings(); else { setTab(false); homeTab.focus(); } });
+    settingsOrigin.addEventListener('click', function () { superGrid.hidden=true; previewSettings.hidden=false; document.getElementById('superBack').focus(); });
     function openClock(origin) { clockOrigin = origin; page.hidden = false; if (window.clockShowHud) window.clockShowHud(); back.focus(); }
     document.getElementById('openClockModule').addEventListener('click', function () { openClock(this); });
     function openCalendar(origin) { calendarReturn = origin; calendarPage.hidden = false; calendarBack.focus(); if (window.calendarOnOpen) window.calendarOnOpen(); }
@@ -1172,6 +1191,7 @@
       if (!timetablePage.hidden) { if (window.timetableCloseEditor && window.timetableCloseEditor()) return; timetablePage.hidden=true; timetableOrigin.focus(); return; }
       if (!weatherPage.hidden) { weatherPage.hidden = true; weatherOrigin.focus(); return; }
       if (!page.hidden) { if (window.clockReturnToHud && window.clockReturnToHud()) { back.focus(); return; } page.hidden = true; clockOrigin.focus(); return; }
+      if (!superPage.hidden && !previewSettings.hidden) { closeSettings(); return; }
       if (!superPage.hidden) { setTab(false); homeTab.focus(); }
     }
     drawerBack.addEventListener('click', goBack);

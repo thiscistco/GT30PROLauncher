@@ -48,6 +48,8 @@
             android:name=".SuperAppActivity"
             android:exported="false" />
 
+        <activity android:name=".LauncherSettingsActivity" android:exported="false" />
+
         <activity
             android:name=".ClockActivity"
             android:exported="false" />

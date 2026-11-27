@@ -28,6 +28,10 @@ public class VoiceCommandsTest {
         eq("timetable",VoiceCommands.command("buka jadwal mengajar"));
         eq("timer",VoiceCommands.command("buka timer"));
         eq("stop",VoiceCommands.command("berhenti mendengarkan"));
+        eq("stop",VoiceCommands.command(VoiceCommands.body(VoiceCommands.COMMAND,"yo selesai")));
+        eq(null,VoiceCommands.body(VoiceCommands.COMMAND,"selesai"));
+        eq("super",VoiceCommands.command(VoiceCommands.body(VoiceCommands.COMMAND,"yo buka super app")));
+        eq("selesai",VoiceCommands.body(VoiceCommands.TYPING,"ketik selesai"));
         eq("",VoiceCommands.command("hapus semua acara"));
         eq("",VoiceCommands.command("buka kalender lalu hapus"));
         VoiceVolumeShortcut v=new VoiceVolumeShortcut();

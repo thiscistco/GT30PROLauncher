@@ -26,7 +26,7 @@ final class VoiceCommands {
         String s=text.toLowerCase(new Locale("id", "ID")).trim().replaceAll("[.!?]+$", "").replaceAll("\\s+", " ");
         if (s.startsWith("buka ")) s=s.substring(5).trim();
         switch (s) {
-            case "berhenti mendengarkan": case "matikan suara": return "stop";
+            case "selesai": case "berhenti mendengarkan": case "matikan suara": return "stop";
             case "beranda": case "homescreen": case "home": return "home";
             case "super app": return "super";
             case "semua aplikasi": case "daftar aplikasi": return "drawer";

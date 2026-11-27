@@ -95,7 +95,7 @@ final class VoiceController {
     static void start(BottomSwipeActivity a, int mode) {
         if (!a.getSharedPreferences("voice_consent",Context.MODE_PRIVATE).getBoolean("accepted",false)) {
             new AlertDialog.Builder(a).setTitle("Aktifkan mikrofon?")
-                .setMessage("Mikrofon akan mendengarkan berulang kali, termasuk di latar belakang, sampai dihentikan atau Android menghentikannya. Suara dapat dikirim ke penyedia pengenalan suara perangkat. Notifikasi berisi tombol Hentikan. Dikte hanya di kolom launcher dan aplikasi bawaannya.")
+                .setMessage("Mikrofon akan mendengarkan berulang kali, termasuk di latar belakang, sampai dihentikan atau Android menghentikannya. Suara dapat dikirim ke penyedia pengenalan suara perangkat. Notifikasi berisi tombol Hentikan. Dikte hanya di kolom launcher dan aplikasi bawaannya. Pengenalan pemilik belum tersedia: suara orang lain juga dapat menjalankan perintah.")
                 .setNegativeButton("Batal",null).setPositiveButton("Lanjutkan",(d,w) -> {
                     a.getSharedPreferences("voice_consent",Context.MODE_PRIVATE).edit().putBoolean("accepted",true).apply(); start(a,mode);
                 }).show();
