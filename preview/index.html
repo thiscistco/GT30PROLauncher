@@ -130,6 +130,11 @@
     box-shadow: inset 0 0 0 0.25mm rgba(0, 0, 0, 0.85);
     z-index: 2;
   }
+  /* Only the bare home intercepts vertical swipes; internal pages keep scrolling. */
+  .screen:not(:has(.super-page:not([hidden]), .clock-page:not([hidden]), .weather-page:not([hidden]), .timetable-page:not([hidden]), .drawer-page:not([hidden]), .system-panel-preview:not([hidden]))) { touch-action:none; }
+  .system-panel-preview { position:absolute; inset:0; z-index:11; padding:8mm 5mm; background:#17212a; color:#f4f7fa; overflow-y:auto; font:700 3mm/1.5 'Doto',monospace; }
+  .system-panel-preview[hidden] { display:none; }
+  .system-panel-preview button { font:inherit; color:inherit; background:#334653; border:0; padding:2mm 4mm; border-radius:2mm; }
   .wallpaper {
     position: absolute;
     inset: 0;
@@ -265,7 +270,7 @@
   .weather-widget svg { position: absolute; left: 17.5%; top: 6%; width: 65%; height: 52%; fill: currentColor; }
   .weather-widget .weather-temp { position: absolute; top: 68%; left: 0; width: 100%; text-align: center; line-height: 1; font-size: 3.025mm; }
   .home-weather { position: absolute; z-index: 6; left: calc(49% - 2px); bottom: calc(6% + 460px); transform: translateX(-50%) scale(0.9); width: 11mm; height: 13.75mm; color: #ffcd6a; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
-  .home-weather .weather-temp { top: calc(68% - 7.222222px); }
+  .home-weather .weather-temp { top: calc(68% - 18.333333px); }
   /* 48dp target: 41px left and 11px above the original bolt-aligned position. */
   .home-voice { position:absolute; z-index:6; bottom:calc(1.2% + 13.75px + 3mm); left:calc(50% - 40px); transform:translateX(-50%); width:8.3mm; height:8.3mm;
     display:flex; align-items:center; justify-content:center; padding:2.075mm; border:0; border-radius:2.1mm;
@@ -371,10 +376,10 @@
     display:flex; justify-content:space-around; align-items:center;
     position:relative; left:-0.63px; width:calc(100% - 0.76px); height:0.22mm;
     margin:calc(0.461mm - 1px) 0 0.45mm 0;
-    color:#aabac5;
+    color:#3e5058;
   }
   .clock-sep i { display:block; width:0.22mm; height:0.22mm; border-radius:50%; background:currentColor;
-    opacity:.4; box-shadow:0 0 .35mm rgba(32,43,49,.6); animation:clockDotPulse 5s linear infinite; }
+    opacity:.4; box-shadow:0 0 .35mm rgba(139,166,176,.4); animation:clockDotPulse 5s linear infinite; }
   .clock-sep i:nth-child(2) { animation-delay:1s; }
   .clock-sep i:nth-child(3) { animation-delay:2s; }
   .clock-sep i:nth-child(4) { animation-delay:3s; }
@@ -392,7 +397,6 @@
       background:none; color:#263840; -webkit-text-fill-color:#263840;
       filter:drop-shadow(0 0 .4mm rgba(40,59,69,.2)) brightness(.55);
     }
-    .clock-sep { color:#263840; }
     .home-weather { color:#ffcd6a; filter:drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
     .battery-led { color:#263840; filter:brightness(.55); text-shadow:0 0 1.2mm rgba(38,56,64,.27); }
     .battery-led.charging { color:#ffcd6a; filter:none; text-shadow:0 0 1.2mm rgba(255,105,25,.55); }
@@ -890,6 +894,11 @@
                 <circle cx="1.5" cy="5.5" r="0.32"/><circle cx="2.5" cy="5.5" r="0.32"/>
                 <circle cx="1.5" cy="6.5" r="0.32"/>
               </svg></div>
+              <section class="system-panel-preview" id="systemPanelPreview" aria-label="Simulasi panel Android" hidden>
+                <button id="systemPanelBack" type="button">Kembali</button>
+                <h2 id="systemPanelTitle"></h2>
+                <p>Ini hanya simulasi preview. Browser tidak dapat membuka panel sistem perangkat; panel asli tersedia di Android jika perangkat mendukung.</p>
+              </section>
               <section class="drawer-page" id="drawerPage" aria-label="Semua Aplikasi" hidden>
                 <div class="app-top"><button class="app-back" id="drawerBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Semua Aplikasi</span><div class="app-theme"><button class="app-theme-button" id="drawerTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="drawerThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="drawerThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="drawerThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="drawerThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="drawerThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="drawerThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <input type="search" aria-label="Cari aplikasi" placeholder="Cari aplikasi…" disabled>
@@ -1145,6 +1154,9 @@
     var calendarBack = document.getElementById('calendarBack');
     var calendarOrigin = document.getElementById('openCalendarModule');
     var homeDate = document.getElementById('homeDate'), calendarReturn = calendarOrigin;
+    var systemPanel = document.getElementById('systemPanelPreview');
+    var systemPanelBack = document.getElementById('systemPanelBack');
+    var systemPanelTitle = document.getElementById('systemPanelTitle');
     var superPage = document.getElementById('superPage');
     var previewSettings = document.getElementById('previewSettings');
     var settingsOrigin = document.getElementById('openSettingsModule');
@@ -1156,6 +1168,7 @@
     var superTab = document.getElementById('tabSuper');
     var clockOrigin = clockLed;
     function setTab(superActive) {
+      systemPanel.hidden = true;
       previewSettings.hidden = true; superGrid.hidden = false;
       page.hidden = true;
       calendarPage.hidden = true;
@@ -1191,6 +1204,7 @@
       setTab(false); drawerPage.hidden = false; drawerBack.focus();
     }
     function goBack() {
+      if (!systemPanel.hidden) { systemPanel.hidden=true; homeTab.focus(); return; }
       if (!drawerPage.hidden) { drawerPage.hidden = true; homeTab.focus(); return; }
       if (!calendarPage.hidden) { calendarPage.hidden = true; calendarReturn.focus(); return; }
       if (!timetablePage.hidden) { if (window.timetableCloseEditor && window.timetableCloseEditor()) return; timetablePage.hidden=true; timetableOrigin.focus(); return; }
@@ -1199,6 +1213,7 @@
       if (!superPage.hidden && !previewSettings.hidden) { closeSettings(); return; }
       if (!superPage.hidden) { setTab(false); homeTab.focus(); }
     }
+    systemPanelBack.addEventListener('click', goBack);
     drawerBack.addEventListener('click', goBack);
     back.addEventListener('click', goBack);
     calendarBack.addEventListener('click', goBack);
@@ -1217,28 +1232,31 @@
       var drawing = document.getElementById('pathDraw');
       if (event.button !== 0 || (drawing && !drawing.hidden)) return;
       var rect = screen.getBoundingClientRect();
-      var internal = !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !timetablePage.hidden || !superPage.hidden || !drawerPage.hidden;
+      var internal = !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !timetablePage.hidden || !superPage.hidden || !drawerPage.hidden || !systemPanel.hidden;
       var bottom = drawerPage.hidden && event.clientY >= rect.top + rect.height * .80 && event.clientY <= rect.bottom;
       var right = internal && event.clientX >= rect.right - rect.width * (32 / 445);
-      if (bottom || right) swipe = { id: event.pointerId, x: event.clientX, y: event.clientY,
-        width: rect.width, height: rect.height, top: rect.top, bottom: bottom, right: right, internal: internal };
+      if (!internal || bottom || right) swipe = { id: event.pointerId, x: event.clientX, y: event.clientY,
+        width: rect.width, height: rect.height, top: rect.top, left: rect.left, bottom: bottom, right: right, internal: internal };
     });
     // Prevent browser scrolling only after an upward drag from the bottom edge begins.
     screen.addEventListener('touchmove', function (event) {
-      if (!swipe || !swipe.bottom) return;
+      if (!swipe || (swipe.internal && !swipe.bottom)) return;
       if (event.touches.length !== 1) { swipe = null; return; }
       var point = event.touches[0], up = swipe.y - point.clientY;
-      if (up >= swipe.width * (12 / 445) && up > Math.abs(point.clientX - swipe.x) * 1.5 && event.cancelable) event.preventDefault();
+      if ((swipe.internal ? up : Math.abs(up)) >= swipe.width * (12 / 445) && Math.abs(up) > Math.abs(point.clientX - swipe.x) * 1.5 && event.cancelable) event.preventDefault();
     }, { passive: false });
     document.addEventListener('pointerup', function (event) {
       if (!swipe || event.pointerId !== swipe.id) return;
       var dx = swipe.x - event.clientX, up = swipe.y - event.clientY;
-      var homeGesture = swipe.bottom && event.clientY <= swipe.top + swipe.height * .62 &&
+      var homeGesture = swipe.internal && swipe.bottom && event.clientY <= swipe.top + swipe.height * .62 &&
         up >= swipe.height * .28 && up > Math.abs(dx) * 1.5;
+      var homeVertical = !swipe.internal && Math.abs(up) >= swipe.width * (48 / 445) && Math.abs(up) > Math.abs(dx) * 1.5;
       var backGesture = swipe.right && dx >= swipe.width * (64 / 445) && dx > Math.abs(up) * 1.5;
-      if (homeGesture || backGesture) {
+      if (homeGesture || homeVertical || backGesture) {
         suppressClick = true;
-        if (homeGesture) { if (swipe.internal) { setTab(false); homeTab.focus(); } else openDrawer(); }
+        if (homeGesture) { setTab(false); homeTab.focus(); }
+        else if (homeVertical && up > 0) { setTab(true); document.getElementById('superBack').focus(); }
+        else if (homeVertical) { systemPanelTitle.textContent=swipe.x < swipe.left + swipe.width/2 ? 'Panel notifikasi · simulasi' : 'Panel kontrol · simulasi'; systemPanel.hidden=false; systemPanelBack.focus(); }
         else goBack();
         setTimeout(function () { suppressClick = false; }, 0);
       }

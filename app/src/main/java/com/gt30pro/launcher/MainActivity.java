@@ -35,13 +35,50 @@ import java.util.Locale;
  * Homescreen minimalis — indikator di atas wallpaper.
  *
  * Akses melalui gesture:
- *   - Swipe ke atas  -> laci aplikasi (semua aplikasi)
+ *   - Swipe ke atas di mana saja -> Super App
+ *   - Swipe ke bawah kiri/kanan -> notifikasi/panel kontrol Android
  *   - Double-tap     -> Super App
  *   - Long-press     -> menu pintasan (Super App / Semua Aplikasi / Setelan)
  */
 public class MainActivity extends BottomSwipeActivity {
-    @Override protected boolean supportsBottomSwipe() { return true; }
-    @Override protected void onBottomSwipe() { openDrawer(); }
+    private float homeStartX, homeStartY, homeWidth, homeHeight;
+    private boolean homeTracking, homeIntercepting, homeCancelled;
+
+    @Override public boolean dispatchTouchEvent(MotionEvent event) {
+        int action = event.getActionMasked();
+        if (action == MotionEvent.ACTION_DOWN) {
+            homeStartX=event.getX(); homeStartY=event.getY();
+            homeWidth=getWindow().getDecorView().getWidth(); homeHeight=getWindow().getDecorView().getHeight();
+            homeTracking=homeWidth>0 && homeHeight>0; homeIntercepting=false; homeCancelled=false;
+            boolean handled=super.dispatchTouchEvent(event);
+            return homeTracking || handled;
+        }
+        if (action == MotionEvent.ACTION_POINTER_DOWN) {
+            homeTracking=false; homeCancelled=true;
+            if (homeIntercepting) return true;
+        }
+        if (action == MotionEvent.ACTION_MOVE && homeTracking && !homeIntercepting &&
+                HomeGesture.vertical(event.getX()-homeStartX,event.getY()-homeStartY,
+                        12f*getResources().getDisplayMetrics().density)) {
+            MotionEvent cancel=MotionEvent.obtain(event);
+            cancel.setAction(MotionEvent.ACTION_CANCEL);
+            super.dispatchTouchEvent(cancel); cancel.recycle();
+            homeIntercepting=true;
+        }
+        if (homeIntercepting) {
+            if (action==MotionEvent.ACTION_UP) {
+                int result=homeCancelled ? HomeGesture.NONE : HomeGesture.action(homeStartX,homeStartY,event.getX(),event.getY(),homeWidth,homeHeight,getResources().getDisplayMetrics().density);
+                homeTracking=false; homeIntercepting=false;
+                if (result==HomeGesture.SUPER) openSuperApp();
+                else if (result==HomeGesture.NOTIFICATIONS) SystemPanels.open(this,false);
+                else if (result==HomeGesture.CONTROLS) SystemPanels.open(this,true);
+            } else if (action==MotionEvent.ACTION_CANCEL) { homeTracking=false; homeIntercepting=false; }
+            return true;
+        }
+        boolean handled=super.dispatchTouchEvent(event);
+        if (action==MotionEvent.ACTION_UP || action==MotionEvent.ACTION_CANCEL) homeTracking=false;
+        return handled;
+    }
 
     private GestureDetector detector;
     private TextView batteryLed;
@@ -238,17 +275,6 @@ public class MainActivity extends BottomSwipeActivity {
             public boolean onDoubleTap(MotionEvent e) {
                 openSuperApp();
                 return true;
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if (e1 != null && e2 != null
-                        && e1.getY() - e2.getY() > 120
-                        && Math.abs(velocityY) > 200) {
-                    openDrawer();
-                    return true;
-                }
-                return false;
             }
 
             @Override

@@ -16,11 +16,11 @@ class Element {
   getBoundingClientRect() { return { left: 0, top: 0, bottom: 1000, right: 445, width: 445, height: 1000 }; }
 }
 const ids = ['chargeToggle','batteryLed','previewBatteryStatus','previewBatterySource','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
-  'superPage','superGrid','previewSettings','openSettingsModule','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
+  'systemPanelPreview','systemPanelBack','systemPanelTitle','superPage','superGrid','previewSettings','openSettingsModule','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
   'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','timetablePage','timetableBack','openTimetableModule','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.weatherPage.hidden = true; elements.superPage.hidden = true;
-elements.previewSettings.hidden = true; elements.timetablePage.hidden = true; elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
+elements.systemPanelPreview.hidden = true; elements.previewSettings.hidden = true; elements.timetablePage.hidden = true; elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
 const screen = new Element(), separator = new Element(), doc = new Element();
 doc.getElementById = id => elements[id];
 doc.querySelector = selector => selector === '.screen' ? screen : separator;
@@ -81,17 +81,21 @@ assert.strictEqual(elements.superPage.hidden,true,'home weather does not open Su
 elements.weatherBack.fire('click'); assert.strictEqual(elements.weatherPage.hidden,true); assert(focused,'weather back restores home focus');
 elements.homeWeather.fire('click'); swipe(440,100,360,100); assert.strictEqual(elements.weatherPage.hidden,true,'weather swipe back to home');
 elements.homeWeather.fire('click'); swipe(200,950,200,500); assert.strictEqual(elements.weatherPage.hidden,true,'weather bottom swipe returns home');
-// Home swipe opens the preview drawer without requiring fling speed.
+// Any upward swipe on home opens Super App, without requiring fling speed.
 elements.tabHome.fire('click');
-swipe(200, 950, 210, 500);
-assert.strictEqual(elements.drawerPage.hidden, false, 'bottom-to-middle opens app drawer');
-assert.strictEqual(elements.superPage.hidden, true);
-swipe(440, 100, 360, 100);
-assert.strictEqual(elements.drawerPage.hidden, true, 'right-edge back closes drawer');
-swipe(200, 750, 200, 450); assert.strictEqual(elements.drawerPage.hidden, true, 'gesture must start near bottom');
-swipe(200, 950, 200, 800); assert.strictEqual(elements.drawerPage.hidden, true, 'short gesture does not open drawer');
-swipe(100, 950, 430, 500); assert.strictEqual(elements.drawerPage.hidden, true, 'diagonal gesture ignored');
-swipe(200, 950, 200, 990); assert.strictEqual(elements.drawerPage.hidden, true, 'downward gesture ignored');
+for (const [x,y] of [[200,950],[200,750],[20,200],[430,500]]) {
+  swipe(x,y,x,y-80);
+  assert.strictEqual(elements.superPage.hidden,false,'home swipe opens Super App');
+  assert.strictEqual(elements.drawerPage.hidden,true,'does not open drawer');
+  elements.tabHome.fire('click');
+}
+swipe(200,500,200,520); assert.strictEqual(elements.systemPanelPreview.hidden,true,'short down ignored');
+swipe(100,500,200,560); assert.strictEqual(elements.systemPanelPreview.hidden,true,'diagonal ignored');
+swipe(100,300,100,400); assert.strictEqual(elements.systemPanelPreview.hidden,false);
+assert.match(elements.systemPanelTitle.textContent,/notifikasi/); elements.systemPanelBack.fire('click');
+assert.strictEqual(elements.systemPanelPreview.hidden,true);
+swipe(350,300,350,400); assert.strictEqual(elements.systemPanelPreview.hidden,false);
+assert.match(elements.systemPanelTitle.textContent,/kontrol/); elements.systemPanelBack.fire('click');
 elements.tabSuper.fire('click'); swipe(200, 950, 210, 500);
 assert.strictEqual(elements.superPage.hidden, true, 'Super App gesture returns to home');
 assert.strictEqual(elements.drawerPage.hidden, true, 'returning home does not open drawer');
@@ -101,7 +105,7 @@ assert.strictEqual(elements.superPage.hidden, true);
 elements.tabSuper.fire('click'); elements.openCalendarModule.fire('click'); swipe(440, 950, 420, 500);
 assert.strictEqual(elements.calendarPage.hidden, true, 'bottom gesture works from right corner');
 assert.strictEqual(elements.superPage.hidden, true);
-elements.pathDraw.hidden = false; swipe(200,950,200,500); assert.strictEqual(elements.drawerPage.hidden,true, 'editor gestures remain untouched'); elements.pathDraw.hidden = true;
+elements.pathDraw.hidden = false; swipe(200,950,200,500); assert.strictEqual(elements.superPage.hidden,true, 'editor gestures remain untouched'); elements.pathDraw.hidden = true;
 screen.fire('pointerdown', {isPrimary:true,button:0,pointerId:9,clientX:200,clientY:950});
 screen.fire('pointerdown', {isPrimary:false,button:0,pointerId:10,clientX:210,clientY:950});
 doc.fire('pointerup',{pointerId:9,clientX:200,clientY:500}); assert.strictEqual(elements.drawerPage.hidden,true,'multi-touch is cancelled');

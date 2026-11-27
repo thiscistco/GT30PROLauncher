@@ -104,8 +104,8 @@ final class HomeClockView extends View {
         float total = 2.8f * pxPerMm - .76f * cssPx;
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;
-        dots.setColor(lightGlass ? 0xFF263840 : 0xFFAABAC5);
-        dots.setShadowLayer(.35f * pxPerMm, 0f, 0f, lightGlass ? 0x33403B45 : 0x99202B31);
+        dots.setColor(0xFF3E5058);
+        dots.setShadowLayer(.35f * pxPerMm, 0f, 0f, lightGlass ? 0x33403B45 : 0x668BA6B0);
         for (int i = 0; i < 5; i++) {
             float x = start + i * total / 5f;
             float y = dotTop + r;

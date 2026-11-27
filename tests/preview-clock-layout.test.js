@@ -18,8 +18,8 @@ const digits = html.match(/\.clock-led > span:not\(\.clock-sep\),\s*\.date-led >
 // Both home overlays retain an amber gradient tuned to the home palette.
 assert.match(digits, /#ffcd6a 0%, #ffcd6a 24%, #ffcd6a 50%, #ffcd6a 76%, #ffcd6a 100%/);
 assert.match(digits, /drop-shadow\(0 0 0\.4mm rgba\(255, 105, 25, 0\.65\)\)/);
-assert.match(sep, /color:#aabac5/);
-assert.match(html, /\.clock-sep \{ color:#263840; \}/);
+assert.match(sep, /color:#3e5058/);
+assert(!html.includes('.clock-sep { color:#263840; }'));
 assert.match(html, /<span class="clock-sep" aria-hidden="true">(?:<i><\/i>){5}<\/span>/);
 assert.match(html, /animation:clockDotPulse 5s linear infinite/);
 for (let i=2; i<=5; i++) assert(html.includes(`.clock-sep i:nth-child(${i}) { animation-delay:${i-1}s; }`));
@@ -53,7 +53,7 @@ assert.match(view,/setDuration\(5000\)/);
 assert.match(view,/ValueAnimator\.areAnimatorsEnabled\(\)/);
 assert.match(java,/clockLed\.startSeparator\(\)/);
 assert.match(java,/clockLed\.stopSeparator\(\)/);
-assert.match(view,/dots\.setColor\(lightGlass \? 0xFF263840 : 0xFFAABAC5\)/);
+assert.match(view,/dots\.setColor\(0xFF3E5058\)/);
 assert.match(view,/canvas\.translate\(-cssPx \/ HOME_SCALE, -cssPx \/ HOME_SCALE\)/);
 assert.match(view, /drawDigits\(canvas, hour/);
 assert.match(view, /drawDigits\(canvas, minute, dotTop \+ \.22f \* pxPerMm \+ \.45f \* pxPerMm, line\)/);
