@@ -22,6 +22,15 @@ final class CalendarDates {
         return target.atDay(Math.min(current.getDayOfMonth(), target.lengthOfMonth()));
     }
 
+    static LocalDate weekStart(LocalDate date) { return date.minusDays(date.getDayOfWeek().getValue() - 1); }
+    static boolean inRange(LocalDate date) { return !date.isBefore(MIN.atDay(1)) && !date.isAfter(MAX.atEndOfMonth()); }
+    static LocalDate shiftWeek(LocalDate current, int weeks) {
+        LocalDate target = current.plusWeeks(weeks);
+        if (target.isBefore(MIN.atDay(1))) return MIN.atDay(1);
+        if (target.isAfter(MAX.atEndOfMonth())) return MAX.atEndOfMonth();
+        return target;
+    }
+
     static boolean validTime(String time) {
         if (time == null) return false;
         String value = time.trim();

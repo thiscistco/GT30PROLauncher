@@ -16,6 +16,21 @@
     var year = Math.floor(index / 12), month = index % 12 + 1;
     return {year: year, month: month, day: Math.min(date.day, daysInMonth(year, month))};
   }
+  function asDate(date) { return new Date(date.year, date.month-1, date.day, 12); }
+  function fromDate(d) { return {year:d.getFullYear(),month:d.getMonth()+1,day:d.getDate()}; }
+  function shiftWeek(date, delta) {
+    var d=asDate(date); d.setDate(d.getDate()+delta*7);
+    if (d.getFullYear()<1900) return {year:1900,month:1,day:1};
+    if (d.getFullYear()>2100) return {year:2100,month:12,day:31};
+    return fromDate(d);
+  }
+  function weekDays(date) {
+    var d=asDate(date); d.setDate(d.getDate()-(d.getDay()+6)%7);
+    return Array.from({length:7}, function (_, i) {
+      var day=new Date(d.getFullYear(),d.getMonth(),d.getDate()+i,12);
+      return day.getFullYear()<1900 || day.getFullYear()>2100 ? null : fromDate(day);
+    });
+  }
   function swipeDirection(dx, dy, threshold) { return Math.abs(dx) < threshold || Math.abs(dx) <= Math.abs(dy) * 1.5 ? 0 : (dx < 0 ? 1 : -1); }
   function pad(value) { return String(value).padStart(2, '0'); }
   function dateKey(date) { return String(date.year).padStart(4, '0') + '-' + pad(date.month) + '-' + pad(date.day); }
@@ -39,7 +54,7 @@
   }
   function mount(win) {
     var doc = win.document, byId = function (id) { return doc.getElementById(id); };
-    var grid = byId('calendarGrid'), form = byId('calendarForm'), selected = today(), records = [];
+    var grid = byId('calendarGrid'), form = byId('calendarForm'), selected = today(), records = [], expanded = false;
     var key = 'gt30-calendar-events-v1', writable = true;
     var updater = null, updateInfo = {message:'Data bawaan; belum diperiksa secara online.', checkedAt:0, pending:false};
     try {
@@ -134,34 +149,44 @@
         });
         if (!monthList.children.length) { var none = doc.createElement('p'); none.className = 'clock-muted'; none.textContent = 'Tidak ada data libur atau peringatan bulan ini.'; monthList.appendChild(none); }
       }
-      byId('calendarPrev').disabled = selected.year === 1900 && selected.month === 1;
-      byId('calendarNext').disabled = selected.year === 2100 && selected.month === 12;
+      var atMin = expanded ? selected.year === 1900 && selected.month === 1 : dateKey(selected) === '1900-01-01';
+      var atMax = expanded ? selected.year === 2100 && selected.month === 12 : dateKey(selected) === '2100-12-31';
+      byId('calendarPrev').disabled = atMin; byId('calendarNext').disabled = atMax;
+      byId('calendarPrev').textContent = expanded ? 'Bulan sebelumnya' : 'Minggu sebelumnya';
+      byId('calendarNext').textContent = expanded ? 'Bulan berikutnya' : 'Minggu berikutnya';
+      var toggle = byId('calendarExpand');
+      toggle.setAttribute('aria-expanded', String(expanded));
+      toggle.setAttribute('aria-label', expanded ? 'Tampilkan satu minggu' : 'Tampilkan satu bulan');
+      toggle.title = expanded ? 'Tampilkan satu minggu' : 'Tampilkan satu bulan';
+      grid.setAttribute('aria-label', expanded ? 'Tanggal bulan ini. Geser untuk mengganti bulan.' : 'Tanggal minggu ini. Geser untuk mengganti minggu.');
       grid.replaceChildren();
       weekdays.forEach(function (name, index) {
         var day = doc.createElement('span'); day.className = 'calendar-weekday'; day.classList.toggle('weekend', index >= 5); day.textContent = name; grid.appendChild(day);
       });
-      for (var empty = 0; empty < leadingDays(selected.year, selected.month); empty++) {
-        var spacer = doc.createElement('span'); spacer.setAttribute('aria-hidden', 'true'); grid.appendChild(spacer);
-      }
-      var total = daysInMonth(selected.year, selected.month);
-      for (var number = 1; number <= total; number++) (function (day) {
-        var date = {year:selected.year, month:selected.month, day:day}, keyForDay = dateKey(date);
-        var has = records.some(function (e) { return e.date === keyForDay; });
+      var slots = [];
+      if (expanded) {
+        for (var empty=0; empty<leadingDays(selected.year,selected.month); empty++) slots.push(null);
+        for (var number=1; number<=daysInMonth(selected.year,selected.month); number++) slots.push({year:selected.year,month:selected.month,day:number});
+      } else slots = weekDays(selected);
+      slots.forEach(function (date, index) {
+        if (!date) { var spacer=doc.createElement('span'); spacer.setAttribute('aria-hidden','true'); grid.appendChild(spacer); return; }
+        var keyForDay = dateKey(date), has = records.some(function (e) { return e.date === keyForDay; });
         var dayHolidays = holidaysFor(keyForDay), isHoliday = dayHolidays.some(function (entry) { return entry.type === 'libur'; });
         var isObservance = dayHolidays.some(function (entry) { return entry.type === 'peringatan'; });
         var button = doc.createElement('button'); button.type = 'button'; button.className = 'calendar-day';
-        button.textContent = day + (has ? '·' : '');
-        button.classList.toggle('weekend', (leadingDays(selected.year, selected.month) + day - 1) % 7 >= 5);
+        button.textContent = String(date.day);
+        button.classList.toggle('weekend', index % 7 >= 5);
         button.classList.toggle('holiday', isHoliday);
         button.classList.toggle('marker-holiday', isHoliday);
         button.classList.toggle('marker-observance', isObservance);
+        button.classList.toggle('marker-event', has);
         button.classList.toggle('today', keyForDay === todayKey);
         button.classList.toggle('selected', keyForDay === selectedKey);
         button.setAttribute('aria-label', label(date) + (dayHolidays.length ? ', ' + dayHolidays.map(holidayText).join(', ') : '') + (has ? ', ada acara' : ''));
         button.setAttribute('aria-pressed', String(keyForDay === selectedKey));
         button.addEventListener('click', function () { selected = date; discardForm(); render(); });
         grid.appendChild(button);
-      })(number);
+      });
       var list = byId('calendarEvents'); list.replaceChildren();
       var forDay = records.filter(function (e) { return e.date === selectedKey; });
       if (!forDay.length) {
@@ -179,14 +204,15 @@
         row.appendChild(name); row.appendChild(remove); list.appendChild(row);
       });
     }
-    function changeMonth(delta) { selected = shiftMonth(selected, delta); discardForm(); render(); }
-    win.calendarOnOpen = function () { selected = today(); discardForm(); closeThemeMenu(); render(); if (updater) updater.refresh(true); };
+    function changePeriod(delta) { selected = expanded ? shiftMonth(selected, delta) : shiftWeek(selected, delta); discardForm(); render(); }
+    win.calendarOnOpen = function () { selected = today(); expanded = false; discardForm(); closeThemeMenu(); closeMonthMenu(); render(); if (updater) updater.refresh(true); };
+    byId('calendarExpand').addEventListener('click', function () { expanded = !expanded; closeMonthMenu(); render(); });
     byId('calendarRefresh').addEventListener('click', function () { if (updater) updater.refresh(true); });
     var monthMenu = byId('calendarMonthMenu');
     if (monthMenu) byId('calendarMonth').addEventListener('click', function () { monthMenu.hidden = !monthMenu.hidden; this.setAttribute('aria-expanded', String(!monthMenu.hidden)); });
     function closeMonthMenu() { if (monthMenu) { monthMenu.hidden = true; byId('calendarMonth').setAttribute('aria-expanded','false'); } }
-    byId('calendarPrev').addEventListener('click', function () { closeMonthMenu(); changeMonth(-1); });
-    byId('calendarNext').addEventListener('click', function () { closeMonthMenu(); changeMonth(1); });
+    byId('calendarPrev').addEventListener('click', function () { closeMonthMenu(); changePeriod(-1); });
+    byId('calendarNext').addEventListener('click', function () { closeMonthMenu(); changePeriod(1); });
     var gesture = null, suppressClick = false;
     grid.addEventListener('pointerdown', function (e) {
       if (e.isPrimary === false || (e.button != null && e.button !== 0)) { gesture = null; return; }
@@ -208,7 +234,7 @@
       if (!gesture || e.pointerId !== gesture.id) return;
       var direction = gesture.moving ? swipeDirection(e.clientX-gesture.x,e.clientY-gesture.y,gesture.width*(48/445)) : 0;
       if (gesture.moving) { suppressClick = true; win.setTimeout(function () { suppressClick = false; }, 0); }
-      gesture = null; if (direction) { closeMonthMenu(); changeMonth(direction); }
+      gesture = null; if (direction) { closeMonthMenu(); changePeriod(direction); }
     });
     grid.addEventListener('pointercancel', function () { gesture = null; });
     grid.addEventListener('click', function (e) { if (suppressClick) { e.preventDefault(); e.stopPropagation(); suppressClick = false; } }, true);
@@ -228,5 +254,5 @@
     render();
   }
   return {daysInMonth:daysInMonth, leadingDays:leadingDays, shiftMonth:shiftMonth, dateKey:dateKey,
-    validTime:validTime, validTitle:validTitle, validDate:validDate, holidaysFor:holidaysFor, swipeDirection:swipeDirection, mount:mount};
+    validTime:validTime, validTitle:validTitle, validDate:validDate, holidaysFor:holidaysFor, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
 });

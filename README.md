@@ -24,9 +24,12 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
   kembali mengembalikan ke homescreen. Kalender memakai font Doto; tema dapat
   dipilih lewat ikon titik: Sistem (layar berhuruf A, default mengikuti perangkat),
   Terang (matahari), atau Gelap (bulan). Ketuk tanggal
-  untuk melihat dan menambah acara; geser kisi tanggal ke kiri/kanan untuk pindah
-  bulan, atau ketuk nama bulan untuk navigasi tanpa gestur. Akhir pekan dan libur
-  nasional tetap merah. Informasi tambahan tersedia pada **Info kalender**.
+  untuk melihat acara; tombol tambah di kanan bulan membuat acara. Kalender
+  terbuka satu minggu, panah bawah membuka tampilan bulan; swipe pada kisi
+  berpindah minggu atau bulan sesuai tampilan. Ketuk nama bulan untuk navigasi
+  tanpa gestur. Tanggal berbentuk squircle: garis merah menandai libur nasional,
+  amber peringatan, biru acara; beberapa garis berarti beberapa penanda. Akhir
+  pekan dan libur nasional tetap merah. Informasi tambahan tersedia pada **Info kalender**.
   Data libur terkurasi dari GitHub diperiksa setiap kali kalender dibuka (permintaan
   bersamaan digabung); jika offline atau terbatas, data terakhir/bawaan dipakai.
   Sumber diperbarui manual, bukan verifikasi otomatis pemerintah. Acara pribadi

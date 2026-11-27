@@ -6,6 +6,8 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -47,7 +49,7 @@ public class CalendarActivity extends SwipeBackActivity {
     private Typeface doto;
     private LinearLayout page;
     private LocalDate selected = LocalDate.now();
-    private boolean storageWritable = true;
+    private boolean storageWritable = true, expanded = false;
     private static final Object HOLIDAY_CACHE_LOCK = new Object();
     private JSONObject holidays;
     private long holidaysCheckedAt, holidayLastAttempt;
@@ -66,6 +68,7 @@ public class CalendarActivity extends SwipeBackActivity {
         loadCachedHolidays();
         if (state != null) {
             try { selected = LocalDate.parse(state.getString("selected")); } catch (Exception ignored) { selected = LocalDate.now(); }
+            expanded = state.getBoolean("expanded", false);
         }
         themeChoice = getSharedPreferences("calendar_appearance", MODE_PRIVATE).getString("theme", "system");
         scroll = new ScrollView(this);
@@ -154,6 +157,7 @@ public class CalendarActivity extends SwipeBackActivity {
 
     @Override protected void onSaveInstanceState(Bundle state) {
         state.putString("selected", selected.toString());
+        state.putBoolean("expanded", expanded);
         super.onSaveInstanceState(state);
     }
 
@@ -229,12 +233,12 @@ public class CalendarActivity extends SwipeBackActivity {
         }
         popup.showAsDropDown(anchor, 0, 0, Gravity.END);
     }
-    private void changeMonth(int direction) { selected = CalendarDates.shiftMonth(selected, direction); render(); }
+    private void changePeriod(int direction) { selected = expanded ? CalendarDates.shiftMonth(selected, direction) : CalendarDates.shiftWeek(selected, direction); render(); }
     private void chooseMonth() {
         showDialog(dialog().setTitle(MONTHS[selected.getMonthValue()-1] + " " + selected.getYear())
-                .setItems(new String[]{"Bulan sebelumnya", "Bulan berikutnya", "Hari ini"}, (d, choice) -> {
+                .setItems(new String[]{expanded ? "Bulan sebelumnya" : "Minggu sebelumnya", expanded ? "Bulan berikutnya" : "Minggu berikutnya", "Hari ini"}, (d, choice) -> {
                     if (choice == 2) { selected = LocalDate.now(); render(); }
-                    else changeMonth(choice == 0 ? -1 : 1);
+                    else changePeriod(choice == 0 ? -1 : 1);
                 }).setNegativeButton("Batal", null).create());
     }
     private final class MonthGrid extends LinearLayout {
@@ -254,7 +258,7 @@ public class CalendarActivity extends SwipeBackActivity {
             if (e.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN || e.getActionMasked() == MotionEvent.ACTION_CANCEL) { cancelled=true; return true; }
             if (e.getActionMasked() == MotionEvent.ACTION_UP) {
                 int direction = cancelled ? 0 : CalendarSwipe.direction(e.getX()-downX,e.getY()-downY,dp(48));
-                horizontal=false; if (direction != 0) changeMonth(direction); return true;
+                horizontal=false; if (direction != 0) changePeriod(direction); return true;
             }
             return true;
         }
@@ -328,18 +332,27 @@ public class CalendarActivity extends SwipeBackActivity {
         }
         return false;
     }
-    private GradientDrawable dayBackground(int color, boolean outline) {
-        GradientDrawable d = new GradientDrawable(); d.setShape(GradientDrawable.OVAL); d.setColor(color);
-        if (outline) d.setStroke(dp(1), 0xFF738596);
-        return d;
+    private Drawable dayBackground(int fill, boolean isToday, boolean chosen, boolean holiday, boolean observanceDay, boolean event) {
+        int[] marks = new int[3]; int count = 0;
+        if (holiday) marks[count++] = chosen ? selectedWeekend : weekend;
+        if (observanceDay) marks[count++] = chosen ? (dark ? 0xFF9B5700 : 0xFFFFC077) : observance;
+        if (event) marks[count++] = chosen ? (dark ? 0xFF0064A5 : 0xFF77C8FF) : (dark ? 0xFF77C8FF : 0xFF0064A5);
+        if (count == 0 && isToday) marks[count++] = borderColor;
+        Drawable[] parts = new Drawable[count + 1];
+        GradientDrawable base = new GradientDrawable(); base.setColor(fill); base.setCornerRadius(dp(11)); parts[0] = base;
+        for (int i=0; i<count; i++) {
+            GradientDrawable ring = new GradientDrawable(); ring.setColor(Color.TRANSPARENT);
+            ring.setCornerRadius(dp(Math.max(4,11-i*2))); ring.setStroke(dp(2), marks[i]); parts[i+1] = ring;
+        }
+        LayerDrawable background = new LayerDrawable(parts);
+        for (int i=0; i<count; i++) { int inset=dp(i*2); background.setLayerInset(i+1,inset,inset,inset,inset); }
+        return background;
     }
-    private View markerDot(int color) {
-        View dot = new View(this);
-        GradientDrawable circle = new GradientDrawable();
-        circle.setShape(GradientDrawable.OVAL); circle.setColor(color);
-        dot.setBackground(circle);
-        dot.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        return dot;
+    private ImageButton actionIcon(int resource, String description, Runnable click) {
+        ImageButton action = new ImageButton(this); action.setImageResource(resource); action.setColorFilter(ink);
+        action.setScaleType(ImageView.ScaleType.FIT_CENTER); action.setPadding(dp(12),dp(12),dp(12),dp(12));
+        action.setBackgroundColor(Color.TRANSPARENT); action.setContentDescription(description); action.setTooltipText(description);
+        action.setOnClickListener(v -> click.run()); return action;
     }
     private void addHolidayEntries(LocalDate date, boolean showDate) {
         JSONArray events = holidaysFor(date);
@@ -362,8 +375,9 @@ public class CalendarActivity extends SwipeBackActivity {
     private void render() {
         page.removeAllViews();
         LinearLayout top = new LinearLayout(this); top.setGravity(Gravity.CENTER_VERTICAL);
-        TextView back = text("Kembali", 14, ink); back.setMinHeight(dp(48)); back.setGravity(Gravity.CENTER_VERTICAL);
-        back.setOnClickListener(v -> finish()); top.addView(back,new LinearLayout.LayoutParams(0,-2,1));
+        ImageButton back = actionIcon(R.drawable.ic_calendar_back, "Kembali", this::finish);
+        top.addView(back,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        top.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
         ImageButton theme = themeButton(themeChoice, false);
         theme.setBackgroundColor(Color.TRANSPARENT);
         theme.setContentDescription("Tema: " + themeLabel() + ". Pilih tema kalender");
@@ -376,8 +390,11 @@ public class CalendarActivity extends SwipeBackActivity {
         root.addView(card); page = card;
         TextView month = button(MONTHS[selected.getMonthValue()-1] + " " + selected.getYear(), this::chooseMonth);
         month.setContentDescription("Pilih bulan. " + MONTHS[selected.getMonthValue()-1] + " " + selected.getYear());
-        LinearLayout.LayoutParams monthParams = new LinearLayout.LayoutParams(-2,dp(48)); monthParams.gravity = Gravity.START;
-        page.addView(month, monthParams); space(8);
+        LinearLayout nav = new LinearLayout(this); nav.setGravity(Gravity.CENTER_VERTICAL);
+        nav.addView(month,new LinearLayout.LayoutParams(-2,dp(48)));
+        nav.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
+        nav.addView(actionIcon(R.drawable.ic_calendar_add,"Tambah acara",this::addEvent),new LinearLayout.LayoutParams(dp(48),dp(48)));
+        page.addView(nav); space(8);
         MonthGrid grid = new MonthGrid(); page.addView(grid);
         LinearLayout weekdays = new LinearLayout(this);
         for (int col = 0; col < WEEKDAYS.length; col++) {
@@ -388,40 +405,28 @@ public class CalendarActivity extends SwipeBackActivity {
         JSONArray events = readEvents();
         YearMonth monthValue = YearMonth.from(selected);
         int leading = CalendarDates.leadingDays(monthValue), length = monthValue.lengthOfMonth();
-        int rowCount = (leading + length + 6) / 7;
+        int rowCount = expanded ? (leading + length + 6) / 7 : 1;
+        LocalDate weekStart = CalendarDates.weekStart(selected);
         for (int row = 0; row < rowCount; row++) {
             LinearLayout week = new LinearLayout(this);
             for (int col = 0; col < 7; col++) {
                 int dayNumber = row * 7 + col - leading + 1;
                 LinearLayout.LayoutParams cell = new LinearLayout.LayoutParams(0, dp(44), 1);
-                if (dayNumber < 1 || dayNumber > length) { week.addView(new View(this), cell); continue; }
-                LocalDate day = monthValue.atDay(dayNumber);
+                LocalDate day = expanded ? (dayNumber < 1 || dayNumber > length ? null : monthValue.atDay(dayNumber)) : weekStart.plusDays(col);
+                if (day == null || !CalendarDates.inRange(day)) { week.addView(new View(this), cell); continue; }
+                dayNumber = day.getDayOfMonth();
                 boolean has = hasEvents(events, day);
                 JSONArray dayHolidays = holidaysFor(day);
                 boolean isHoliday = hasHolidayType(dayHolidays, "libur");
                 boolean isObservance = hasHolidayType(dayHolidays, "peringatan");
                 FrameLayout item = new FrameLayout(this);
                 boolean chosen = day.equals(selected);
-                TextView number = text(String.valueOf(dayNumber) + (has ? "·" : ""), 14,
+                TextView number = text(String.valueOf(dayNumber), 14,
                         col >= 5 || isHoliday ? (chosen ? selectedWeekend : weekend) : (chosen ? selectedText : ink));
                 number.setGravity(Gravity.CENTER);
                 number.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-                number.setBackground(dayBackground(chosen ? selectionColor : day.equals(LocalDate.now()) ? todayColor : dayColor, !chosen && day.equals(LocalDate.now())));
+                number.setBackground(dayBackground(chosen ? selectionColor : day.equals(LocalDate.now()) ? todayColor : dayColor, day.equals(LocalDate.now()), chosen, isHoliday, isObservance, has));
                 item.addView(number, new FrameLayout.LayoutParams(dp(38), dp(38), Gravity.CENTER));
-                if (isHoliday || isObservance) {
-                    LinearLayout dots = new LinearLayout(this);
-                    dots.setGravity(Gravity.CENTER);
-                    dots.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-                    if (isHoliday) dots.addView(markerDot(weekend), new LinearLayout.LayoutParams(dp(5), dp(5)));
-                    if (isObservance) {
-                        LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dp(5), dp(5));
-                        if (isHoliday) dotParams.leftMargin = dp(3);
-                        dots.addView(markerDot(observance), dotParams);
-                    }
-                    FrameLayout.LayoutParams dotPosition = new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-                    dotPosition.bottomMargin = dp(4);
-                    item.addView(dots, dotPosition);
-                }
                 StringBuilder description = new StringBuilder(dateLabel(day));
                 for (int i = 0; i < dayHolidays.length(); i++) {
                     JSONObject event = dayHolidays.optJSONObject(i);
@@ -435,6 +440,10 @@ public class CalendarActivity extends SwipeBackActivity {
             }
             grid.addView(week);
         }
+        ImageButton expand = actionIcon(R.drawable.ic_calendar_expand, expanded ? "Tampilkan satu minggu" : "Tampilkan satu bulan", () -> { expanded = !expanded; render(); });
+        expand.setRotation(expanded ? 180f : 0f);
+        LinearLayout toggleRow = new LinearLayout(this); toggleRow.setGravity(Gravity.CENTER);
+        toggleRow.addView(expand,new LinearLayout.LayoutParams(dp(48),dp(48))); page.addView(toggleRow);
         page = root; space(16);
         LinearLayout agenda = new LinearLayout(this); agenda.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout agendaTitle = new LinearLayout(this); agendaTitle.setOrientation(LinearLayout.VERTICAL);
@@ -444,7 +453,7 @@ public class CalendarActivity extends SwipeBackActivity {
         agenda.addView(button("Hari ini", () -> { selected = LocalDate.now(); render(); }));
         page.addView(agenda); space(10);
         addHolidayEntries(selected, false);
-        page.addView(button("+ Tambah acara", this::addEvent)); space(12);
+        space(4);
         boolean found = false;
         for (int i = 0; i < events.length(); i++) {
             JSONObject e = events.optJSONObject(i);
@@ -467,7 +476,7 @@ public class CalendarActivity extends SwipeBackActivity {
     }
 
     private void showInfo(YearMonth month) {
-        StringBuilder info = new StringBuilder("Titik merah: libur nasional. Titik amber: peringatan.\n\nLibur dan peringatan bulan ini:\n");
+        StringBuilder info = new StringBuilder("Garis merah: libur nasional. Garis amber: peringatan. Garis biru: acara. Beberapa garis berarti beberapa penanda.\n\nLibur dan peringatan bulan ini:\n");
         boolean found = false;
         for (int day = 1; day <= month.lengthOfMonth(); day++) {
             JSONArray entries = holidaysFor(month.atDay(day));

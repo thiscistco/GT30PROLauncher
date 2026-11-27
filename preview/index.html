@@ -280,12 +280,7 @@
   .calendar-day.today { background: #211a17; border-color: #8d604c; }
   .calendar-day.selected { background: #61402c; border-color: #8d604c; }
   .calendar-weekday.weekend, .calendar-day.weekend, .calendar-day.holiday { color: #ff6b6b; }
-  .calendar-day.marker-holiday::after, .calendar-day.marker-observance::after {
-    content: ''; position: absolute; left: 50%; bottom: 0.7mm; width: 0.8mm; height: 0.8mm;
-    border-radius: 50%; transform: translateX(-50%); background: #ff6b6b;
-  }
-  .calendar-day.marker-observance:not(.marker-holiday)::after { background: #ffd49d; }
-  .calendar-day.marker-holiday.marker-observance::after { left: calc(50% - 0.6mm); box-shadow: 1.2mm 0 #ffd49d; }
+
   .calendar-legend { color: #e7a579; font-size: 2.2mm; line-height: 1.5; margin: 2mm 0; }
   .calendar-holiday-detail { color: #ffd49d; font-size: 2.8mm; line-height: 1.5; margin: 2mm 0; }
   .calendar-holiday-detail.holiday { color: #ff6b6b; }
@@ -398,14 +393,8 @@
   .calendar-nav button { flex-basis: 9mm; padding: 1mm; }
   .calendar-grid { gap: 0; }
   .calendar-weekday { color: #526477; }
-  .calendar-day { color: #304355; border: 0; border-radius: 0; background: radial-gradient(circle 3.2mm at center, #dce5ed 99%, transparent 100%); }
-  .calendar-day.today { background: radial-gradient(circle 3.2mm at center, #fff 91%, #738596 94%, #738596 99%, transparent 100%); }
-  .calendar-day.selected { color: #fff; background: radial-gradient(circle 3.2mm at center, #304355 99%, transparent 100%); }
   .calendar-weekday.weekend, .calendar-day.weekend, .calendar-day.holiday { color: #b3263b; }
   .calendar-day.selected.weekend, .calendar-day.selected.holiday { color: #ff9ea8; }
-  .calendar-day.marker-holiday::after { background: #b3263b; }
-  .calendar-day.marker-observance:not(.marker-holiday)::after { background: #9b5700; }
-  .calendar-day.marker-holiday.marker-observance::after { box-shadow: 1.2mm 0 #9b5700; }
   .calendar-legend { color: #526477; font-size: 2mm; }
   .calendar-agenda { padding-top: 4mm; }
   .calendar-agenda-head { display: flex; align-items: center; justify-content: space-between; gap: 2mm; border-left: 1mm solid #d6e0e8; padding-left: 2mm; }
@@ -441,14 +430,8 @@
   .calendar-month-menu .clock-action { white-space:normal; font-size:2.3mm; flex:1; }
   .calendar-grid { touch-action:pan-y; }
   .calendar-weekday { color:var(--cal-muted); }
-  .calendar-day { color:var(--cal-text); background:radial-gradient(circle 3.2mm at center,var(--cal-day) 99%,transparent 100%); }
-  .calendar-day.today { background:radial-gradient(circle 3.2mm at center,var(--cal-card) 91%,var(--cal-border) 94%,var(--cal-border) 99%,transparent 100%); }
-  .calendar-day.selected { color:var(--cal-selected-text); background:radial-gradient(circle 3.2mm at center,var(--cal-select) 99%,transparent 100%); }
   .calendar-weekday.weekend, .calendar-day.weekend, .calendar-day.holiday { color:var(--cal-weekend); }
   .calendar-day.selected.weekend, .calendar-day.selected.holiday { color:var(--cal-selected-weekend); }
-  .calendar-day.marker-holiday::after { background:var(--cal-weekend); }
-  .calendar-day.marker-observance:not(.marker-holiday)::after { background:var(--cal-observe); }
-  .calendar-day.marker-holiday.marker-observance::after { box-shadow:1.2mm 0 var(--cal-observe); }
   .calendar-agenda-head { border-color:var(--cal-border); }
   .calendar-kicker, .calendar-legend, .calendar-page .clock-muted { color:var(--cal-muted); }
   .calendar-page .calendar-holiday-detail { color:var(--cal-observe); }
@@ -459,6 +442,30 @@
   .calendar-info { margin-top:4mm; color:var(--cal-muted); font-size:2.6mm; }
   .calendar-info summary { cursor:pointer; text-decoration:underline; text-underline-offset:1mm; min-height:10mm; display:flex; align-items:center; }
   .calendar-warning[hidden] { display:none; }
+  .calendar-page .calendar-icon-button { display:grid; place-items:center; flex:none; width:7.62mm; height:7.62mm; min-height:7.62mm; padding:0; border:0; border-radius:2mm; background:transparent; color:var(--cal-text); cursor:pointer; }
+  .calendar-page .calendar-icon-button:focus-visible { outline:1px solid var(--cal-text); outline-offset:-1px; }
+  .calendar-action-icon { display:block; width:3.81mm; height:3.81mm; background:currentColor; mask-size:contain; mask-repeat:no-repeat; mask-position:center; -webkit-mask-size:contain; -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; }
+  .calendar-back-icon { mask-image:url('assets/calendar-back.svg?v=1'); -webkit-mask-image:url('assets/calendar-back.svg?v=1'); }
+  .calendar-add-icon { mask-image:url('assets/calendar-add.svg?v=1'); -webkit-mask-image:url('assets/calendar-add.svg?v=1'); }
+  .calendar-expand-icon { mask-image:url('assets/calendar-expand.svg?v=1'); -webkit-mask-image:url('assets/calendar-expand.svg?v=1'); }
+  .calendar-icon-button[aria-expanded="true"] .calendar-expand-icon { transform:rotate(180deg); }
+  .calendar-nav { justify-content:space-between; }
+  .calendar-expand-row { display:flex; justify-content:center; }
+  .calendar-page { --cal-event-ring:#0064a5; --cal-selected-event:#77c8ff; --cal-selected-observe:#ffc077; }
+  .calendar-page[data-theme="dark"] { --cal-event-ring:#77c8ff; --cal-selected-event:#0064a5; --cal-selected-observe:#9b5700; }
+  .calendar-day, .calendar-day.today, .calendar-day.selected { isolation:isolate; background:transparent; border:0; border-radius:0; }
+  .calendar-day::before { content:''; position:absolute; z-index:-1; width:6.4mm; height:6.4mm; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:30%; background:var(--cal-day); }
+  .calendar-day.today::before { background:var(--cal-card); box-shadow:inset 0 0 0 .3mm var(--cal-border); }
+  .calendar-day.selected::before { background:var(--cal-select); }
+  .calendar-day { --ring-h:var(--cal-weekend); --ring-o:var(--cal-observe); --ring-e:var(--cal-event-ring); }
+  .calendar-day.selected { --ring-h:var(--cal-selected-weekend); --ring-o:var(--cal-selected-observe); --ring-e:var(--cal-selected-event); }
+  .calendar-day.marker-holiday::before { box-shadow:inset 0 0 0 .32mm var(--ring-h); }
+  .calendar-day.marker-observance::before { box-shadow:inset 0 0 0 .32mm var(--ring-o); }
+  .calendar-day.marker-event::before { box-shadow:inset 0 0 0 .32mm var(--ring-e); }
+  .calendar-day.marker-holiday.marker-observance::before { box-shadow:inset 0 0 0 .32mm var(--ring-h), inset 0 0 0 .64mm var(--ring-o); }
+  .calendar-day.marker-holiday.marker-event::before { box-shadow:inset 0 0 0 .32mm var(--ring-h), inset 0 0 0 .64mm var(--ring-e); }
+  .calendar-day.marker-observance.marker-event::before { box-shadow:inset 0 0 0 .32mm var(--ring-o), inset 0 0 0 .64mm var(--ring-e); }
+  .calendar-day.marker-holiday.marker-observance.marker-event::before { box-shadow:inset 0 0 0 .32mm var(--ring-h), inset 0 0 0 .64mm var(--ring-o), inset 0 0 0 .96mm var(--ring-e); }
   .date-led:focus-visible { outline: 1px solid #ffc477; outline-offset: 3px; }
   .clock-display { font-size: 6.5mm; text-align: center; margin: 4mm 0; color: #ffd49d; }
   .timer-inputs { display: flex; gap: 1mm; margin-bottom: 3mm; }
@@ -666,7 +673,7 @@
                 </div>
               </section>
               <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>
-                <div class="calendar-top"><button class="clock-back" id="calendarBack" type="button">Kembali</button>
+                <div class="calendar-top"><button class="calendar-icon-button" id="calendarBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button>
                   <div class="calendar-theme"><button class="calendar-theme-button" id="calendarTheme" type="button" aria-label="Tema: Sistem. Pilih tema kalender" aria-expanded="false" aria-controls="calendarThemeMenu" title="Pilih tema kalender"><span class="calendar-theme-icon calendar-theme-system" id="calendarThemeIcon" aria-hidden="true"></span></button>
                     <div class="calendar-theme-menu" id="calendarThemeMenu" role="group" aria-label="Pilihan tema kalender" hidden>
                       <button class="calendar-theme-option" id="calendarThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button>
@@ -676,17 +683,18 @@
                 <div class="calendar-card">
                 <div class="calendar-nav">
                   <button class="clock-action calendar-month" id="calendarMonth" type="button" aria-label="Pilih bulan" aria-expanded="false"></button>
+                  <button class="calendar-icon-button" id="calendarAdd" type="button" aria-label="Tambah acara" title="Tambah acara"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button>
                 </div>
                 <div id="calendarMonthMenu" class="calendar-month-menu" hidden>
                   <button class="clock-action" id="calendarPrev" type="button">Bulan sebelumnya</button>
                   <button class="clock-action" id="calendarNext" type="button">Bulan berikutnya</button>
                 </div>
-                <div class="calendar-grid" id="calendarGrid" aria-label="Tanggal bulan ini. Geser kiri untuk bulan berikutnya, kanan untuk bulan sebelumnya."></div>
+                <div class="calendar-grid" id="calendarGrid" aria-label="Tanggal minggu ini"></div>
+                <div class="calendar-expand-row"><button class="calendar-icon-button" id="calendarExpand" type="button" aria-label="Tampilkan satu bulan" aria-expanded="false" aria-controls="calendarGrid" title="Tampilkan satu bulan"><span class="calendar-action-icon calendar-expand-icon" aria-hidden="true"></span></button></div>
                 </div>
                 <div class="clock-section calendar-agenda">
                   <div class="calendar-agenda-head"><div><span class="calendar-kicker" id="calendarDayLabel">TANGGAL DIPILIH</span><h3 id="calendarSelected"></h3></div><button class="clock-action" id="calendarToday" type="button">Hari ini</button></div>
                   <div id="calendarHolidayDetails" aria-live="polite"></div>
-                  <button class="clock-action clock-wide" id="calendarAdd" type="button">+ Tambah acara</button>
                   <form class="alarm-form" id="calendarForm" hidden>
                     <label>Nama acara <input id="calendarTitle" type="text" maxlength="80" required></label>
                     <label>Waktu (opsional) <input id="calendarTime" type="time"></label>
@@ -696,7 +704,7 @@
                   <div id="calendarEvents"></div>
                   <p class="clock-muted calendar-warning" id="calendarWarning" role="status" hidden></p>
                   <details class="calendar-info"><summary>Info kalender</summary>
-                    <p class="calendar-legend">Titik merah: libur nasional · titik amber: peringatan</p>
+                    <p class="calendar-legend">Garis merah: libur nasional · amber: peringatan · biru: acara. Beberapa garis berarti beberapa penanda.</p>
                     <h3>LIBUR &amp; PERINGATAN</h3>
                     <div id="calendarMonthHolidays"></div>
                     <p class="clock-muted" id="calendarHolidayStatus" role="status"></p>
@@ -991,7 +999,7 @@
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=8"></script>
+<script src="calendar.js?v=9"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

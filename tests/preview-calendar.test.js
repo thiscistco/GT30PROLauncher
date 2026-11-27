@@ -23,14 +23,14 @@ class Element {
   fire(type,extra={}){if(this.listeners[type]) this.listeners[type].call(this,{preventDefault(){},stopPropagation(){},...extra});}
 }
 const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
-function createUI(){
+function createUI(openMonth=true){
  const ids = {};
- for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel']) ids[id]=new Element();
+ for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel','calendarExpand']) ids[id]=new Element();
  ids.calendarThemeMenu.hidden=true; ids.calendarMonthMenu.hidden=true; ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
  const media={matches:true,addEventListener(type,fn){this.change=fn;}};
  const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer,matchMedia:()=>media,setTimeout};
- calendar.mount(win); ids._win=win; ids._media=media; return ids;
+ calendar.mount(win); if(openMonth) ids.calendarExpand.fire('click'); ids._win=win; ids._media=media; return ids;
 }
 let ui=createUI();
 assert.equal(ui.calendarGrid.children.filter(e=>e.attrs['aria-pressed']==='true').length,1);
@@ -55,7 +55,7 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=8"/);
+assert.match(html,/src="calendar\.js\?v=9"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
@@ -85,19 +85,19 @@ let march=createUI(); navigateTo(march,2026,3); let cuti=march.calendarGrid.chil
 assert(!cuti.classes.has('holiday') && !cuti.classes.has('marker-holiday') && !cuti.classes.has('marker-observance')); cuti.fire('click'); assert.match(march.calendarHolidayDetails.children[0].textContent,/Cuti bersama/);
 let missing=createUI(); navigateTo(missing,2028,1); assert.match(missing.calendarHolidayStatus.textContent,/belum tersedia/);
 assert(missing.calendarGrid.children.every(e=>!e.classes.has('marker-holiday')&&!e.classes.has('marker-observance')));
-assert.match(html,/marker-holiday::after/); assert.match(html,/marker-observance::after/); assert.match(html,/Titik merah: libur nasional · titik amber: peringatan/);
+assert.match(html,/marker-holiday::before/); assert.match(html,/marker-observance::before/); assert(!html.includes('marker-holiday::after')); assert.match(html,/Garis merah: libur nasional/);
 storage.clear(); let events=createUI(); navigateTo(events,2026,8);
 events.calendarGrid.children.find(e=>e.textContent==='17').fire('click');
 events.calendarAdd.fire('click'); events.calendarTitle.value='Acara'; events.calendarForm.fire('submit');
-let eventHoliday=events.calendarGrid.children.find(e=>e.textContent==='17·');
-assert(eventHoliday.classes.has('marker-holiday')); assert.match(eventHoliday.attrs['aria-label'],/ada acara/);
+let eventHoliday=events.calendarGrid.children.find(e=>e.textContent==='17');
+assert(eventHoliday.classes.has('marker-holiday')); assert(eventHoliday.classes.has('marker-event')); assert.match(eventHoliday.attrs['aria-label'],/ada acara/);
 events.calendarEvents.children[0].children[1].fire('click');
 assert(events.calendarGrid.children.find(e=>e.textContent==='17').classes.has('marker-holiday'));
 console.log('Calendar preview: date rules, holidays, local persistence, deletion, safe text and navigation: OK');
 
 const nativeCalendar=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/CalendarActivity.java','utf8');
 const mainActivity=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java','utf8');
-assert.match(html,/class="calendar-card"/);assert.match(html,/radial-gradient\(circle 3\.2mm/);
+assert.match(html,/class="calendar-card"/);assert.match(html,/calendar-day::before[^}]+border-radius:30%/);
 assert.match(html,/id="homeDate" role="button" tabindex="0"/);
 assert.match(mainActivity,/dateBox\.setOnClickListener\(v -> startActivity\(new Intent\(this, CalendarActivity\.class\)\)\)/);
 assert.match(nativeCalendar,/dayBackground\(/);assert.match(nativeCalendar,/0xFFF4F7FA/);assert.match(nativeCalendar,/fonts\/Doto\.ttf/);
@@ -132,3 +132,20 @@ assert.match(html,/id="calendarThemeLight"[^>]*aria-label="Terang"/);
 assert.match(html,/id="calendarThemeDark"[^>]*aria-label="Gelap"/);
 assert.match(nativeCalendar,/setContentDescription\("Tema: " \+ themeLabel\(\)/);
 assert.match(nativeCalendar,/new PopupWindow\(/);
+
+assert.deepEqual(calendar.weekDays({year:2027,month:1,day:1}),[{year:2026,month:12,day:28},{year:2026,month:12,day:29},{year:2026,month:12,day:30},{year:2026,month:12,day:31},{year:2027,month:1,day:1},{year:2027,month:1,day:2},{year:2027,month:1,day:3}]);
+assert.deepEqual(calendar.shiftWeek({year:2024,month:2,day:26},1),{year:2024,month:3,day:4});
+assert.deepEqual(calendar.shiftWeek({year:1900,month:1,day:3},-1),{year:1900,month:1,day:1});
+assert.deepEqual(calendar.shiftWeek({year:2100,month:12,day:29},1),{year:2100,month:12,day:31});
+assert.equal(calendar.weekDays({year:2100,month:12,day:31}).filter(x=>x===null).length,2);
+storage.clear();let weekly=createUI(false);
+assert.equal(weekly.calendarExpand.attrs['aria-expanded'],'false');assert.equal(weekly.calendarGrid.children.length,14);
+const first=weekly.calendarSelected.textContent;
+weekly.calendarNext.fire('click');assert.notEqual(weekly.calendarSelected.textContent,first);
+weekly.calendarPrev.fire('click');assert.equal(weekly.calendarSelected.textContent,first);
+weekly.calendarExpand.fire('click');assert.equal(weekly.calendarExpand.attrs['aria-expanded'],'true');assert(weekly.calendarGrid.children.length>14);
+weekly.calendarExpand.fire('click');assert.equal(weekly.calendarGrid.children.length,14);assert.equal(weekly.calendarSelected.textContent,first);
+assert.match(html,/id="calendarAdd"[^>]*aria-label="Tambah acara"/);
+assert.match(html,/id="calendarBack"[^>]*aria-label="Kembali"/);
+assert.match(html,/marker-holiday\.marker-observance\.marker-event::before/); assert.match(html,/calendar-day, \.calendar-day\.today, \.calendar-day\.selected \{[^}]*border:0/);
+console.log('Calendar week/month, squircle outlines and icon controls: OK');

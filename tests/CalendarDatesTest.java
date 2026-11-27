@@ -17,6 +17,11 @@ public class CalendarDatesTest {
         check(CalendarDates.shiftMonth(LocalDate.of(2026, 12, 31), 1).equals(LocalDate.of(2027, 1, 31)), "year transition");
         check(CalendarDates.shiftMonth(LocalDate.of(1900, 1, 31), -1).equals(LocalDate.of(1900, 1, 31)), "minimum boundary");
         check(CalendarDates.shiftMonth(LocalDate.of(2100, 12, 31), 1).equals(LocalDate.of(2100, 12, 31)), "maximum boundary");
+        check(CalendarDates.weekStart(LocalDate.of(2027, 1, 1)).equals(LocalDate.of(2026,12,28)), "cross-year Monday");
+        check(CalendarDates.shiftWeek(LocalDate.of(2024, 2, 26), 1).equals(LocalDate.of(2024,3,4)), "leap week");
+        check(CalendarDates.shiftWeek(LocalDate.of(1900,1,3), -1).equals(LocalDate.of(1900,1,1)), "week lower clamp");
+        check(CalendarDates.shiftWeek(LocalDate.of(2100,12,29), 1).equals(LocalDate.of(2100,12,31)), "week upper clamp");
+        check(!CalendarDates.inRange(LocalDate.of(2101,1,1)), "out-of-range date hidden");
         check(CalendarDates.validTime("") && CalendarDates.validTime("00:00") && CalendarDates.validTime("23:59"), "valid optional time");
         check(!CalendarDates.validTime("24:00") && !CalendarDates.validTime("12:60") && !CalendarDates.validTime("9:30"), "invalid time");
         check(CalendarDates.validTitle(" Acara ") && !CalendarDates.validTitle("   ") && !CalendarDates.validTitle(null), "title validation");
