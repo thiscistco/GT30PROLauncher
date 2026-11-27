@@ -19,9 +19,11 @@ assert 'Calendar.HOUR_OF_DAY' in hud and 'Calendar.MINUTE' in hud and 'Calendar.
 assert 'String.format(Locale.US,"%02d:%02d:%02d",h,m,s)' in hud
 assert 'i<60' in hud and 'i%5==0' in hud and 'second/60' in hud
 assert 'ui.ink' in hud and 'ui.card' in hud and 'ui.border' in hud
-assert 'float size=Math.min(getWidth(),getHeight())' in hud
+assert 'float size=Math.min(frame.width(),frame.height())' in hud
 assert 'canvas.drawCircle(cx,cy,radius,paint)' in hud and 'setTextSize(size*.135f)' in hud
-assert 'canvas.drawRoundRect(frame' not in hud and 'clock-hud-label' not in html
+assert 'canvas.drawRoundRect(frame,corner,corner,paint)' in hud and 'clock-hud-label' not in html
+assert 'RectF frame=new RectF(gap,gap,getWidth()-gap,getHeight()-gap)' in hud
+assert '.clock-hud { position:absolute; inset:1.2mm;' in html and 'background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm' in html
 assert 'height:min(100%, 64mm)' in html and "font:800 32.4px" in html
 assert 'width:7.62mm; min-width:0; height:7.62mm' in html
 assert 'new LinearLayout.LayoutParams(dp(48), dp(48))' in clock

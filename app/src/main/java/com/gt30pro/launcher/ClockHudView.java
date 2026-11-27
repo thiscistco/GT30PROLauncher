@@ -3,6 +3,7 @@ package com.gt30pro.launcher;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.view.View;
 import java.util.Calendar;
@@ -31,8 +32,15 @@ final class ClockHudView extends View {
     }
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        float size=Math.min(getWidth(),getHeight());
-        if (size <= 0) return;
+        float density=getResources().getDisplayMetrics().density;
+        float gap=Math.min(8f*density, Math.min(getWidth(),getHeight())*.05f);
+        RectF frame=new RectF(gap,gap,getWidth()-gap,getHeight()-gap);
+        if (frame.width() <= 0 || frame.height() <= 0) return;
+        float corner=Math.min(12f*density,Math.min(frame.width(),frame.height())/2f);
+        paint.setStyle(Paint.Style.FILL); paint.setColor(card); canvas.drawRoundRect(frame,corner,corner,paint);
+        paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(1f,density)); paint.setColor(border);
+        canvas.drawRoundRect(frame,corner,corner,paint);
+        float size=Math.min(frame.width(),frame.height());
         float cx=getWidth()/2f, cy=getHeight()/2f, radius=size*.43f;
         paint.setStyle(Paint.Style.FILL); paint.setColor(card); canvas.drawCircle(cx,cy,radius,paint);
         paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(1f,size*.004f)); paint.setColor(border);

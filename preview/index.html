@@ -579,7 +579,7 @@
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; }
   #clockPage .app-top { flex:none; }
   .clock-stage { flex:1; min-height:0; position:relative; }
-  .clock-hud { position:absolute; inset:0; display:grid; place-items:center; }
+  .clock-hud { position:absolute; inset:1.2mm; display:grid; place-items:center; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { height:min(100%, 64mm); width:auto; max-width:100%; aspect-ratio:1; overflow:visible; }
   .clock-hud-face { fill:var(--app-card); stroke:var(--app-border); stroke-width:1; }
@@ -590,9 +590,10 @@
   .clock-hud-marker { fill:var(--app-text); }
   #clockHudText { fill:var(--app-text); font:800 32.4px 'Doto', monospace; font-variation-settings:'wght' 800; }
   .clock-panel-scroll { position:absolute; inset:0; overflow-y:auto; overscroll-behavior:contain; }
-  #clockPage .clock-tabs { flex:none; display:flex; gap:.48mm; margin:0; padding-top:2mm; overflow-x:auto; }
+  #clockPage .clock-tabs { flex:none; display:flex; gap:.79mm; margin:0; padding-top:2mm; overflow-x:auto; }
   #clockPage .clock-tabs button { flex:0 0 7.62mm; width:7.62mm; min-width:0; height:7.62mm; padding:1.905mm; border-radius:2.5mm; }
   #clockPage .clock-tabs button:first-child { margin-left:auto; }
+  #clockPage .clock-tabs button:last-child { margin-right:auto; }
   #clockPage .clock-tabs button img { width:3.81mm; height:3.81mm; }
   #clockPage .clock-action { border-radius:2.5mm; }
   #clockPage .clock-entry, #clockPage .alarm-form, #clockPage input, #clockPage select { border-radius:3mm; }
@@ -787,7 +788,7 @@
                   <button data-clock-tab="alarm" type="button" aria-label="Alarm" aria-pressed="false" title="Alarm"><img src="assets/clock-alarm.svg?v=3" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="world" type="button" aria-label="Jam Dunia" aria-pressed="false" title="Jam Dunia"><img src="assets/clock-world.svg?v=3" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="timer" type="button" aria-label="Timer" aria-pressed="false" title="Timer"><img src="assets/clock-timer.svg?v=3" alt="" aria-hidden="true"></button>
-                  <button data-clock-tab="stopwatch" type="button" aria-label="Stopwatch" aria-pressed="false" title="Stopwatch"><img src="assets/clock-stopwatch.svg?v=3" alt="" aria-hidden="true"></button>
+                  <button data-clock-tab="stopwatch" type="button" aria-label="Stopwatch" aria-pressed="false" title="Stopwatch"><img src="assets/clock-stopwatch.svg?v=4" alt="" aria-hidden="true"></button>
                 </nav>
               </section>
               <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>

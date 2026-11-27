@@ -13,8 +13,8 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 | Bodi | 163,7 × 75,8 × 8,0 mm |
 
 Saat membuka **Jam**, HUD waktu lokal HH:mm:ss tampil di tengah dalam lingkaran
-jam analog. Ikon bilah bawah rata kanan untuk Alarm, Jam Dunia, Timer, dan
-Stopwatch. Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
+jam analog, dengan bingkai squircle yang mengisi area antara judul dan bilah
+bawah. Ikon bilah bawah rata tengah untuk Alarm, Jam Dunia, Timer, dan Stopwatch. Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
 
 ## Desain aplikasi bawaan
 
