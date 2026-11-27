@@ -9,7 +9,7 @@ html=(root/'preview/index.html').read_text()
 assert 'private int tab = -1;' in clock and 'state.getInt("clock_tab",-1)' in clock
 assert 'new ClockHudView(this,ui,doto)' in clock
 assert 'page.addView(stage,new LinearLayout.LayoutParams(-1,0,1))' in clock
-assert clock.index('page.addView(stage') < clock.index('page.addView(tabs')
+assert clock.index('page.addView(stage') < clock.index('page.addView(tabsScroll')
 assert 'hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE)' in clock
 assert 'panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE)' in clock
 assert 'if (tab != -1) showTab(-1); else super.onBackPressed();' in clock
@@ -18,14 +18,13 @@ assert 'handler.removeCallbacks(tick)' in clock and 'lastHudSecond=-1' in clock
 assert 'Calendar.HOUR_OF_DAY' in hud and 'Calendar.MINUTE' in hud and 'Calendar.SECOND' in hud
 assert 'String.format(Locale.US,"%02d:%02d:%02d",h,m,s)' in hud
 assert 'i<60' in hud and 'i%5==0' in hud and 'second/60' in hud
-assert 'ui.ink' in hud and 'ui.card' in hud and 'ui.border' in hud and 'ui.control' in hud
-assert 'canvas.drawRoundRect(frame,corner,corner,paint)' in hud and 'Math.min(12f*density' in hud
-assert 'frame.width()*.72f' in hud and 'frame.height()*.48f' in hud and '230f*density' in hud
-assert 'setTextSize(size*.11f)' in hud and 'canvas.drawRoundRect(label,labelCorner,labelCorner,paint)' in hud
-assert 'class="clock-hud-label"' in html and 'border-radius:3mm' in html
-assert 'height:min(48%, 36.5mm)' in html and 'font:800 26.4px' in html
+assert 'ui.ink' in hud and 'ui.card' in hud and 'ui.border' in hud
+assert 'float size=Math.min(getWidth(),getHeight())' in hud
+assert 'canvas.drawCircle(cx,cy,radius,paint)' in hud and 'setTextSize(size*.135f)' in hud
+assert 'canvas.drawRoundRect(frame' not in hud and 'clock-hud-label' not in html
+assert 'height:min(100%, 64mm)' in html and "font:800 32.4px" in html
 assert 'width:7.62mm; min-width:0; height:7.62mm' in html
-assert 'new FrameLayout.LayoutParams(dp(48), dp(48), Gravity.CENTER)' in clock
+assert 'new LinearLayout.LayoutParams(dp(48), dp(48))' in clock
 assert 'timerDisplay.setBackground(bg(ui.card))' in clock and 'stopwatchDisplay.setBackground(bg(ui.card))' in clock
 assert 'setContentDescription("Jam " + value)' in hud
 assert 'ClockAlarms.schedule' in clock and 'timer_draft' in clock and 'saveStopwatch()' in clock

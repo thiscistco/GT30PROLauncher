@@ -56,6 +56,7 @@ public class ClockActivity extends SwipeBackActivity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Typeface doto;
     private LinearLayout content, tabs;
+    private HorizontalScrollView tabsScroll;
     private ClockHudView hud;
     private ScrollView panelScroll;
     private long lastHudSecond = -1;
@@ -98,8 +99,10 @@ public class ClockActivity extends SwipeBackActivity {
         hud = new ClockHudView(this,ui,doto); stage.addView(hud,new FrameLayout.LayoutParams(-1,-1));
         panelScroll = new ScrollView(this); panelScroll.setFillViewport(false); stage.addView(panelScroll,new FrameLayout.LayoutParams(-1,-1));
         content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(0, dp(18), 0, dp(20)); panelScroll.addView(content);
-        tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); tabs.setGravity(Gravity.CENTER);
-        tabs.setPadding(0,dp(8),0,0); page.addView(tabs,new LinearLayout.LayoutParams(-1,dp(64)));
+        tabsScroll = new HorizontalScrollView(this); tabsScroll.setHorizontalScrollBarEnabled(false); tabsScroll.setFillViewport(true);
+        tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); tabs.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        tabs.setPadding(0,dp(8),0,0); tabsScroll.addView(tabs,new FrameLayout.LayoutParams(-1,-1));
+        page.addView(tabsScroll,new LinearLayout.LayoutParams(-1,dp(64)));
         setContentView(root);
         showTab(tab);
     }
@@ -142,10 +145,11 @@ public class ClockActivity extends SwipeBackActivity {
             item.setTooltipText(TAB_NAMES[i]);
             item.setSelected(i == selected);
             item.setOnClickListener(v -> showTab(tab == index ? -1 : index));
-            FrameLayout cell = new FrameLayout(this);
-            cell.addView(item, new FrameLayout.LayoutParams(dp(48), dp(48), Gravity.CENTER));
-            tabs.addView(cell, new LinearLayout.LayoutParams(0, dp(48), 1));
+            LinearLayout.LayoutParams itemParams = new LinearLayout.LayoutParams(dp(48), dp(48));
+            if (i > 0) itemParams.leftMargin = dp(3);
+            tabs.addView(item, itemParams);
         }
+        tabsScroll.post(() -> tabsScroll.scrollTo(Math.max(0, tabs.getWidth() - tabsScroll.getWidth()), 0));
         hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE);
         panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE);
         if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else if (selected == 3) showStopwatch();

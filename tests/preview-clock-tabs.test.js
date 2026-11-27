@@ -11,7 +11,7 @@ for (let i=0; i<4; i++) {
   assert(attrs.includes(`aria-label="${labels[i]}"`));
   assert(attrs.includes(`title="${labels[i]}"`));
   assert(attrs.includes('aria-pressed="false"'));
-  assert(content.includes(`src="assets/clock-${name}.svg?v=2"`));
+  assert(content.includes(`src="assets/clock-${name}.svg?v=3"`));
   assert.match(content, /alt="" aria-hidden="true"/);
   assert.equal(content.replace(/<[^>]+>/g, '').trim(), '', 'tabs display icons only');
 }
@@ -24,9 +24,14 @@ assert.match(java, /item\.setContentDescription\(TAB_NAMES\[i\]\)/);
 assert.match(java, /item\.setTooltipText\(TAB_NAMES\[i\]\)/);
 assert.match(java, /item\.setSelected\(i == selected\)/);
 assert.match(java, /item\.setOnClickListener\(v -> showTab\(tab == index \? -1 : index\)\)/);
-assert.match(java, /new FrameLayout\.LayoutParams\(dp\(48\), dp\(48\), Gravity\.CENTER\)/);
+assert.match(java, /new LinearLayout\.LayoutParams\(dp\(48\), dp\(48\)\)/);
+assert.match(java, /tabs\.setGravity\(Gravity\.RIGHT \| Gravity\.CENTER_VERTICAL\)/);
+assert.match(java, /if \(i > 0\) itemParams\.leftMargin = dp\(3\)/);
+assert.match(java, /tabsScroll\.setFillViewport\(true\)/);
+assert.match(html, /gap:\.48mm/);
+assert.match(html, /#clockPage \.clock-tabs button:first-child \{ margin-left:auto/);
 assert.match(java, /item\.setPadding\(dp\(12\), dp\(12\), dp\(12\), dp\(12\)\)/);
-assert(java.indexOf('page.addView(stage') < java.indexOf('page.addView(tabs'));
+assert(java.indexOf('page.addView(stage') < java.indexOf('page.addView(tabsScroll'));
 const buttons = names.map(name => ({
   name, attrs:{'aria-pressed':'false'}, active:false,
   getAttribute(key){return key==='data-clock-tab' ? this.name : this.attrs[key]},
