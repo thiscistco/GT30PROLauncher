@@ -1,15 +1,16 @@
 package com.gt30pro.launcher;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
-import android.graphics.RadialGradient;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
-/** Explicitly sized, software-rendered home clock; the separator stays steady. */
+/** Explicitly sized home clock with a five-dot sequential gunmetal pulse. */
 final class HomeClockView extends View {
     static final float WIDTH_MM = 3.6f;
     static final float CONTENT_HEIGHT_MM = 5.731f;
@@ -25,6 +26,28 @@ final class HomeClockView extends View {
     private final Paint dots = new Paint(Paint.ANTI_ALIAS_FLAG);
     private String hour = "00", minute = "00";
     private float pxPerMm = 1f;
+    private ValueAnimator separatorAnimator;
+    private float separatorPhase = -1f;
+    private static final float HOME_SCALE = 1.14f;
+
+    void startSeparator() {
+        stopSeparator();
+        if (!ValueAnimator.areAnimatorsEnabled()) return;
+        separatorAnimator = ValueAnimator.ofFloat(0f, 5f);
+        separatorAnimator.setDuration(5000);
+        separatorAnimator.setInterpolator(new LinearInterpolator());
+        separatorAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        separatorAnimator.addUpdateListener(animation -> {
+            separatorPhase = (Float) animation.getAnimatedValue();
+            invalidate();
+        });
+        separatorAnimator.start();
+    }
+    void stopSeparator() {
+        if (separatorAnimator != null) { separatorAnimator.cancel(); separatorAnimator = null; }
+        separatorPhase = -1f;
+        invalidate();
+    }
 
     HomeClockView(Context context) {
         super(context);
@@ -81,16 +104,20 @@ final class HomeClockView extends View {
         float total = 2.8f * pxPerMm - .76f * cssPx;
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;
-        dots.setShadowLayer(.6f * pxPerMm, 0f, 0f, 0xA6FF6919);
+        dots.setColor(lightGlass ? 0xFF263840 : 0xFFAABAC5);
+        dots.setShadowLayer(.35f * pxPerMm, 0f, 0f, lightGlass ? 0x33403B45 : 0x99202B31);
         for (int i = 0; i < 5; i++) {
             float x = start + i * total / 5f;
             float y = dotTop + r;
-            dots.setShader(new RadialGradient(x, y, r,
-                new int[]{0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A},
-                new float[]{0f, .55f, 1f}, Shader.TileMode.CLAMP));
+            float pulse = HomeClockPulse.intensity(separatorPhase, i);
+            dots.setAlpha(Math.round(102f + 153f * pulse));
             canvas.drawCircle(x, y, r, dots);
         }
-        dots.setShader(null);
+        dots.setAlpha(255);
+        // The clock's view is scaled, so compensate to move the minute by one final CSS pixel.
+        canvas.save();
+        canvas.translate(-cssPx / HOME_SCALE, -cssPx / HOME_SCALE);
         drawDigits(canvas, minute, dotTop + .22f * pxPerMm + .45f * pxPerMm, line);
+        canvas.restore();
     }
 }

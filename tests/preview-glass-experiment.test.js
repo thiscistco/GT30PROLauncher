@@ -17,7 +17,7 @@ screen.clientWidth=500;screen.clientHeight=1360;resize();
 assert.equal(parseFloat(props['--clock-shift']),1091); assert.equal(parseFloat(props['--clock-right']),375);
 assert.equal(parseFloat(props['--battery-shift']),735); assert.equal(parseFloat(props['--battery-right']),247.5);
 assert.match(html,/\.battery-value \{[^}]*translate\(var\(--battery-right, 0px\), calc\(0px - var\(--battery-shift, 0px\)\)\) scale\(1\.215\)/);
-assert.match(html,/transform: translate\(calc\(-50% \+ var\(--clock-right, 0px\)\), calc\(0px - var\(--clock-shift, 0px\)\)\) scale\(1\.2\)/);
+assert.match(html,/transform: translate\(calc\(-50% \+ var\(--clock-right, 0px\)\), calc\(0px - var\(--clock-shift, 0px\)\)\) scale\(1\.14\)/);
 assert.match(html,/\.home-weather \{[^}]*color: #ffcd6a/);
 assert.match(html,/\.battery-led\.charging \{[^}]*color: #ffcd6a/);
 console.log('Home positioning: glass removed, proportional offsets and app layers preserved OK');

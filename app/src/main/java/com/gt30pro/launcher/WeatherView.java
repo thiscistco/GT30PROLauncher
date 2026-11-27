@@ -33,7 +33,7 @@ final class WeatherView extends View {
     }
     void setIconColor(int value) { if (!home) { color=value; invalidate(); } }
     void setOpensDetails(boolean value) { opensDetails = value; }
-    // Use the root's physical CSS-pixel scale so the 5px gap adjustment matches preview.
+    // Use the root's physical CSS-pixel scale so the temperature offset matches preview.
     void setHomeCssPixel(float value) {
         if (!home || homeCssPixel == value) return;
         homeCssPixel = value;
@@ -62,7 +62,7 @@ final class WeatherView extends View {
         if (home) {
             paint.setTextSize(5.5f*s);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(temperature, getWidth()/2f, y0+20.8f*s - 5f*homeCssPixel, paint);
+            canvas.drawText(temperature, getWidth()/2f, y0+20.8f*s - (5f + 2f / .9f)*homeCssPixel, paint);
         }
         paint.clearShadowLayer();
     }

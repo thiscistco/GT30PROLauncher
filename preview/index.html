@@ -162,7 +162,7 @@
     font-weight: 100 900;
   }
   /* Informational home label; preview uses sample data, never reads device battery. */
-  .battery-info { position:absolute; z-index:6; left:calc(8% - 5px); width:84%; bottom:calc(14% + 105px); box-sizing:border-box;
+  .battery-info { position:absolute; z-index:6; left:calc(8% - 5px); width:84%; bottom:calc(14% + 97px); box-sizing:border-box;
     padding:1.5mm 2.2mm; border:0; background:transparent; color:#f1f2e9; pointer-events:none; }
   .battery-info-spacer { height:2.3mm; }
   .battery-info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:2mm; }
@@ -216,7 +216,7 @@
   .clock-led {
     position: absolute;
     left: calc(35.7% - 0.5px);
-    transform: translate(calc(-50% + var(--clock-right, 0px)), calc(0px - var(--clock-shift, 0px))) scale(1.2);
+    transform: translate(calc(-50% + var(--clock-right, 0px)), calc(0px - var(--clock-shift, 0px))) scale(1.14);
     bottom: calc(6% + 0.55px);
     font-family: 'Doto', monospace;
     font-size: 2mm;
@@ -265,7 +265,7 @@
   .weather-widget svg { position: absolute; left: 17.5%; top: 6%; width: 65%; height: 52%; fill: currentColor; }
   .weather-widget .weather-temp { position: absolute; top: 68%; left: 0; width: 100%; text-align: center; line-height: 1; font-size: 3.025mm; }
   .home-weather { position: absolute; z-index: 6; left: calc(49% - 2px); bottom: calc(6% + 460px); transform: translateX(-50%) scale(0.9); width: 11mm; height: 13.75mm; color: #ffcd6a; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
-  .home-weather .weather-temp { top: calc(68% - 5px); }
+  .home-weather .weather-temp { top: calc(68% - 7.222222px); }
   /* 48dp target: 41px left and 11px above the original bolt-aligned position. */
   .home-voice { position:absolute; z-index:6; bottom:calc(1.2% + 13.75px + 3mm); left:calc(50% - 40px); transform:translateX(-50%); width:8.3mm; height:8.3mm;
     display:flex; align-items:center; justify-content:center; padding:2.075mm; border:0; border-radius:2.1mm;
@@ -366,16 +366,21 @@
     -webkit-text-fill-color: #aabac5;
     filter: drop-shadow(0 0 0.4mm rgba(20, 27, 31, 0.85)) brightness(1.4);
   }
+  #clockMin { transform: translate(-0.877193px, -0.877193px); }
   .clock-sep {
-    display: block;
-    position: relative;
-    left: -0.63px;
-    width: calc(100% - 0.76px);
-    height: 0.22mm;
-    background: radial-gradient(circle 0.11mm at center, #ffcd6a 0%, #ffcd6a 55%, #ffcd6a 90%, transparent 100%) 50% 50% / 20% 100% repeat-x;
-    filter: drop-shadow(0 0 0.6mm rgba(255, 105, 25, 0.65));
-    margin: calc(0.461mm - 1px) 0 0.45mm 0;
+    display:flex; justify-content:space-around; align-items:center;
+    position:relative; left:-0.63px; width:calc(100% - 0.76px); height:0.22mm;
+    margin:calc(0.461mm - 1px) 0 0.45mm 0;
+    color:#aabac5;
   }
+  .clock-sep i { display:block; width:0.22mm; height:0.22mm; border-radius:50%; background:currentColor;
+    opacity:.4; box-shadow:0 0 .35mm rgba(32,43,49,.6); animation:clockDotPulse 5s linear infinite; }
+  .clock-sep i:nth-child(2) { animation-delay:1s; }
+  .clock-sep i:nth-child(3) { animation-delay:2s; }
+  .clock-sep i:nth-child(4) { animation-delay:3s; }
+  .clock-sep i:nth-child(5) { animation-delay:4s; }
+  @keyframes clockDotPulse { 0%,20%,100% { opacity:.4; } 10% { opacity:1; } }
+  @media (prefers-reduced-motion:reduce) { .clock-sep i { animation:none; opacity:1; } }
   /* Gunmetal keeps its system-dependent contrast; amber matches the circuit light. */
   @media (prefers-color-scheme: light) {
     .clock-led > span:not(.clock-sep), .date-led > span {
@@ -387,7 +392,7 @@
       background:none; color:#263840; -webkit-text-fill-color:#263840;
       filter:drop-shadow(0 0 .4mm rgba(40,59,69,.2)) brightness(.55);
     }
-    .clock-sep { background: radial-gradient(circle 0.11mm at center, #ffcd6a 0%, #ffcd6a 55%, #ffcd6a 90%, transparent 100%) 50% 50% / 20% 100% repeat-x; filter:drop-shadow(0 0 .6mm rgba(255,105,25,.65)); }
+    .clock-sep { color:#263840; }
     .home-weather { color:#ffcd6a; filter:drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
     .battery-led { color:#263840; filter:brightness(.55); text-shadow:0 0 1.2mm rgba(38,56,64,.27); }
     .battery-led.charging { color:#ffcd6a; filter:none; text-shadow:0 0 1.2mm rgba(255,105,25,.55); }
@@ -854,7 +859,7 @@
               <button class="home-voice" id="homeVoice" type="button" aria-label="Ikon perintah suara. Ketuk untuk info preview" aria-describedby="voicePreviewStatus" title="Perintah suara: info preview"><span class="home-voice-icon" aria-hidden="true"><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span></span></button>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>
-                <span class="clock-sep"></span>
+                <span class="clock-sep" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
                 <span id="clockMin">00</span>
               </div>
               <div class="date-led" id="homeDate" role="button" tabindex="0" aria-label="Tanggal hari ini. Buka Kalender di Super App">

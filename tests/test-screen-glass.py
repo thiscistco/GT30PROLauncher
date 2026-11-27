@@ -29,7 +29,7 @@ assert 'Math.max(root.getWidth() / 1224f, root.getHeight() / 2720f)' in main
 assert 'clockBox.setTranslationY(top - params.topMargin - 2182f * wallpaperScale(root))' in main
 assert 'batteryBox.setTranslationY(cssPixel - 1470f * wallpaperScale(root))' in main
 assert '+ 750f * wallpaperScale(root)' in main
-assert 'clockBox.setScaleX(1.2f)' in main and 'batteryLed.setScaleX(1.215f)' in main
+assert 'clockBox.setScaleX(1.14f)' in main and 'batteryLed.setScaleX(1.215f)' in main
 assert html.index('id="wallpaper"') < html.index('id="amberGlow"') < html.index('id="clockLed"')
 assert '<script src="home-position.js?v=1"></script>' in html
 print('Homescreen: glass/reflection removed, wallpaper intact, system palette and home positions preserved OK')

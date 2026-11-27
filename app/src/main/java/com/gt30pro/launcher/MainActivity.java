@@ -177,8 +177,8 @@ public class MainActivity extends BottomSwipeActivity {
         clockLed = clockBox;
         clockBox.setVisibility(View.VISIBLE);
         clockBox.setAlpha(1f);
-        clockBox.setScaleX(1.2f);
-        clockBox.setScaleY(1.2f);
+        clockBox.setScaleX(1.14f);
+        clockBox.setScaleY(1.14f);
         clockBox.setElevation(4f * getResources().getDisplayMetrics().density);
         homeRoot.setClipChildren(false);
         homeRoot.addView(clockBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
@@ -265,7 +265,7 @@ public class MainActivity extends BottomSwipeActivity {
         float cssPixel=(root.getWidth()/70.9f)*25.4f/96f;
         batteryInfo.setColumnOffset(cssPixel);
         batteryInfo.setTranslationX(-5f*cssPixel);
-        int width=Math.round(root.getWidth()*.84f), bottom=Math.round(root.getHeight()*.14f+105f*cssPixel);
+        int width=Math.round(root.getWidth()*.84f), bottom=Math.round(root.getHeight()*.14f+97f*cssPixel);
         if(p.width!=width || p.bottomMargin!=bottom) { p.width=width; p.bottomMargin=bottom; batteryInfo.setLayoutParams(p); }
     }
 
@@ -413,6 +413,7 @@ public class MainActivity extends BottomSwipeActivity {
             clockLed.setVisibility(View.VISIBLE);
             clockLed.setAlpha(1f);
             clockLed.bringToFront();
+            clockLed.startSeparator();
         }
         if (dateLed != null) {
             dateLed.setVisibility(View.VISIBLE);
@@ -440,6 +441,7 @@ public class MainActivity extends BottomSwipeActivity {
     protected void onPause() {
         super.onPause();
         homeResumed = false;
+        if (clockLed != null) clockLed.stopSeparator();
         unregisterReceiver(batteryReceiver);
         unregisterReceiver(powerSaveReceiver);
         stopAmberGlow();
