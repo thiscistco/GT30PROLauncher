@@ -24,10 +24,13 @@ assert.match(html,/\.home-weather\s+\.weather-temp\s*\{\s*top:\s*calc\(68%\s*-\s
 assert.match(weatherLayout,/width \* \.49f - 2f \* cssPixel - w \/ 2f/);
 assert.match(weatherLayout,/height - \(height \* \.06f \+ 460f \* cssPixel\) - h/);
 assert.match(weatherLayout,/box\.setHomeCssPixel\(cssPixel\)/);
-assert.match(html,/\.home-weather \.weather-temp \{[^}]*transform:translate\(5\.555556px, 5\.555556px\)/);
-assert.match(weatherView,/float tempShift=5f \/ \.9f \* homeCssPixel/);
+assert.match(html,/\.home-weather \.weather-temp \{[^}]*transform:translate\(3\.333333px, 3\.333333px\)/);
+assert.match(weatherView,/float tempShift=3f \/ \.9f \* homeCssPixel/);
 assert.match(weatherView,/canvas\.drawText\(temperature, getWidth\(\)\/2f \+ tempShift, y0\+20\.8f\*s - \(5f \+ 4f \/ \.9f\)\*homeCssPixel \+ tempShift, paint\)/);
-assert(Math.abs(5.555556*.9-5)<1e-6);
+assert(Math.abs((5.555556-3.333333)*.9-2)<1e-6);
+assert.match(html,/\.home-weather svg \{ transform:scale\(\.85\); transform-origin:center; \}/);
+assert.match(weatherView,/if \(home\) canvas\.scale\(\.85f, \.85f, x0\+6\.5f\*s, y0\+6\.5f\*s\)/);
+assert.match(weatherView,/canvas\.save\(\);[\s\S]*?canvas\.scale\(\.85f[\s\S]*?canvas\.drawCircle[\s\S]*?canvas\.restore\(\);[\s\S]*?canvas\.drawText\(temperature/);
 assert(Math.abs((18.333333-9.444444)*.9-8)<1e-6);
 for (const [w,h] of [[269,596],[720,1600],[1080,2400],[1224,2720]]) {
  const mm=w/70.9, css=mm*25.4/96, dateCenter=w*.49+115*css, center=w*.49-2*css;

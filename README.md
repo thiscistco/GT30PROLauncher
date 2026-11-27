@@ -223,3 +223,6 @@ Super App memiliki aplikasi **Catatan**: buat, edit, dan hapus catatan dengan ko
 
 ### Penyesuaian v0.1.219
 Hanya angka suhu di homescreen digeser 5 px ke kanan dan 5 px ke bawah berdasarkan skala preview; ikon cuaca tidak dipindahkan.
+
+### Penyesuaian v0.1.220
+Angka suhu di homescreen digeser 2 px ke kiri dan 2 px ke atas berdasarkan skala preview. Ikon cuaca homescreen diperkecil 15% dari pusatnya; ikon cuaca di Super App tidak berubah.

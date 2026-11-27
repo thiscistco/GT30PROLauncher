@@ -56,14 +56,18 @@ final class WeatherView extends View {
         paint.setColor(color); paint.setStyle(Paint.Style.FILL);
         paint.setShadowLayer(.65f*s, 0, 0, !home || color == Color.WHITE ? 0 : 0x99FF6919);
         String[] rows = WeatherIcons.forCode(code, day);
+        canvas.save();
+        // Only the home icon is 15% smaller; keep its center and the temperature unchanged.
+        if (home) canvas.scale(.85f, .85f, x0+6.5f*s, y0+6.5f*s);
         for (int y = 0; y < 13; y++) for (int x = 0; x < 13; x++) {
             if (rows[y].charAt(x) == '#') canvas.drawCircle(x0+(x+.5f)*s, y0+(y+.5f)*s, .36f*s, paint);
         }
+        canvas.restore();
         if (home) {
             paint.setTextSize(5.5f*s);
             paint.setTextAlign(Paint.Align.CENTER);
-            // Move only the temperature by five final CSS pixels in each direction; the view is scaled to 90%.
-            float tempShift=5f / .9f * homeCssPixel;
+            // The view is scaled to 90%; retain a three-final-CSS-pixel offset in both axes.
+            float tempShift=3f / .9f * homeCssPixel;
             canvas.drawText(temperature, getWidth()/2f + tempShift, y0+20.8f*s - (5f + 4f / .9f)*homeCssPixel + tempShift, paint);
         }
         paint.clearShadowLayer();
