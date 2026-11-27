@@ -16,6 +16,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
 
 /** UI bridge: microphone control and foreground-only safe operations. */
 final class VoiceController {
@@ -24,6 +25,8 @@ final class VoiceController {
     private static WeakReference<Dialog> dialog=new WeakReference<>(null);
     private static WeakReference<BottomSwipeActivity> dialogOwner=new WeakReference<>(null);
     private static int pendingMode=VoiceCommands.OFF;
+    // Weak keys avoid retaining destroyed pages or calendar headers after re-rendering.
+    private static final WeakHashMap<ImageButton,Integer> buttons=new WeakHashMap<>();
     static void resume(BottomSwipeActivity activity) {
         active=new WeakReference<>(activity);
         if(dialogOwner.get()!=activity) { dialog.clear(); dialogOwner.clear(); }
@@ -37,12 +40,32 @@ final class VoiceController {
     }
     static ImageButton button(BottomSwipeActivity a, int color) {
         ImageButton b=new ImageButton(a);
-        b.setImageResource(R.drawable.ic_voice_mic); b.setColorFilter(color);
+        b.setImageResource(R.drawable.ic_voice_command);
         b.setScaleType(ImageView.ScaleType.FIT_CENTER);
         int padding=Math.round(12*a.getResources().getDisplayMetrics().density);
-        b.setPadding(padding,padding,padding,padding); b.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-        b.setContentDescription("Kontrol suara"); b.setTooltipText("Kontrol suara");
-        b.setOnClickListener(v -> menu(a)); return b;
+        b.setPadding(padding,padding,padding,padding);
+        b.setOnClickListener(v -> toggle(a,VoiceCommands.COMMAND));
+        b.setOnLongClickListener(v -> { menu(a); return true; });
+        setButtonColor(b,color); return b;
+    }
+    static void setButtonColor(ImageButton b,int color) { buttons.put(b,color); updateButton(b,color); }
+    static void refreshButtons() {
+        for (java.util.Map.Entry<ImageButton,Integer> entry : buttons.entrySet()) updateButton(entry.getKey(),entry.getValue());
+    }
+    private static void updateButton(ImageButton b,int color) {
+        int mode=VoiceService.mode;
+        boolean lightInk=android.graphics.Color.red(color)+android.graphics.Color.green(color)+android.graphics.Color.blue(color)>420;
+        int tint=mode==VoiceCommands.COMMAND ? (lightInk ? 0xFFFFCB66 : 0xFF8C4800)
+                : mode==VoiceCommands.TYPING ? (lightInk ? 0xFF9CE9FF : 0xFF005B7C) : color;
+        b.setColorFilter(tint);
+        android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();
+        bg.setCornerRadius(12*b.getResources().getDisplayMetrics().density);
+        bg.setColor(mode==VoiceCommands.COMMAND ? 0x33E79A24 : mode==VoiceCommands.TYPING ? 0x33379DC0 : android.graphics.Color.TRANSPARENT);
+        b.setBackground(bg); b.setSelected(mode==VoiceCommands.COMMAND);
+        String label=mode==VoiceCommands.COMMAND ? "Hentikan perintah suara" : "Aktifkan perintah suara";
+        String state=mode==VoiceCommands.TYPING ? ". Mode mengetik aktif" : "";
+        b.setContentDescription(label+state+". Tekan lama untuk pilihan suara");
+        b.setTooltipText(label+" · tekan lama untuk pilihan suara");
     }
     static void menu(BottomSwipeActivity a) {
         String mode=VoiceService.mode==VoiceCommands.COMMAND ? "Perintah" : VoiceService.mode==VoiceCommands.TYPING ? "Ketik" : "Tidak aktif";

@@ -57,6 +57,7 @@ public final class VoiceService extends Service {
             if (Build.VERSION.SDK_INT>=29) startForeground(ID,listening(),ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
             else startForeground(ID,listening());
         } catch (RuntimeException e) { fail("Mikrofon tidak dapat dimulai. Buka launcher dan periksa izin."); return START_NOT_STICKY; }
+        VoiceController.refreshButtons();
         failures=0; restartRecognizer();
         return START_NOT_STICKY;
     }
@@ -139,7 +140,7 @@ public final class VoiceService extends Service {
         stopSelf();
     }
     @Override public void onDestroy() {
-        mode=VoiceCommands.OFF; generation++; handler.removeCallbacksAndMessages(null);
+        mode=VoiceCommands.OFF; VoiceController.refreshButtons(); generation++; handler.removeCallbacksAndMessages(null);
         if(recognizer!=null) { recognizer.destroy(); recognizer=null; }
         notifications.cancel(OPEN_ID); super.onDestroy();
     }

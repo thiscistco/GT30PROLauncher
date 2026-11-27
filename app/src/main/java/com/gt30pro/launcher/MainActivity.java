@@ -55,6 +55,7 @@ public class MainActivity extends BottomSwipeActivity {
     private ValueAnimator dateAnim;
     private CircuitGlowView amberGlow;
     private ImageView screenGlass;
+    private android.widget.ImageButton voiceButton;
     private Boolean glassDark;
     private boolean homeResumed;
     private ValueAnimator amberAnim;
@@ -103,7 +104,7 @@ public class MainActivity extends BottomSwipeActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FrameLayout micRoot=findViewById(R.id.root);
-        android.widget.ImageButton mic=VoiceController.button(this,0xFFB7CBD6);
+        android.widget.ImageButton mic=VoiceController.button(this,0xFFB7CBD6); voiceButton=mic;
         int micSize=Math.round(48*getResources().getDisplayMetrics().density);
         FrameLayout.LayoutParams micParams=new FrameLayout.LayoutParams(micSize,micSize,Gravity.TOP|Gravity.END);
         micParams.topMargin=Math.round(40*getResources().getDisplayMetrics().density);
@@ -361,6 +362,7 @@ public class MainActivity extends BottomSwipeActivity {
                 glassDark = dark;
             }
         }
+        if (voiceButton != null) VoiceController.setButtonColor(voiceButton,dark ? 0xFFFFFFFF : 0xFF142A3A);
         if (clockLed != null) clockLed.setLightGlass(!dark);
         if (dateLed != null) dateLed.setLightGlass(!dark);
         if (weatherLed != null) weatherLed.setLightGlass(!dark);
