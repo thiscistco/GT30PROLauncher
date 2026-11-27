@@ -181,10 +181,12 @@
     font-variation-settings: 'wght' 700;
     letter-spacing: 0.2mm;
     color: #e9f0f5;
-    opacity: 0.6;
+    opacity: 1;
     text-shadow: 0 0 1.2mm rgba(233, 240, 245, 0.55);
     z-index: 6;
   }
+  /* Only the number moves; its sibling charging bolt stays in the original place. */
+  .battery-value { display:inline-block; transform:translateY(calc(0px - var(--home-shift, 0px))); }
   .battery-led.charging {
     color: #ffb65c;
     text-shadow: 0 0 1.2mm rgba(255, 105, 25, 0.55);
@@ -202,12 +204,12 @@
     pointer-events: none;
   }
   .battery-led.charging .battery-bolt { display: block; }
-  @keyframes batteryPulse { from { opacity: 0.21; } to { opacity: 0.6; } }
+  @keyframes batteryPulse { from { opacity: 0.65; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .battery-led.charging { animation: none; } }
   .clock-led {
     position: absolute;
     left: calc(35.7% - 0.5px);
-    transform: translateX(-50%);
+    transform: translate(-50%, calc(0px - var(--home-shift, 0px)));
     bottom: calc(6% + 0.55px);
     font-family: 'Doto', monospace;
     font-size: 2mm;
@@ -805,7 +807,7 @@
         <button id="tabSuper" type="button" aria-pressed="false">Super App</button>
       </div>
       <label class="glass-preview-control"><input type="checkbox" id="glassPreviewToggle" aria-describedby="glassPreviewHelp" checked> Ikon dan label di balik kaca</label>
-      <p class="glass-preview-note" id="glassPreviewHelp">Percobaan preview saja. Matikan untuk membandingkan dengan tampilan APK saat ini.</p>
+      <p class="glass-preview-note" id="glassPreviewHelp">Percobaan preview saja. Matikan untuk membandingkan posisi kaca; jam dan angka baterai digeser 800 piksel gambar pada kedua pilihan.</p>
     </header>
 
     <div class="stage">
@@ -832,7 +834,7 @@
                 <span id="homeDateMonth">---</span>
               </div>
               <button class="weather-widget home-weather" id="homeWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg><span class="weather-temp">--°</span></button>
-              <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen">85<svg class="battery-bolt" viewBox="0 0 5 7" preserveAspectRatio="none" aria-hidden="true">
+              <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen"><span class="battery-value">85</span><svg class="battery-bolt" viewBox="0 0 5 7" preserveAspectRatio="none" aria-hidden="true">
                 <circle cx="2.5" cy="0.5" r="0.32"/><circle cx="3.5" cy="0.5" r="0.32"/>
                 <circle cx="1.5" cy="1.5" r="0.32"/><circle cx="2.5" cy="1.5" r="0.32"/>
                 <circle cx="1.5" cy="2.5" r="0.32"/><circle cx="2.5" cy="2.5" r="0.32"/>
@@ -1401,7 +1403,7 @@
     }, 50);
   })();
 </script>
-<script src="glass-preview.js?v=1"></script>
+<script src="glass-preview.js?v=2"></script>
 <script src="home-date.js?v=2"></script>
 <script src="weather-page.js?v=2"></script>
 <script src="weather.js?v=6"></script>
