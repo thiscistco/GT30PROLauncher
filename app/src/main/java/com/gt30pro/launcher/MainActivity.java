@@ -478,7 +478,7 @@ public class MainActivity extends BottomSwipeActivity {
         if (charging) {
             if (batteryLed != null) {
                 batteryLed.setTextColor(light ? 0xFF993800 : 0xFFFF9D2F);
-                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44893000 : 0x8CFF6919);
+                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0xCCFFFFFF : 0x8CFF6919);
             }
             if (batteryBolt != null) {
                 batteryBolt.setColor(light ? 0xFF993800 : 0xFFFF9D2F);
@@ -504,7 +504,7 @@ public class MainActivity extends BottomSwipeActivity {
             }
             if (batteryLed != null) {
                 batteryLed.setTextColor(light ? 0xFF263840 : 0xFFFFFFFF);
-                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44263840 : 0x8CFFFFFF);
+                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0xCCFFFFFF : 0x8CFFFFFF);
                 batteryLed.setAlpha(.6f);
             }
             if (batteryBolt != null) {

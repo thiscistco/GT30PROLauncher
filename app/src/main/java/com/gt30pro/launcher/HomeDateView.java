@@ -61,7 +61,7 @@ final class HomeDateView extends View {
         text.setTextSize(2f * SIZE_SCALE * sizeFactor * pxPerMm);
         text.setColor(lightGlass ? (gunmetal ? 0xFF283B45 : 0xFFB64B00)
                 : (gunmetal ? 0xFF82929A : 0xFFFFCD6A));
-        text.setShadowLayer(.4f * pxPerMm, 0f, 0f, lightGlass ? 0x33283B45 : (gunmetal ? 0xD9141B1F : 0xA6FF6919));
+        text.setShadowLayer(.4f * pxPerMm, 0f, 0f, lightGlass ? 0xCCFFFFFF : (gunmetal ? 0xD9141B1F : 0xA6FF6919));
         Paint.FontMetrics metrics = text.getFontMetrics();
         float baseline = top + (line - (metrics.descent - metrics.ascent)) / 2f - metrics.ascent;
         float width = text.measureText(value) + Math.max(0, value.length() - 1) * gap;

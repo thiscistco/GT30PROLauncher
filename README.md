@@ -17,7 +17,7 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 - **Homescreen minimalis** — wallpaper render GT 30 Pro dengan jam, tanggal,
   baterai, animasi jalur dan ikon cuaca dengan suhu (sesuai preview). Di atas
   wallpaper terdapat lapisan kaca putih (mode terang) atau hitam (mode gelap)
-  dengan transparansi 25%. Ikon dan label berada di atas kaca; lapisan ini
+  dengan transparansi 75%. Ikon dan label berada di atas kaca; lapisan ini
   tidak menghalangi sentuhan atau mengubah wallpaper asli.
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
   long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).

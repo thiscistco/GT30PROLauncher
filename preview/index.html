@@ -341,16 +341,16 @@
     .clock-led > span:not(.clock-sep), .date-led > span {
       background: linear-gradient(to bottom, #893000 0%, #a33c00 24%, #b64b00 50%, #a33c00 76%, #893000 100%);
       -webkit-background-clip: text; background-clip: text;
-      filter: drop-shadow(0 0 0.4mm rgba(137,48,0,.27));
+      filter: drop-shadow(0 0 0.4mm rgba(255,255,255,.8));
     }
     .date-led #homeDateWeekday, .date-led #homeDateMonth {
       background:none; color:#283b45; -webkit-text-fill-color:#283b45;
-      filter:drop-shadow(0 0 .4mm rgba(40,59,69,.2));
+      filter:drop-shadow(0 0 .4mm rgba(255,255,255,.8));
     }
-    .clock-sep { background: radial-gradient(circle 0.11mm at center, #b64b00 0%, #a33c00 55%, #893000 90%, transparent 100%) 50% 50% / 20% 100% repeat-x; filter:drop-shadow(0 0 .6mm rgba(137,48,0,.27)); }
-    .home-weather { color:#993800; filter:drop-shadow(0 0 .35mm rgba(137,48,0,.27)); }
-    .battery-led { color:#263840; text-shadow:0 0 1.2mm rgba(38,56,64,.27); }
-    .battery-led.charging { color:#993800; text-shadow:0 0 1.2mm rgba(137,48,0,.27); }
+    .clock-sep { background: radial-gradient(circle 0.11mm at center, #b64b00 0%, #a33c00 55%, #893000 90%, transparent 100%) 50% 50% / 20% 100% repeat-x; filter:drop-shadow(0 0 .6mm rgba(255,255,255,.8)); }
+    .home-weather { color:#993800; filter:drop-shadow(0 0 .35mm rgba(255,255,255,.8)); }
+    .battery-led { color:#263840; text-shadow:0 0 1.2mm rgba(255,255,255,.8); }
+    .battery-led.charging { color:#993800; text-shadow:0 0 1.2mm rgba(255,255,255,.8); }
   }
   .weather-page { position: absolute; inset: 0; z-index: 10; overflow-y: auto; padding: 6.35mm 3.175mm 4.45mm; background: linear-gradient(to bottom, rgba(0,0,0,.30) 0mm, rgba(0,0,0,.65) 46mm, #000 80mm), url('assets/weather-sky.jpg?v=1') center top / 100% auto no-repeat, #000; color: #f5f5f5; font: 700 2.06475mm 'Doto', monospace; }
   .weather-page[hidden] { display: none; }
@@ -637,8 +637,8 @@
             <div class="screen">
               <div class="wallpaper" id="wallpaper"></div>
               <canvas class="amber-glow" id="amberGlow" aria-hidden="true"></canvas>
-              <img class="home-screen-glass light" src="assets/home-screen-glass.png?v=3" alt="" aria-hidden="true" draggable="false">
-              <img class="home-screen-glass dark" src="assets/home-screen-glass-dark.png?v=2" alt="" aria-hidden="true" draggable="false">
+              <img class="home-screen-glass light" src="assets/home-screen-glass.png?v=4" alt="" aria-hidden="true" draggable="false">
+              <img class="home-screen-glass dark" src="assets/home-screen-glass-dark.png?v=3" alt="" aria-hidden="true" draggable="false">
               <canvas class="path-draw" id="pathDraw" aria-label="Area menggambar jalur animasi" hidden></canvas>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>

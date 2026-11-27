@@ -52,7 +52,7 @@ assert.match(charge, /setRepeatMode\(ValueAnimator\.REVERSE\)/);
 assert.match(charge, /batteryLed\.setAlpha\(alpha\)/);
 assert.match(charge, /batteryBolt\.setAlpha\(alpha\)/);
 assert.match(charge, /batteryLed\.setTextColor\(light \? 0xFF993800 : 0xFFFF9D2F\)/);
-assert.match(charge, /batteryLed\.setShadowLayer\(8f, 0f, 0f, light \? 0x44893000 : 0x8CFF6919\)/);
+assert.match(charge, /batteryLed\.setShadowLayer\(8f, 0f, 0f, light \? 0xCCFFFFFF : 0x8CFF6919\)/);
 assert.match(charge, /batteryBolt\.setColor\(light \? 0xFF993800 : 0xFFFF9D2F\)/);
 assert.match(charge, /batteryLed\.setTextColor\(light \? 0xFF263840 : 0xFFFFFFFF\)/);
 assert.match(charge, /batteryBolt\.setColor\(light \? 0xFF263840 : 0xFFFFFFFF\)/);

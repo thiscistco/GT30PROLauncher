@@ -62,7 +62,7 @@ final class HomeClockView extends View {
         float firstWidth = text.measureText(value, 0, 1);
         float secondWidth = text.measureText(value, 1, 2);
         float x = (getWidth() - firstWidth - gap - secondWidth) / 2f;
-        text.setShadowLayer(.4f * pxPerMm, 0, 0, lightGlass ? 0x44893000 : 0xA6FF6919);
+        text.setShadowLayer(.4f * pxPerMm, 0, 0, lightGlass ? 0xCCFFFFFF : 0xA6FF6919);
         text.setShader(new LinearGradient(0, top, 0, top + lineHeight, lightGlass ? AMBER_LIGHT : AMBER, STOPS, Shader.TileMode.CLAMP));
         canvas.drawText(value, 0, 1, x, baseline, text);
         canvas.drawText(value, 1, 2, x + firstWidth + gap, baseline, text);
@@ -81,7 +81,7 @@ final class HomeClockView extends View {
         float total = 2.8f * pxPerMm - .76f * cssPx;
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;
-        dots.setShadowLayer(.6f * pxPerMm, 0f, 0f, lightGlass ? 0x44893000 : 0xA6FF6919);
+        dots.setShadowLayer(.6f * pxPerMm, 0f, 0f, lightGlass ? 0xCCFFFFFF : 0xA6FF6919);
         for (int i = 0; i < 5; i++) {
             float x = start + i * total / 5f;
             float y = dotTop + r;
