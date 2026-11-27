@@ -579,7 +579,7 @@
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; padding:2.54mm 3.175mm; }
   #clockPage .app-top { flex:none; }
   .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
-  .clock-stage:has([data-clock-panel="alarm"]:not([hidden]) #previewAlarmForm:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
+  .clock-stage:has([data-clock-panel="alarm"]:not([hidden]) #previewAlarmForm:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
   .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
@@ -625,8 +625,8 @@
   #clockPage .alarm-days label span { display:grid; place-items:center; box-sizing:border-box; width:100%; height:100%; background:var(--app-control); color:var(--app-text); border:1px solid var(--app-border); border-radius:2mm; }
   #clockPage .alarm-days input:checked + span { background:var(--app-selected); color:var(--app-selected-text); }
   .alarm-editor-actions { display:flex; gap:1.27mm; }
-  .alarm-editor-actions #previewSaveAlarm { flex:1; }
-  #clockPage .alarm-editor-actions .alarm-cancel, #clockPage .alarm-editor-actions .alarm-editor-delete { min-height:7.62mm; width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
+   .alarm-editor-actions { justify-content:flex-end; }
+  #clockPage .alarm-editor-actions .alarm-cancel, #clockPage .alarm-editor-actions .alarm-editor-delete, #clockPage .alarm-editor-actions .alarm-save { min-height:7.62mm; width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
   #previewEditorDelete[hidden] { display:none !important; }
   #previewSound { width:100%; margin-top:1mm; }
   #clockPage .alarm-card { display:flex; align-items:center; gap:.64mm; padding:1.27mm; }
@@ -643,6 +643,16 @@
   .alarm-card-switch input:focus-visible + .alarm-switch-track { outline:2px solid var(--app-text); outline-offset:2px; }
   #clockPage .alarm-delete { min-height:7.62mm; flex:0 0 7.62mm; width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
   .alarm-delete-icon { mask-image:url('assets/alarm-delete.svg?v=1'); -webkit-mask-image:url('assets/alarm-delete.svg?v=1'); }
+  #clockPage .clock-city { display:flex; align-items:center; gap:1.27mm; margin:0; min-height:8.89mm; }
+  .clock-city-name { flex:1; min-width:0; overflow-wrap:anywhere; }
+  #clockPage .clock-city .alarm-card-switch { display:inline-flex; flex:none; margin:0; }
+  .clock-control-row { display:flex; align-items:center; justify-content:center; gap:1.27mm; margin-top:1.27mm; }
+  #clockPage .clock-control { min-height:7.62mm; width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
+  .clock-action-play { mask-image:url('assets/clock-action-play.svg?v=1'); -webkit-mask-image:url('assets/clock-action-play.svg?v=1'); }
+  .clock-action-pause { mask-image:url('assets/clock-action-pause.svg?v=1'); -webkit-mask-image:url('assets/clock-action-pause.svg?v=1'); }
+  .clock-action-stop { mask-image:url('assets/clock-action-stop.svg?v=1'); -webkit-mask-image:url('assets/clock-action-stop.svg?v=1'); }
+  .clock-action-lap { mask-image:url('assets/clock-action-lap.svg?v=1'); -webkit-mask-image:url('assets/clock-action-lap.svg?v=1'); }
+  .clock-action-reset { mask-image:url('assets/clock-action-reset.svg?v=1'); -webkit-mask-image:url('assets/clock-action-reset.svg?v=1'); }
   .clock-alarm-countdown { margin:.8mm 0; font-size:2.2mm; color:var(--app-muted); }
   #clockPage .clock-entry, #clockPage .alarm-form, #clockPage input, #clockPage select { border-radius:3mm; }
   #clockPage .clock-display { background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; padding:2mm; }
@@ -815,7 +825,7 @@
                     <div class="alarm-days" id="previewAlarmDays" role="group" aria-label="Hari pengulangan">
                       <label><input type="checkbox" value="1"><span>Sen</span></label><label><input type="checkbox" value="2"><span>Sel</span></label><label><input type="checkbox" value="3"><span>Rab</span></label><label><input type="checkbox" value="4"><span>Kam</span></label><label><input type="checkbox" value="5"><span>Jum</span></label><label><input type="checkbox" value="6"><span>Sab</span></label><label><input type="checkbox" value="0"><span>Min</span></label>
                     </div>
-                    <div class="alarm-editor-actions"><button class="clock-action alarm-cancel" id="previewCancelAlarm" type="button" aria-label="Batal" title="Batal"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button><button class="clock-action" id="previewSaveAlarm" type="button">Simpan</button><button class="clock-action alarm-editor-delete" id="previewEditorDelete" type="button" aria-label="Hapus alarm" title="Hapus alarm" hidden><span class="calendar-action-icon alarm-delete-icon" aria-hidden="true"></span></button></div>
+                    <div class="alarm-editor-actions"><button class="clock-action alarm-cancel" id="previewCancelAlarm" type="button" aria-label="Batal" title="Batal"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button><button class="clock-action alarm-save" id="previewSaveAlarm" type="button" aria-label="Simpan alarm" title="Simpan alarm"><span class="calendar-action-icon calendar-save-icon" aria-hidden="true"></span></button><button class="clock-action alarm-editor-delete" id="previewEditorDelete" type="button" aria-label="Hapus alarm" title="Hapus alarm" hidden><span class="calendar-action-icon alarm-delete-icon" aria-hidden="true"></span></button></div>
                   </div>
                   <div id="previewAlarms" class="clock-muted">Belum ada alarm. Tambahkan pengingat pertama.</div>
                 </div>
@@ -825,15 +835,18 @@
                 </div>
                 <div class="clock-section" data-clock-panel="timer" hidden>
                   <h3>TIMER</h3><div class="clock-display" id="previewTimerDisplay">00:00:00</div>
-                  <div class="timer-inputs"><input type="number" id="timerHours" placeholder="Jam" min="0" max="999"><input type="number" id="timerMinutes" placeholder="Menit" min="0" max="59"><input type="number" id="timerSeconds" placeholder="Detik" min="0" max="59"></div>
-                  <button class="clock-action clock-wide" id="previewTimerStart" type="button">Mulai timer</button>
-                  <div class="clock-row"><button class="clock-action" id="previewTimerCancel" type="button">Batalkan timer</button></div>
+                  <div class="alarm-wheels" aria-label="Pemilih durasi timer">
+                    <input type="hidden" id="timerHours" value="0"><input type="hidden" id="timerMinutes" value="0"><input type="hidden" id="timerSeconds" value="0">
+                    <div class="alarm-wheel" id="timerHourWheel" role="spinbutton" tabindex="0" aria-label="Jam timer" aria-valuemin="0" aria-valuemax="999"><button type="button" class="wheel-prev" aria-label="Jam sebelumnya"></button><span class="wheel-value" aria-hidden="true"></span><button type="button" class="wheel-next" aria-label="Jam berikutnya"></button></div>
+                    <div class="alarm-wheel" id="timerMinuteWheel" role="spinbutton" tabindex="0" aria-label="Menit timer" aria-valuemin="0" aria-valuemax="59"><button type="button" class="wheel-prev" aria-label="Menit sebelumnya"></button><span class="wheel-value" aria-hidden="true"></span><button type="button" class="wheel-next" aria-label="Menit berikutnya"></button></div>
+                    <div class="alarm-wheel" id="timerSecondWheel" role="spinbutton" tabindex="0" aria-label="Detik timer" aria-valuemin="0" aria-valuemax="59"><button type="button" class="wheel-prev" aria-label="Detik sebelumnya"></button><span class="wheel-value" aria-hidden="true"></span><button type="button" class="wheel-next" aria-label="Detik berikutnya"></button></div>
+                  </div>
+                  <div class="clock-control-row"><button class="clock-action clock-control" id="previewTimerStart" type="button" aria-label="Mulai timer" title="Mulai timer"><span class="calendar-action-icon clock-action-play" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewTimerCancel" type="button" aria-label="Batalkan timer" title="Batalkan timer"><span class="calendar-action-icon clock-action-stop" aria-hidden="true"></span></button></div>
                   <p class="clock-muted" id="previewTimerMessage">Pratinjau hanya simulasi; alarm berjalan di Android.</p>
                 </div>
                 <div class="clock-section" data-clock-panel="stopwatch" hidden>
                   <h3>STOPWATCH</h3><div class="clock-display" id="previewStopwatchDisplay">00:00:00.000</div>
-                  <button class="clock-action clock-wide" id="previewStopwatchStart" type="button">Mulai</button>
-                  <div class="clock-row"><button class="clock-action" id="previewLap" type="button">Lap</button><button class="clock-action" id="previewReset" type="button">Reset</button></div>
+                  <div class="clock-control-row"><button class="clock-action clock-control" id="previewStopwatchStart" type="button" aria-label="Mulai stopwatch" title="Mulai stopwatch"><span class="calendar-action-icon clock-action-play" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewLap" type="button" aria-label="Catat lap" title="Catat lap"><span class="calendar-action-icon clock-action-lap" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewReset" type="button" aria-label="Reset stopwatch" title="Reset stopwatch"><span class="calendar-action-icon clock-action-reset" aria-hidden="true"></span></button></div>
                   <div id="previewLaps"></div>
                 </div>
                   </div>
@@ -1229,23 +1242,42 @@
     }
     setInterval(updatePreviewCountdowns,1000);
     var cities = [['Jakarta','Asia/Jakarta'],['Makassar','Asia/Makassar'],['Jayapura','Asia/Jayapura'],['Singapore','Asia/Singapore'],['Tokyo','Asia/Tokyo'],['Seoul','Asia/Seoul'],['Dubai','Asia/Dubai'],['London','Europe/London'],['Paris','Europe/Paris'],['New York','America/New_York'],['Los Angeles','America/Los_Angeles'],['Sydney','Australia/Sydney']];
+    // Fixed display order preserves the existing array indices and default selection.
+    var cityOrder=[0,1,2,3,5,11,4,6,8,7,10,9];
     var cityBox = byId('previewCities');
-    cities.forEach(function (city, index) {
-      var label = document.createElement('label'); label.className = 'clock-city';
-      var input = document.createElement('input'); input.type = 'checkbox'; input.checked = [0,3,4,7,9].indexOf(index) !== -1;
-      input.addEventListener('change', renderWorld); label.appendChild(input); label.appendChild(document.createTextNode(city[0])); cityBox.appendChild(label);
+    cityOrder.forEach(function (index) {
+      var city=cities[index], row=document.createElement('div'); row.className='clock-city';
+      var name=document.createElement('span'); name.className='clock-city-name'; name.textContent=city[0]; row.appendChild(name);
+      var label=document.createElement('label'); label.className='alarm-card-switch';
+      var input=document.createElement('input'); input.type='checkbox'; input.setAttribute('role','switch'); input.setAttribute('aria-label',city[0]); input.dataset.cityIndex=index; input.checked=[0,3,4,7,9].indexOf(index)!==-1;
+      var track=document.createElement('span'); track.className='alarm-switch-track'; track.setAttribute('aria-hidden','true');
+      input.addEventListener('change',renderWorld); label.appendChild(input); label.appendChild(track); row.appendChild(label); cityBox.appendChild(row);
     });
     byId('previewCitiesButton').addEventListener('click', function () { cityBox.hidden = !cityBox.hidden; });
     function renderWorld() {
       var box = byId('previewWorld'); box.textContent = '';
-      cityBox.querySelectorAll('input').forEach(function (input, i) {
-        if (!input.checked) return;
+      cityBox.querySelectorAll('input').forEach(function (input) {
+        if (!input.checked) return; var city=cities[Number(input.dataset.cityIndex)];
         var row = document.createElement('div'); row.className = 'clock-entry';
-        row.textContent = cities[i][0] + '  ·  ' + new Intl.DateTimeFormat('id-ID', { timeZone: cities[i][1], hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date());
+        row.textContent = city[0] + '  ·  ' + new Intl.DateTimeFormat('id-ID', { timeZone: city[1], hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date());
         box.appendChild(row);
       });
     }
     renderWorld(); setInterval(renderWorld, 1000);
+    [['timerHourWheel','timerHours',1000],['timerMinuteWheel','timerMinutes',60],['timerSecondWheel','timerSeconds',60]].forEach(function(entry) {
+      var wheel=byId(entry[0]), input=byId(entry[1]), max=entry[2], startY=null, moved=false;
+      function refresh() { var n=Number(input.value), two=function(x){return String(x).padStart(2,'0');};
+        wheel.querySelector('.wheel-prev').textContent=two((n+max-1)%max); wheel.querySelector('.wheel-value').textContent=two(n); wheel.querySelector('.wheel-next').textContent=two((n+1)%max);
+        wheel.setAttribute('aria-valuenow',String(n)); wheel.setAttribute('aria-valuetext',two(n)); }
+      function move(delta) { input.value=String((Number(input.value)+delta+max)%max); refresh(); }
+      wheel.querySelector('.wheel-prev').addEventListener('click',function(){if(!moved)move(-1);moved=false;});
+      wheel.querySelector('.wheel-next').addEventListener('click',function(){if(!moved)move(1);moved=false;});
+      wheel.addEventListener('keydown',function(e){if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();move(e.key==='ArrowUp'?1:-1);}});
+      wheel.addEventListener('wheel',function(e){e.preventDefault();move(e.deltaY>0?1:-1);},{passive:false});
+      wheel.addEventListener('pointerdown',function(e){startY=e.clientY;moved=false;});
+      wheel.addEventListener('pointerup',function(e){if(startY!==null && Math.abs(startY-e.clientY)>15){moved=true;move(startY>e.clientY?1:-1);}startY=null;});
+      wheel.addEventListener('pointercancel',function(){startY=null;moved=false;}); refresh();
+    });
     var timerEnd = 0, timerDone = false;
     function pad(n, width) { return String(n).padStart(width || 2, '0'); }
     function format(ms, withMillis) { var s = Math.floor(ms / 1000); return pad(Math.floor(s/3600)) + ':' + pad(Math.floor(s/60)%60) + ':' + pad(s%60) + (withMillis ? '.' + pad(Math.floor(ms%1000),3) : ''); }
@@ -1258,15 +1290,16 @@
     byId('previewTimerCancel').addEventListener('click', function () { timerEnd = 0; byId('previewTimerMessage').textContent = 'Timer dibatalkan.'; });
     var elapsed = 0, started = 0, running = false, laps = [];
     function current() { return elapsed + (running ? performance.now() - started : 0); }
+    function updateStopwatchButton() { var b=byId('previewStopwatchStart'), label=running?'Jeda stopwatch':'Mulai stopwatch'; b.setAttribute('aria-label',label); b.title=label; b.querySelector('span').className='calendar-action-icon clock-action-'+(running?'pause':'play'); }
     byId('previewStopwatchStart').addEventListener('click', function () {
       if (running) { elapsed = current(); running = false; } else { started = performance.now(); running = true; }
-      this.textContent = running ? 'Jeda' : 'Mulai';
+      updateStopwatchButton();
     });
     byId('previewLap').addEventListener('click', function () {
       if (!running) return; var value = current(), previous = laps.length ? laps[laps.length-1] : 0; laps.push(value);
       var row = document.createElement('div'); row.className = 'clock-entry'; row.textContent = 'Lap ' + laps.length + '   ' + format(value-previous, true) + '  ·  Total ' + format(value, true); byId('previewLaps').prepend(row);
     });
-    byId('previewReset').addEventListener('click', function () { elapsed = 0; running = false; laps = []; byId('previewLaps').textContent = ''; byId('previewStopwatchStart').textContent = 'Mulai'; });
+    byId('previewReset').addEventListener('click', function () { elapsed = 0; running = false; laps = []; byId('previewLaps').textContent = ''; updateStopwatchButton(); });
     setInterval(function () {
       var remaining = timerEnd ? Math.max(0, timerEnd-Date.now()) : 0;
       byId('previewTimerDisplay').textContent = format(Math.ceil(remaining/1000)*1000, false);
