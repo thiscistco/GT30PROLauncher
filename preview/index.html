@@ -140,6 +140,11 @@
   .amber-glow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   .amber-glow.off { display: none; }
   .home-screen-glass { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; user-select:none; }
+  .home-screen-glass.dark { display:none; }
+  @media (prefers-color-scheme: dark) {
+    .home-screen-glass.light { display:none; }
+    .home-screen-glass.dark { display:block; }
+  }
   .path-draw { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 12; touch-action: none; cursor: crosshair; }
   .path-draw[hidden] { display: none; }
   .path-editor { max-width: 430px; width: 100%; display: grid; gap: 10px; padding: 14px; border: 1px solid rgba(247,162,59,.3); border-radius: 14px; background: rgba(20,22,26,.92); font: 600 12px/1.5 'Doto', monospace; }
@@ -616,7 +621,8 @@
             <div class="screen">
               <div class="wallpaper" id="wallpaper"></div>
               <canvas class="amber-glow" id="amberGlow" aria-hidden="true"></canvas>
-              <img class="home-screen-glass" src="assets/home-screen-glass.png?v=1" alt="" aria-hidden="true" draggable="false">
+              <img class="home-screen-glass light" src="assets/home-screen-glass.png?v=2" alt="" aria-hidden="true" draggable="false">
+              <img class="home-screen-glass dark" src="assets/home-screen-glass-dark.png?v=1" alt="" aria-hidden="true" draggable="false">
               <canvas class="path-draw" id="pathDraw" aria-label="Area menggambar jalur animasi" hidden></canvas>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
                 <span id="clockHour">00</span>

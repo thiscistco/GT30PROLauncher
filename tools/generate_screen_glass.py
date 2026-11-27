@@ -15,9 +15,10 @@ def coat(image, color, opacity):
     layer.putalpha(opacity)
     return Image.alpha_composite(image, layer)
 
-def artwork():
-    # A very light cool tint: nearly all the internals remain visible.
-    image = Image.new('RGBA', (W, H), (28, 45, 60, 8))
+def artwork(dark=False):
+    # Both tints stay translucent so the internals and circuit remain visible.
+    tint = (5, 12, 23, 48) if dark else (208, 226, 240, 22)
+    image = Image.new('RGBA', (W, H), tint)
     reflection = Image.new('L', (W, H), 0)
     draw = ImageDraw.Draw(reflection)
     draw.polygon([(-W*.22, H*.04), (W*.04, -H*.04), (W*1.17, H*.48), (W*.94, H*.56)], fill=28)
@@ -43,6 +44,7 @@ def artwork():
     return image
 
 if __name__ == '__main__':
-    image = artwork()
-    for name in ['app/src/main/assets/home_screen_glass.png','preview/assets/home-screen-glass.png']:
-        image.save(ROOT / name, optimize=True)
+    for dark, android_suffix, preview_suffix in [(False, '', ''), (True, '_dark', '-dark')]:
+        image = artwork(dark)
+        image.save(ROOT / f'app/src/main/assets/home_screen_glass{android_suffix}.png', optimize=True)
+        image.save(ROOT / f'preview/assets/home-screen-glass{preview_suffix}.png', optimize=True)

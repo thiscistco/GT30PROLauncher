@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -52,6 +54,8 @@ public class MainActivity extends BottomSwipeActivity {
     private ValueAnimator chargeAnim;
     private ValueAnimator dateAnim;
     private CircuitGlowView amberGlow;
+    private ImageView screenGlass;
+    private Boolean glassDark;
     private ValueAnimator amberAnim;
     private double amberPhase, amberDurationMs;
     private long amberLastFrame, amberNextMemorySample;
@@ -103,8 +107,8 @@ public class MainActivity extends BottomSwipeActivity {
         amberGlow = findViewById(R.id.amber_glow);
         amberGlow.load();
         amberGlow.setVisibility(View.INVISIBLE);
-        ImageView glass = findViewById(R.id.screen_glass);
-        glass.setImageBitmap(Wallpapers.loadScreenGlass(this));
+        screenGlass = findViewById(R.id.screen_glass);
+        updateScreenGlass();
 
         // Label indikator baterai (font Doto, putih, kecil, agak transparan) di portal USB Type-C
         batteryLed = new TextView(this);
@@ -313,9 +317,27 @@ public class MainActivity extends BottomSwipeActivity {
         if (weather != null) weather.permissionResult(requestCode);
     }
 
+    private void updateScreenGlass() {
+        if (screenGlass == null) return;
+        boolean dark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+        if (glassDark != null && glassDark.booleanValue() == dark) return;
+        Bitmap bitmap = Wallpapers.loadScreenGlass(this, dark);
+        if (bitmap != null) {
+            screenGlass.setImageBitmap(bitmap);
+            glassDark = dark;
+        }
+    }
+
+    @Override public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateScreenGlass();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        updateScreenGlass();
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         registerReceiver(powerSaveReceiver, new IntentFilter(android.os.PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
         updateAmberGlow();
