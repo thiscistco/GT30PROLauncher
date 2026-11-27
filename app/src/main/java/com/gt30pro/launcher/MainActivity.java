@@ -115,9 +115,9 @@ public class MainActivity extends BottomSwipeActivity {
         batteryLed = new TextView(this);
         batteryLed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Doto.ttf"));
         batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        batteryLed.setTextColor(0xFFFFFFFF);
+        batteryLed.setTextColor(0xFFE9F0F5);
         batteryLed.setAlpha(0.6f);
-        batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+        batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CE9F0F5);
         batteryLed.setLetterSpacing(0.06f);
         batteryLed.setFontVariationSettings("'wght' 700");
         batteryLed.setText("85");
@@ -480,11 +480,11 @@ public class MainActivity extends BottomSwipeActivity {
                 != Configuration.UI_MODE_NIGHT_YES;
         if (charging) {
             if (batteryLed != null) {
-                batteryLed.setTextColor(light ? 0xFF993800 : 0xFFFF9D2F);
+                batteryLed.setTextColor(light ? 0xFF993800 : 0xFFFFB65C);
                 batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44893000 : 0x8CFF6919);
             }
             if (batteryBolt != null) {
-                batteryBolt.setColor(light ? 0xFF993800 : 0xFFFF9D2F);
+                batteryBolt.setColor(light ? 0xFF993800 : 0xFFFFB65C);
                 batteryBolt.setVisibility(View.VISIBLE);
             }
             if (chargeAnim == null) {
@@ -506,12 +506,12 @@ public class MainActivity extends BottomSwipeActivity {
                 chargeAnim = null;
             }
             if (batteryLed != null) {
-                batteryLed.setTextColor(light ? 0xFF263840 : 0xFFFFFFFF);
-                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44263840 : 0x8CFFFFFF);
+                batteryLed.setTextColor(light ? 0xFF263840 : 0xFFE9F0F5);
+                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44263840 : 0x8CE9F0F5);
                 batteryLed.setAlpha(.6f);
             }
             if (batteryBolt != null) {
-                batteryBolt.setColor(light ? 0xFF263840 : 0xFFFFFFFF);
+                batteryBolt.setColor(light ? 0xFF263840 : 0xFFE9F0F5);
                 batteryBolt.setAlpha(.6f);
                 batteryBolt.setVisibility(View.INVISIBLE);
             }

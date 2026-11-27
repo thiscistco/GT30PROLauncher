@@ -177,13 +177,13 @@
     font-weight: 700;
     font-variation-settings: 'wght' 700;
     letter-spacing: 0.2mm;
-    color: #ffffff;
+    color: #e9f0f5;
     opacity: 0.6;
-    text-shadow: 0 0 1.2mm rgba(255, 255, 255, 0.55);
+    text-shadow: 0 0 1.2mm rgba(233, 240, 245, 0.55);
     z-index: 6;
   }
   .battery-led.charging {
-    color: #ff9d2f;
+    color: #ffb65c;
     text-shadow: 0 0 1.2mm rgba(255, 105, 25, 0.55);
     animation: batteryPulse 0.9s ease-in-out infinite alternate;
   }
@@ -252,7 +252,7 @@
   .weather-widget { padding: 0; border: 0; background: transparent; color: #fff; cursor: pointer; position: relative; font-family: 'Doto', monospace; font-weight: 700; }
   .weather-widget svg { position: absolute; left: 17.5%; top: 6%; width: 65%; height: 52%; fill: currentColor; }
   .weather-widget .weather-temp { position: absolute; top: 68%; left: 0; width: 100%; text-align: center; line-height: 1; font-size: 3.025mm; }
-  .home-weather { position: absolute; z-index: 6; left: calc(49% - 2px); bottom: calc(6% + 460px); transform: translateX(-50%) scale(0.9); width: 11mm; height: 13.75mm; color: #ff9d2f; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
+  .home-weather { position: absolute; z-index: 6; left: calc(49% - 2px); bottom: calc(6% + 460px); transform: translateX(-50%) scale(0.9); width: 11mm; height: 13.75mm; color: #ffb65c; filter: drop-shadow(0 0 .35mm rgba(255,105,25,.6)); }
   .home-weather .weather-temp { top: calc(68% - 5px); }
   .super-weather { width: 100%; height: 12mm; }
   .super-weather svg { width: 8mm; height: 8mm; top: 2mm; left: calc(50% - 4mm); }
@@ -313,7 +313,7 @@
   }
   .clock-led:focus-visible { outline: 1px solid #ffc477; outline-offset: 3px; }
   .clock-led > span:not(.clock-sep), .date-led > span {
-    background: linear-gradient(to bottom, #ff6919 0%, #ff9d2f 24%, #ffcd6a 50%, #ff9d2f 76%, #ff6919 100%);
+    background: linear-gradient(to bottom, #ff9d2f 0%, #ffaa46 24%, #ffb65c 50%, #ffaa46 76%, #ff9d2f 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -322,8 +322,8 @@
   /* Gunmetal labels only; the numeric date keeps its amber gradient. */
   #homeDateWeekday, #homeDateMonth {
     background: none;
-    color: #82929a;
-    -webkit-text-fill-color: #82929a;
+    color: #aabac5;
+    -webkit-text-fill-color: #aabac5;
     filter: drop-shadow(0 0 0.4mm rgba(20, 27, 31, 0.85));
   }
   .clock-sep {
@@ -332,22 +332,22 @@
     left: -0.63px;
     width: calc(100% - 0.76px);
     height: 0.22mm;
-    background: radial-gradient(circle 0.11mm at center, #ffcd6a 0%, #ff9d2f 55%, #ff6919 90%, transparent 100%) 50% 50% / 20% 100% repeat-x;
+    background: radial-gradient(circle 0.11mm at center, #ffb65c 0%, #ffaa46 55%, #ff9d2f 90%, transparent 100%) 50% 50% / 20% 100% repeat-x;
     filter: drop-shadow(0 0 0.6mm rgba(255, 105, 25, 0.65));
     margin: calc(0.461mm - 1px) 0 0.45mm 0;
   }
   /* Darker home indicators remain legible above the white glass. */
   @media (prefers-color-scheme: light) {
     .clock-led > span:not(.clock-sep), .date-led > span {
-      background: linear-gradient(to bottom, #893000 0%, #a33c00 24%, #b64b00 50%, #a33c00 76%, #893000 100%);
+      background: linear-gradient(to bottom, #7a2d00 0%, #893000 24%, #993800 50%, #893000 76%, #7a2d00 100%);
       -webkit-background-clip: text; background-clip: text;
       filter: drop-shadow(0 0 0.4mm rgba(137,48,0,.27));
     }
     .date-led #homeDateWeekday, .date-led #homeDateMonth {
-      background:none; color:#283b45; -webkit-text-fill-color:#283b45;
+      background:none; color:#263840; -webkit-text-fill-color:#263840;
       filter:drop-shadow(0 0 .4mm rgba(40,59,69,.2));
     }
-    .clock-sep { background: radial-gradient(circle 0.11mm at center, #b64b00 0%, #a33c00 55%, #893000 90%, transparent 100%) 50% 50% / 20% 100% repeat-x; filter:drop-shadow(0 0 .6mm rgba(137,48,0,.27)); }
+    .clock-sep { background: radial-gradient(circle 0.11mm at center, #993800 0%, #893000 55%, #7a2d00 90%, transparent 100%) 50% 50% / 20% 100% repeat-x; filter:drop-shadow(0 0 .6mm rgba(137,48,0,.27)); }
     .home-weather { color:#993800; filter:drop-shadow(0 0 .35mm rgba(137,48,0,.27)); }
     .battery-led { color:#263840; text-shadow:0 0 1.2mm rgba(38,56,64,.27); }
     .battery-led.charging { color:#993800; text-shadow:0 0 1.2mm rgba(137,48,0,.27); }

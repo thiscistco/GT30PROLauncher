@@ -20,7 +20,7 @@ final class WeatherView extends View {
     WeatherView(Context context, boolean home) {
         super(context);
         this.home = home;
-        color = home ? 0xFFFF9D2F : Color.WHITE;
+        color = home ? 0xFFFFB65C : Color.WHITE;
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         paint.setTypeface(Typeface.createFromAsset(context.getAssets(), "fonts/Doto.ttf"));
         paint.setFontVariationSettings("'wght' 700");
@@ -29,7 +29,7 @@ final class WeatherView extends View {
         setWeather(-1, true, null, "Ketuk untuk mengaktifkan cuaca");
     }
     void setLightGlass(boolean light) {
-        if (home) { color = light ? 0xFF993800 : 0xFFFF9D2F; invalidate(); }
+        if (home) { color = light ? 0xFF993800 : 0xFFFFB65C; invalidate(); }
     }
     void setIconColor(int value) { if (!home) { color=value; invalidate(); } }
     void setOpensDetails(boolean value) { opensDetails = value; }

@@ -16,9 +16,9 @@ final class HomeClockView extends View {
     static final float GLOW_PAD_MM = 0.4f;
     static final float HEIGHT_MM = CONTENT_HEIGHT_MM + 2f * GLOW_PAD_MM;
     private static final int[] AMBER = {
-        0xFFFF6919, 0xFFFF9D2F, 0xFFFFCD6A, 0xFFFF9D2F, 0xFFFF6919
+        0xFFFF9D2F, 0xFFFFAA46, 0xFFFFB65C, 0xFFFFAA46, 0xFFFF9D2F
     };
-    private static final int[] AMBER_LIGHT = {0xFF893000, 0xFFA33C00, 0xFFB64B00, 0xFFA33C00, 0xFF893000};
+    private static final int[] AMBER_LIGHT = {0xFF7A2D00, 0xFF893000, 0xFF993800, 0xFF893000, 0xFF7A2D00};
     private boolean lightGlass;
     private static final float[] STOPS = {0f, .24f, .5f, .76f, 1f};
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
@@ -33,7 +33,7 @@ final class HomeClockView extends View {
         setWillNotDraw(false);
         text.setTypeface(Typeface.createFromAsset(context.getAssets(), "fonts/Doto.ttf"));
         text.setFontVariationSettings("'wght' 800");
-        text.setColor(0xFFFFCD6A);
+        text.setColor(0xFFFFB65C);
     }
 
     void setScale(float pixelsPerMm) {
@@ -86,8 +86,8 @@ final class HomeClockView extends View {
             float x = start + i * total / 5f;
             float y = dotTop + r;
             dots.setShader(new RadialGradient(x, y, r,
-                lightGlass ? new int[]{0xFFB64B00, 0xFFA33C00, 0xFF893000}
-                        : new int[]{0xFFFFCD6A, 0xFFFF9D2F, 0xFFFF6919},
+                lightGlass ? new int[]{0xFF993800, 0xFF893000, 0xFF7A2D00}
+                        : new int[]{0xFFFFB65C, 0xFFFFAA46, 0xFFFF9D2F},
                 new float[]{0f, .55f, 1f}, Shader.TileMode.CLAMP));
             canvas.drawCircle(x, y, r, dots);
         }

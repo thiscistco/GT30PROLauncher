@@ -64,10 +64,10 @@ assert.match(view,/float rowGap = CSS_PX_MM \* pxPerMm/);
 assert.match(view,/drawLine\(canvas, HomeDateText\.weekday\(date\), top, LABEL_SCALE, true\)/);
 assert.match(view,/drawLine\(canvas, HomeDateText\.day\(date\), top \+ labelLine \+ rowGap, 1f, false\)/);
 assert.match(view,/drawLine\(canvas, HomeDateText\.month\(date\), top \+ labelLine \+ numberLine \+ 2f \* rowGap, LABEL_SCALE, true\)/);
-assert.match(view,/gunmetal \? 0xFF82929A : 0xFFFFCD6A/);
+assert.match(view,/gunmetal \? 0xFFAABAC5 : 0xFFFFB65C/);
 assert.match(view,/text\.setShader\(gunmetal \? null : new LinearGradient/);
 const gunmetal=html.match(/#homeDateWeekday,\s*#homeDateMonth\s*\{([^}]*)\}/g).at(-1);
-assert.match(gunmetal, /-webkit-text-fill-color:\s*#82929a/);
+assert.match(gunmetal, /-webkit-text-fill-color:\s*#aabac5/);
 assert.match(gunmetal, /background:\s*none/);
 assert(!/separatorAlpha/.test(view),'charging must not affect date');
 for(const w of [269,720,1224]) {

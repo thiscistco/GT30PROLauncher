@@ -58,6 +58,16 @@ assert '.home-screen-glass.light { display:none; }' in media and '.home-screen-g
 for name in ['home-screen-glass.png?v=5','home-screen-glass-dark.png?v=4']:
     assert f'src="assets/{name}" alt="" aria-hidden="true" draggable="false"' in html
 assert '@media (prefers-color-scheme: light)' in html
+# The home-only palette adapts to the system without touching the glass or wallpaper.
+clock=(root/'app/src/main/java/com/gt30pro/launcher/HomeClockView.java').read_text()
+date=(root/'app/src/main/java/com/gt30pro/launcher/HomeDateView.java').read_text()
+weather=(root/'app/src/main/java/com/gt30pro/launcher/WeatherView.java').read_text()
+assert '0xFFFFB65C' in clock and '0xFF993800' in clock
+assert '0xFFAABAC5' in date and '0xFF263840' in date
+assert 'color = light ? 0xFF993800 : 0xFFFFB65C' in weather
+assert 'light ? 0xFF263840 : 0xFFE9F0F5' in main
+assert 'color: #e9f0f5' in html and 'color: #aabac5' in html and 'color: #ffb65c' in html
+assert 'color:#263840' in html and 'color:#993800' in html
 for selector in ('.clock-led > span:not(.clock-sep)', '.date-led #homeDateWeekday', '.home-weather', '.battery-led'):
     assert selector in html.split('@media (prefers-color-scheme: light)',1)[1].split('\n  }',1)[0]
 print('Screen glass: light/dark artwork, system changes, preview parity and touch-through: OK')
