@@ -23,17 +23,21 @@ assert.match(digits, /drop-shadow\(0 0 0\.4mm rgba\(255, 105, 25, 0\.65\)\)/);
 assert.match(sep, /color:#adc3ca/);
 assert.match(html, /\.clock-sep \{ color:#425860; \}/);
 assert.match(html, /<span class="clock-sep" aria-hidden="true">(?:<i><\/i>){5}<\/span>/);
-assert.match(html, /animation-duration:6s; animation-iteration-count:infinite/);
-for (const [i,at] of [[1,'8.333333'],[2,'25'],[3,'41.666667'],[4,'58.333333'],[5,'75']]) {
+assert.match(html, /animation-duration:5s; animation-iteration-count:infinite/);
+assert.match(html, /@keyframes clockDot1 \{ 0%,100% \{ opacity:1; \} \}/);
+for (const [i,at] of [[2,'20'],[3,'40'],[4,'60'],[5,'80']]) {
   assert(html.includes(`.clock-sep i:nth-child(${i}) { animation-name:clockDot${i}; }`));
   const frames=html.match(new RegExp(`@keyframes clockDot${i} \\{([^\\n]*)`))[1];
   assert(frames.includes(`${at}% { opacity:1;`));
-  assert(frames.includes('91.666667%,100% { opacity:0;'));
+  assert(frames.includes('100% { opacity:0;'));
 }
-assert.match(html, /83\.333333% \{ opacity:1; animation-timing-function:linear; \}/);
+assert.match(html, /90% \{ opacity:1; animation-timing-function:linear; \}/);
 assert.match(view,/dots\.setAlpha\(Math\.round\(255f \* pulse\)\)/);
 assert.match(html, /prefers-reduced-motion:reduce[^}]*\.clock-sep i \{ animation:none; opacity:1/);
-assert.match(html, /#clockMin \{ transform: translate\(0px, -0\.877193px\)/);
+assert.match(html, /#clockHour \{ transform: translateX\(0\.4385965px\)/);
+assert.match(html, /#clockMin \{ transform: translate\(0\.4385965px, -0\.877193px\)/);
+assert(Math.abs(.4385965 * 1.14 - .5)<1e-6);
+assert.match(view,/firstWidth - gap - secondWidth\) \/ 2f \+ \.5f \* \(pxPerMm \* 25\.4f \/ 96f\) \/ HOME_SCALE/);
 assert(Math.abs(1.14 / 1.2 - .95)<1e-9);
 assert(Math.abs(.877193 * 1.14 - 1)<1e-6);
 // With the 1.14 clock scale, removing the -1/1.14 horizontal offset moves only minutes one final CSS px right.
@@ -60,7 +64,7 @@ assert.match(view, /text\.setFontVariationSettings\("'wght' 800"\)/);
 assert.match(view, /text\.setShadowLayer\(\.4f \* pixelsPerMm/);
 assert.match(view, /for \(int i = 0; i < 5; i\+\+\)/);
 assert.match(view,/HomeClockPulse\.intensity\(separatorPhase, i\)/);
-assert.match(view,/setDuration\(6000\)/);
+assert.match(view,/setDuration\(5000\)/);
 assert.match(view,/ValueAnimator\.areAnimatorsEnabled\(\)/);
 assert.match(java,/clockLed\.startSeparator\(\)/);
 assert.match(java,/clockLed\.stopSeparator\(\)/);

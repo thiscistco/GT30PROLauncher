@@ -16,7 +16,7 @@ final class BatteryInfoView extends LinearLayout {
     private final LinearLayout[] cells=new LinearLayout[LABELS.length];
     private static final String[] LABELS={"LEVEL","STATUS","SUMBER","KONDISI","SUHU","TEGANGAN",
             "ARUS SAAT INI","ARUS RATA-RATA","MUATAN TERSISA","SIKLUS","BATERAI TERDETEKSI","BATERAI RENDAH","PERKIRAAN PENUH",
-            "PERANGKAT","ANDROID","CPU","CORE CPU","RAM TERSEDIA","PENYIMPANAN TERSEDIA"};
+            "","PERANGKAT","CPU","ANDROID","CPU CORE","RAM TERSEDIA","","PENYIMPANAN TERSEDIA",""};
     BatteryInfoView(Context c) {
         super(c); setOrientation(VERTICAL); setPadding(dp(12),dp(8),dp(12),dp(8));
         setClickable(false); setFocusable(false); setBackground(null);
@@ -29,6 +29,7 @@ final class BatteryInfoView extends LinearLayout {
             for(int col=0;col<2;col++) {
                 int index=row*2+col; if(index>=LABELS.length) break;
                 LinearLayout cell=new LinearLayout(c); cell.setOrientation(VERTICAL); cells[index]=cell;
+                if(LABELS[index].isEmpty()) cell.setVisibility(View.INVISIBLE);
                 cell.setPadding(0,dp(3),col==0?dp(6):0,0);
                 TextView name=new TextView(c); name.setText(LABELS[index]); name.setTextSize(9); name.setTypeface(doto); name.setFontVariationSettings("'wght' 900");
                 name.setSingleLine(true); name.setEllipsize(TextUtils.TruncateAt.END);
@@ -93,8 +94,8 @@ final class BatteryInfoView extends LinearLayout {
             BatteryInfoFormat.current(property(b,BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)),
             BatteryInfoFormat.charge(property(b,BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)),
             BatteryInfoFormat.cycles(cycles), BatteryInfoFormat.present(present), BatteryInfoFormat.low(low), BatteryInfoFormat.timeToFull(timeToFull(b)),
-            clean(Build.MANUFACTURER + " " + Build.MODEL), clean(Build.VERSION.RELEASE), cpu(),
-            String.valueOf(Runtime.getRuntime().availableProcessors()), memory(), storage()};
+            "", clean(Build.MANUFACTURER + " " + Build.MODEL), cpu(), clean(Build.VERSION.RELEASE),
+            String.valueOf(Runtime.getRuntime().availableProcessors()), memory(), "", storage(), ""};
         for(int i=0;i<data.length;i++) values[i].setText(data[i]);
     }
 }

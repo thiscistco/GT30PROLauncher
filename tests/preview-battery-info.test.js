@@ -12,9 +12,17 @@ assert.match(html,/\.battery-info \{[^}]*z-index:6;[^}]*bottom:calc\(14% \+ 62px
 assert.match(html,/\.battery-info \{[^}]*pointer-events:none/);
 assert.match(html,/\.battery-info-cell:nth-child\(even\) \{ transform:translateX\(-25px\); \}/);
 assert.match(view,/for\(int i=1;i<cells\.length;i\+=2\) cells\[i\]\.setTranslationX\(-25f\*cssPixel\)/);
-for(const label of ['LEVEL','STATUS','SUMBER','KONDISI','SUHU','TEGANGAN','ARUS SAAT INI','ARUS RATA-RATA','MUATAN TERSISA','SIKLUS','BATERAI TERDETEKSI','BATERAI RENDAH','PERKIRAAN PENUH','PERANGKAT','ANDROID','CPU','CORE CPU','RAM TERSEDIA','PENYIMPANAN TERSEDIA']) {
+for(const label of ['LEVEL','STATUS','SUMBER','KONDISI','SUHU','TEGANGAN','ARUS SAAT INI','ARUS RATA-RATA','MUATAN TERSISA','SIKLUS','BATERAI TERDETEKSI','BATERAI RENDAH','PERKIRAAN PENUH','PERANGKAT','ANDROID','CPU','CPU CORE','RAM TERSEDIA','PENYIMPANAN TERSEDIA']) {
  assert(html.includes('>'+label+'</span>'),label); assert(view.includes('"'+label+'"'),label);
 }
+// Each pair is one grid row. Device fields start after the complete battery section.
+const grid=html.match(/<div class="battery-info-grid">([\s\S]*?)\n                <\/div>/)[1];
+const cells=[...grid.matchAll(/<div class="battery-info-cell"(?: aria-hidden="true")?>([\s\S]*?)<\/div>/g)].map(m => (m[1].match(/<span class="battery-info-name">([^<]+)<\/span>/)||[])[1] || '');
+assert.deepEqual(cells.slice(12),['PERKIRAAN PENUH','','PERANGKAT','CPU','ANDROID','CPU CORE','RAM TERSEDIA','','PENYIMPANAN TERSEDIA','']);
+const labels=[...view.match(/LABELS=\{([\s\S]*?)\};/)[1].matchAll(/"([^"]*)"/g)].map(m=>m[1]);
+assert.deepEqual(labels,cells,'native and preview grid slots match, including empty cells');
+assert.match(view,/if\(LABELS\[index\]\.isEmpty\(\)\) cell\.setVisibility\(View\.INVISIBLE\)/);
+assert.match(view,/"", clean\(Build\.MANUFACTURER \+ " " \+ Build\.MODEL\), cpu\(\), clean\(Build\.VERSION\.RELEASE\),\s*String\.valueOf\(Runtime\.getRuntime\(\)\.availableProcessors\(\)\), memory\(\), "", storage\(\), ""/);
 assert(html.includes('>PERANGKAT</span>GT30Pro</div>'));
 assert(!html.includes('Contoh GT30</div>'));
 assert.match(view,/clean\(Build\.MANUFACTURER \+ " " \+ Build\.MODEL\)/);

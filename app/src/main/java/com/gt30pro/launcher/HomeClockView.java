@@ -33,8 +33,8 @@ final class HomeClockView extends View {
     void startSeparator() {
         stopSeparator();
         if (!ValueAnimator.areAnimatorsEnabled()) return;
-        separatorAnimator = ValueAnimator.ofFloat(0f, 6f);
-        separatorAnimator.setDuration(6000);
+        separatorAnimator = ValueAnimator.ofFloat(0f, 5f);
+        separatorAnimator.setDuration(5000);
         separatorAnimator.setInterpolator(new LinearInterpolator());
         separatorAnimator.setRepeatCount(ValueAnimator.INFINITE);
         separatorAnimator.addUpdateListener(animation -> {
@@ -84,7 +84,7 @@ final class HomeClockView extends View {
         float gap = .2f * pxPerMm;
         float firstWidth = text.measureText(value, 0, 1);
         float secondWidth = text.measureText(value, 1, 2);
-        float x = (getWidth() - firstWidth - gap - secondWidth) / 2f;
+        float x = (getWidth() - firstWidth - gap - secondWidth) / 2f + .5f * (pxPerMm * 25.4f / 96f) / HOME_SCALE;
         text.setShadowLayer(.4f * pxPerMm, 0, 0, 0xA6FF6919);
         text.setShader(new LinearGradient(0, top, 0, top + lineHeight, lightGlass ? AMBER_LIGHT : AMBER, STOPS, Shader.TileMode.CLAMP));
         canvas.drawText(value, 0, 1, x, baseline, text);

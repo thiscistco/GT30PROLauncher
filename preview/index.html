@@ -377,7 +377,8 @@
     -webkit-text-fill-color: #aabac5;
     filter: drop-shadow(0 0 0.4mm rgba(20, 27, 31, 0.85)) brightness(1.4);
   }
-  #clockMin { transform: translate(0px, -0.877193px); }
+  #clockHour { transform: translateX(0.4385965px); }
+  #clockMin { transform: translate(0.4385965px, -0.877193px); }
   .clock-sep {
     display:flex; justify-content:space-around; align-items:center;
     position:relative; left:-0.63px; transform:translateY(-0.4385965px); width:calc(100% - 0.76px); height:0.22mm;
@@ -385,17 +386,17 @@
     color:#adc3ca;
   }
   .clock-sep i { display:block; width:0.28mm; height:0.28mm; flex:none; border-radius:50%; background:currentColor;
-    opacity:0; box-shadow:0 0 .35mm rgba(139,166,176,.4); animation-duration:6s; animation-iteration-count:infinite; }
+    opacity:0; box-shadow:0 0 .35mm rgba(139,166,176,.4); animation-duration:5s; animation-iteration-count:infinite; }
   .clock-sep i:nth-child(1) { animation-name:clockDot1; }
   .clock-sep i:nth-child(2) { animation-name:clockDot2; }
   .clock-sep i:nth-child(3) { animation-name:clockDot3; }
   .clock-sep i:nth-child(4) { animation-name:clockDot4; }
   .clock-sep i:nth-child(5) { animation-name:clockDot5; }
-  @keyframes clockDot1 { 0% { opacity:0; animation-timing-function:steps(1,end); } 8.333333% { opacity:1; animation-timing-function:steps(1,end); } 91.666667%,100% { opacity:0; } }
-  @keyframes clockDot2 { 0% { opacity:0; animation-timing-function:steps(1,end); } 25% { opacity:1; animation-timing-function:steps(1,end); } 91.666667%,100% { opacity:0; } }
-  @keyframes clockDot3 { 0% { opacity:0; animation-timing-function:steps(1,end); } 41.666667% { opacity:1; animation-timing-function:steps(1,end); } 91.666667%,100% { opacity:0; } }
-  @keyframes clockDot4 { 0% { opacity:0; animation-timing-function:steps(1,end); } 58.333333% { opacity:1; animation-timing-function:steps(1,end); } 91.666667%,100% { opacity:0; } }
-  @keyframes clockDot5 { 0% { opacity:0; animation-timing-function:steps(1,end); } 75% { opacity:1; animation-timing-function:steps(1,end); } 83.333333% { opacity:1; animation-timing-function:linear; } 91.666667%,100% { opacity:0; } }
+  @keyframes clockDot1 { 0%,100% { opacity:1; } }
+  @keyframes clockDot2 { 0% { opacity:0; animation-timing-function:steps(1,end); } 20% { opacity:1; animation-timing-function:steps(1,end); } 100% { opacity:0; } }
+  @keyframes clockDot3 { 0% { opacity:0; animation-timing-function:steps(1,end); } 40% { opacity:1; animation-timing-function:steps(1,end); } 100% { opacity:0; } }
+  @keyframes clockDot4 { 0% { opacity:0; animation-timing-function:steps(1,end); } 60% { opacity:1; animation-timing-function:steps(1,end); } 100% { opacity:0; } }
+  @keyframes clockDot5 { 0% { opacity:0; animation-timing-function:steps(1,end); } 80% { opacity:1; animation-timing-function:steps(1,end); } 90% { opacity:1; animation-timing-function:linear; } 100% { opacity:0; } }
   @media (prefers-reduced-motion:reduce) { .clock-sep i { animation:none; opacity:1; } }
   /* Gunmetal keeps its system-dependent contrast; amber matches the circuit light. */
   @media (prefers-color-scheme: light) {
@@ -906,10 +907,11 @@
                   <div class="battery-info-cell"><span class="battery-info-name">ARUS SAAT INI</span>-</div><div class="battery-info-cell"><span class="battery-info-name">ARUS RATA-RATA</span>-</div>
                   <div class="battery-info-cell"><span class="battery-info-name">MUATAN TERSISA</span>-</div><div class="battery-info-cell"><span class="battery-info-name">SIKLUS</span>-</div>
                   <div class="battery-info-cell"><span class="battery-info-name">BATERAI TERDETEKSI</span>Ya</div><div class="battery-info-cell"><span class="battery-info-name">BATERAI RENDAH</span>-</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">PERKIRAAN PENUH</span>-</div><div class="battery-info-cell"><span class="battery-info-name">PERANGKAT</span>GT30Pro</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">ANDROID</span>15</div><div class="battery-info-cell"><span class="battery-info-name">CPU</span>ABI arm64-v8a</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">CORE CPU</span>8</div><div class="battery-info-cell"><span class="battery-info-name">RAM TERSEDIA</span>4,0 / 8,0 GiB</div>
-                  <div class="battery-info-cell"><span class="battery-info-name">PENYIMPANAN TERSEDIA</span>80,0 / 128,0 GiB</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">PERKIRAAN PENUH</span>-</div><div class="battery-info-cell" aria-hidden="true"></div>
+                  <div class="battery-info-cell"><span class="battery-info-name">PERANGKAT</span>GT30Pro</div><div class="battery-info-cell"><span class="battery-info-name">CPU</span>ABI arm64-v8a</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">ANDROID</span>15</div><div class="battery-info-cell"><span class="battery-info-name">CPU CORE</span>8</div>
+                  <div class="battery-info-cell"><span class="battery-info-name">RAM TERSEDIA</span>4,0 / 8,0 GiB</div><div class="battery-info-cell" aria-hidden="true"></div>
+                  <div class="battery-info-cell"><span class="battery-info-name">PENYIMPANAN TERSEDIA</span>80,0 / 128,0 GiB</div><div class="battery-info-cell" aria-hidden="true"></div>
                 </div>
               </section>
               <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen"><span class="battery-value">85</span><svg class="battery-bolt" viewBox="0 0 5 7" preserveAspectRatio="none" aria-hidden="true">

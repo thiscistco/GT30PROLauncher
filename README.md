@@ -211,3 +211,6 @@ Titik pembatas dinaikkan 0,5 px (berdasarkan skala preview). Titik muncul satu p
 
 ### Penyesuaian v0.1.215
 Label informasi homescreen diturunkan 10 px berdasarkan skala preview; posisi dan ukuran elemen lainnya tetap.
+
+### Penyesuaian v0.1.216
+Angka jam dan menit digeser 0,5 px ke kanan tanpa memindahkan titik. Setelah titik terakhir memudar, titik pertama langsung memulai siklus berikutnya. Informasi perangkat disusun: perangkat, Android, RAM, penyimpanan di kiri; CPU dan CPU core di kanan.
