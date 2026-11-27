@@ -20,6 +20,7 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.text.InputType;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
@@ -37,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Calendar;
 
 /** Jam bawaan: alarm, waktu dunia, timer dan stopwatch. */
 public class ClockActivity extends SwipeBackActivity {
@@ -45,7 +47,7 @@ public class ClockActivity extends SwipeBackActivity {
     private AppUi ui;
     private EditText timerHours, timerMinutes, timerSeconds;
     private String[] timerDraft = {"", "", ""};
-    private static final String[] TAB_NAMES = {"Alarm", "Dunia", "Timer", "Stopwatch"};
+    private static final String[] TAB_NAMES = {"Alarm", "Jam Dunia", "Timer", "Stopwatch"};
     private static final int[] TAB_ICONS = {R.drawable.ic_clock_alarm, R.drawable.ic_clock_world,
             R.drawable.ic_clock_timer, R.drawable.ic_clock_stopwatch};
     private static final String[] CITIES = {"Jakarta", "Makassar", "Jayapura", "Singapore", "Tokyo", "Seoul", "Dubai", "London", "Paris", "New York", "Los Angeles", "Sydney"};
@@ -54,9 +56,12 @@ public class ClockActivity extends SwipeBackActivity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Typeface doto;
     private LinearLayout content, tabs;
+    private ClockHudView hud;
+    private ScrollView panelScroll;
+    private long lastHudSecond = -1;
     private TextView timerDisplay, stopwatchDisplay;
     private LinearLayout worldList;
-    private int tab = 0;
+    private int tab = -1;
     private String editingSound = Settings.System.DEFAULT_ALARM_ALERT_URI.toString();
     private TextView soundLabel;
     private long swAccumulated, swStarted;
@@ -78,7 +83,7 @@ public class ClockActivity extends SwipeBackActivity {
         restoreStopwatch();
         ui = new AppUi(this); AMBER=ui.ink; MUTED=ui.muted; ui.window(this);
         if (state != null) {
-            tab = Math.max(0, Math.min(3, state.getInt("clock_tab",0)));
+            tab = Math.max(-1, Math.min(3, state.getInt("clock_tab",-1)));
             String[] saved=state.getStringArray("timer_draft"); if (saved != null && saved.length == 3) timerDraft=saved;
         }
         FrameLayout root = new FrameLayout(this); root.setBackgroundColor(ui.canvas);
@@ -87,12 +92,14 @@ public class ClockActivity extends SwipeBackActivity {
         page.setOnApplyWindowInsetsListener((v, insets) -> {
             v.setPadding(dp(20), dp(16) + insets.getSystemWindowInsetTop(), dp(20), dp(16) + insets.getSystemWindowInsetBottom()); return insets;
         });
-        page.addView(ui.header(this, doto, "Jam"));
-        HorizontalScrollView horizontal = new HorizontalScrollView(this); horizontal.setHorizontalScrollBarEnabled(false);
-        tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); horizontal.addView(tabs);
-        LinearLayout.LayoutParams tabParams = new LinearLayout.LayoutParams(-1, -2); tabParams.topMargin = dp(18); page.addView(horizontal, tabParams);
-        ScrollView scroll = new ScrollView(this); scroll.setFillViewport(false); page.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
-        content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(0, dp(18), 0, dp(20)); scroll.addView(content);
+        LinearLayout header=ui.header(this, doto, "Jam");
+        header.getChildAt(0).setOnClickListener(v -> onBackPressed()); page.addView(header);
+        FrameLayout stage = new FrameLayout(this); page.addView(stage,new LinearLayout.LayoutParams(-1,0,1));
+        hud = new ClockHudView(this,ui,doto); stage.addView(hud,new FrameLayout.LayoutParams(-1,-1));
+        panelScroll = new ScrollView(this); panelScroll.setFillViewport(false); stage.addView(panelScroll,new FrameLayout.LayoutParams(-1,-1));
+        content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(0, dp(18), 0, dp(20)); panelScroll.addView(content);
+        tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); tabs.setGravity(Gravity.CENTER);
+        tabs.setPadding(0,dp(8),0,0); page.addView(tabs,new LinearLayout.LayoutParams(-1,dp(64)));
         setContentView(root);
         showTab(tab);
     }
@@ -134,14 +141,17 @@ public class ClockActivity extends SwipeBackActivity {
             item.setContentDescription(TAB_NAMES[i]);
             item.setTooltipText(TAB_NAMES[i]);
             item.setSelected(i == selected);
-            item.setOnClickListener(v -> showTab(index));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(52), dp(52));
+            item.setOnClickListener(v -> showTab(tab == index ? -1 : index));
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(52), 1);
             if (i > 0) p.leftMargin = dp(6);
             tabs.addView(item, p);
         }
-        if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else showStopwatch();
+        hud.setVisibility(selected == -1 ? View.VISIBLE : View.GONE);
+        panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE);
+        if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else if (selected == 3) showStopwatch();
         updateLive();
     }
+    @Override public void onBackPressed() { if (tab != -1) showTab(-1); else super.onBackPressed(); }
     private void requestAlerts() {
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 41);
@@ -309,8 +319,10 @@ public class ClockActivity extends SwipeBackActivity {
     private void updateLive() {
         if(stopwatchDisplay!=null) stopwatchDisplay.setText(formatElapsed(elapsed()));
         if(timerDisplay!=null){long end=ClockAlarms.prefs(this).getLong("timer_end",0);long seconds=Math.max(0,(end-System.currentTimeMillis()+999)/1000);timerDisplay.setText(String.format(Locale.US,"%02d:%02d:%02d",seconds/3600,(seconds/60)%60,seconds%60));}
-        long second=System.currentTimeMillis()/1000;if(worldList!=null&&second!=lastWorldSecond){lastWorldSecond=second;updateWorld();}
+        long second=System.currentTimeMillis()/1000;
+        if (hud != null && second != lastHudSecond) { lastHudSecond=second; hud.setTime(Calendar.getInstance()); }
+        if(worldList!=null&&second!=lastWorldSecond){lastWorldSecond=second;updateWorld();}
     }
-    @Override protected void onResume() { super.onResume(); AppUi current=new AppUi(this); if (ui.dark != current.dark || !ui.choice.equals(current.choice)) { recreate(); return; } if(awaitingExactPermission){awaitingExactPermission=false;if(ClockAlarms.canSchedule(this))requestAlerts();} ClockAlarms.restore(this);handler.removeCallbacks(tick);tick.run(); }
+    @Override protected void onResume() { super.onResume(); AppUi current=new AppUi(this); if (ui.dark != current.dark || !ui.choice.equals(current.choice)) { recreate(); return; } if(awaitingExactPermission){awaitingExactPermission=false;if(ClockAlarms.canSchedule(this))requestAlerts();} ClockAlarms.restore(this);lastHudSecond=-1;handler.removeCallbacks(tick);tick.run(); }
     @Override protected void onPause() { handler.removeCallbacks(tick); super.onPause(); }
 }

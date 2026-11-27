@@ -575,6 +575,23 @@
   #weatherPage .weather-observed { color:#e5ecf2; }
   #weatherPage .weather-condition { color:#ffd49d; }
   #weatherPage .weather-hour svg, #weatherPage .weather-daily-row svg { fill:var(--app-text); }
+  /* Clock: one central local-time HUD and a fixed four-icon bottom bar. */
+  #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; }
+  #clockPage .app-top { flex:none; }
+  .clock-stage { flex:1; min-height:0; position:relative; }
+  .clock-hud { position:absolute; inset:0; display:grid; place-items:center; }
+  .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
+  .clock-hud-dial { height:min(100%, 64mm); width:auto; max-width:100%; aspect-ratio:1; overflow:visible; }
+  .clock-hud-face { fill:var(--app-card); stroke:var(--app-border); stroke-width:1; }
+  .clock-hud-inner { fill:none; stroke:var(--app-border); stroke-width:.5; }
+  .clock-hud-ticks { stroke-linecap:round; }
+  .clock-hud-ticks .major { stroke:var(--app-text); stroke-width:1.7; }
+  .clock-hud-ticks .minor { stroke:var(--app-muted); stroke-width:.72; }
+  .clock-hud-marker { fill:var(--app-text); }
+  #clockHudText { fill:var(--app-text); font:800 32.4px 'Doto', monospace; font-variation-settings:'wght' 800; }
+  .clock-panel-scroll { position:absolute; inset:0; overflow-y:auto; overscroll-behavior:contain; }
+  #clockPage .clock-tabs { flex:none; display:flex; gap:1.5mm; margin:0; padding-top:2mm; overflow:visible; }
+  #clockPage .clock-tabs button { flex:1 1 0; width:auto; min-width:0; height:9mm; }
   /* ===== Punch-hole kamera depan 13 MP (tengah atas) ===== */
   .punch-hole {
     position: absolute;
@@ -717,13 +734,17 @@
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
                 <div class="app-top"><button class="app-back" id="clockBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Jam</span><div class="app-theme"><button class="app-theme-button" id="clockTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="clockThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="clockThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="clockThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="clockThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="clockThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="clockThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
-                <nav class="clock-tabs" aria-label="Fitur jam">
-                  <button class="active" data-clock-tab="alarm" type="button" aria-label="Alarm" aria-pressed="true" title="Alarm"><img src="assets/clock-alarm.svg?v=1" alt="" aria-hidden="true"></button>
-                  <button data-clock-tab="world" type="button" aria-label="Dunia" aria-pressed="false" title="Dunia"><img src="assets/clock-world.svg?v=1" alt="" aria-hidden="true"></button>
-                  <button data-clock-tab="timer" type="button" aria-label="Timer" aria-pressed="false" title="Timer"><img src="assets/clock-timer.svg?v=1" alt="" aria-hidden="true"></button>
-                  <button data-clock-tab="stopwatch" type="button" aria-label="Stopwatch" aria-pressed="false" title="Stopwatch"><img src="assets/clock-stopwatch.svg?v=1" alt="" aria-hidden="true"></button>
-                </nav>
-                <div class="clock-section" data-clock-panel="alarm">
+                <div class="clock-stage">
+                  <div class="clock-hud" id="clockHud" role="img" aria-label="Jam digital">
+                    <svg class="clock-hud-dial" viewBox="0 0 240 240" aria-hidden="true">
+                      <circle class="clock-hud-face" cx="120" cy="120" r="103.2"/><circle class="clock-hud-inner" cx="120" cy="120" r="80.5"/>
+                      <g class="clock-hud-ticks"><line class="major" x1="120.00" y1="33.31" x2="120.00" y2="22.99"/><line class="minor" x1="129.60" y1="28.66" x2="130.14" y2="23.52"/><line class="minor" x1="139.10" y1="30.16" x2="140.17" y2="25.11"/><line class="minor" x1="148.38" y1="32.65" x2="149.98" y2="27.74"/><line class="minor" x1="157.36" y1="36.09" x2="159.46" y2="31.38"/><line class="major" x1="163.34" y1="44.93" x2="168.50" y2="35.99"/><line class="minor" x1="173.99" y1="45.69" x2="177.02" y2="41.52"/><line class="minor" x1="181.46" y1="51.74" x2="184.91" y2="47.91"/><line class="minor" x1="188.26" y1="58.54" x2="192.09" y2="55.09"/><line class="minor" x1="194.31" y1="66.01" x2="198.48" y2="62.98"/><line class="major" x1="195.07" y1="76.66" x2="204.01" y2="71.50"/><line class="minor" x1="203.91" y1="82.64" x2="208.62" y2="80.54"/><line class="minor" x1="207.35" y1="91.62" x2="212.26" y2="90.02"/><line class="minor" x1="209.84" y1="100.90" x2="214.89" y2="99.83"/><line class="minor" x1="211.34" y1="110.40" x2="216.48" y2="109.86"/><line class="major" x1="206.69" y1="120.00" x2="217.01" y2="120.00"/><line class="minor" x1="211.34" y1="129.60" x2="216.48" y2="130.14"/><line class="minor" x1="209.84" y1="139.10" x2="214.89" y2="140.17"/><line class="minor" x1="207.35" y1="148.38" x2="212.26" y2="149.98"/><line class="minor" x1="203.91" y1="157.36" x2="208.62" y2="159.46"/><line class="major" x1="195.07" y1="163.34" x2="204.01" y2="168.50"/><line class="minor" x1="194.31" y1="173.99" x2="198.48" y2="177.02"/><line class="minor" x1="188.26" y1="181.46" x2="192.09" y2="184.91"/><line class="minor" x1="181.46" y1="188.26" x2="184.91" y2="192.09"/><line class="minor" x1="173.99" y1="194.31" x2="177.02" y2="198.48"/><line class="major" x1="163.34" y1="195.07" x2="168.50" y2="204.01"/><line class="minor" x1="157.36" y1="203.91" x2="159.46" y2="208.62"/><line class="minor" x1="148.38" y1="207.35" x2="149.98" y2="212.26"/><line class="minor" x1="139.10" y1="209.84" x2="140.17" y2="214.89"/><line class="minor" x1="129.60" y1="211.34" x2="130.14" y2="216.48"/><line class="major" x1="120.00" y1="206.69" x2="120.00" y2="217.01"/><line class="minor" x1="110.40" y1="211.34" x2="109.86" y2="216.48"/><line class="minor" x1="100.90" y1="209.84" x2="99.83" y2="214.89"/><line class="minor" x1="91.62" y1="207.35" x2="90.02" y2="212.26"/><line class="minor" x1="82.64" y1="203.91" x2="80.54" y2="208.62"/><line class="major" x1="76.66" y1="195.07" x2="71.50" y2="204.01"/><line class="minor" x1="66.01" y1="194.31" x2="62.98" y2="198.48"/><line class="minor" x1="58.54" y1="188.26" x2="55.09" y2="192.09"/><line class="minor" x1="51.74" y1="181.46" x2="47.91" y2="184.91"/><line class="minor" x1="45.69" y1="173.99" x2="41.52" y2="177.02"/><line class="major" x1="44.93" y1="163.34" x2="35.99" y2="168.50"/><line class="minor" x1="36.09" y1="157.36" x2="31.38" y2="159.46"/><line class="minor" x1="32.65" y1="148.38" x2="27.74" y2="149.98"/><line class="minor" x1="30.16" y1="139.10" x2="25.11" y2="140.17"/><line class="minor" x1="28.66" y1="129.60" x2="23.52" y2="130.14"/><line class="major" x1="33.31" y1="120.00" x2="22.99" y2="120.00"/><line class="minor" x1="28.66" y1="110.40" x2="23.52" y2="109.86"/><line class="minor" x1="30.16" y1="100.90" x2="25.11" y2="99.83"/><line class="minor" x1="32.65" y1="91.62" x2="27.74" y2="90.02"/><line class="minor" x1="36.09" y1="82.64" x2="31.38" y2="80.54"/><line class="major" x1="44.93" y1="76.66" x2="35.99" y2="71.50"/><line class="minor" x1="45.69" y1="66.01" x2="41.52" y2="62.98"/><line class="minor" x1="51.74" y1="58.54" x2="47.91" y2="55.09"/><line class="minor" x1="58.54" y1="51.74" x2="55.09" y2="47.91"/><line class="minor" x1="66.01" y1="45.69" x2="62.98" y2="41.52"/><line class="major" x1="76.66" y1="44.93" x2="71.50" y2="35.99"/><line class="minor" x1="82.64" y1="36.09" x2="80.54" y2="31.38"/><line class="minor" x1="91.62" y1="32.65" x2="90.02" y2="27.74"/><line class="minor" x1="100.90" y1="30.16" x2="99.83" y2="25.11"/><line class="minor" x1="110.40" y1="28.66" x2="109.86" y2="23.52"/></g>
+                      <g id="clockHudMarker"><circle class="clock-hud-marker" cx="120" cy="20.4" r="2.88"/></g>
+                      <text id="clockHudText" x="120" y="120" text-anchor="middle" dominant-baseline="central">00:00:00</text>
+                    </svg>
+                  </div>
+                  <div class="clock-panel-scroll" id="clockPanelScroll" hidden>
+                <div class="clock-section" data-clock-panel="alarm" hidden>
                   <h3>ALARM</h3><button class="clock-action clock-wide" id="previewAddAlarm" type="button">+ Tambah alarm</button>
                   <p class="clock-muted">Simulasi preview; alarm aktif di aplikasi Android.</p>
                   <div class="alarm-form" id="previewAlarmForm" hidden>
@@ -755,6 +776,14 @@
                   <div class="clock-row"><button class="clock-action" id="previewLap" type="button">Lap</button><button class="clock-action" id="previewReset" type="button">Reset</button></div>
                   <div id="previewLaps"></div>
                 </div>
+                  </div>
+                </div>
+                <nav class="clock-tabs" aria-label="Fitur jam">
+                  <button data-clock-tab="alarm" type="button" aria-label="Alarm" aria-pressed="false" title="Alarm"><img src="assets/clock-alarm.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button data-clock-tab="world" type="button" aria-label="Jam Dunia" aria-pressed="false" title="Jam Dunia"><img src="assets/clock-world.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button data-clock-tab="timer" type="button" aria-label="Timer" aria-pressed="false" title="Timer"><img src="assets/clock-timer.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button data-clock-tab="stopwatch" type="button" aria-label="Stopwatch" aria-pressed="false" title="Stopwatch"><img src="assets/clock-stopwatch.svg?v=1" alt="" aria-hidden="true"></button>
+                </nav>
               </section>
               <section class="clock-page calendar-page" id="calendarPage" aria-label="Kalender di Super App" hidden>
                 <div class="calendar-top"><button class="calendar-icon-button" id="calendarBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button>
@@ -929,7 +958,7 @@
     homeTab.addEventListener('click', function () { setTab(false); });
     superTab.addEventListener('click', function () { setTab(true); });
     document.getElementById('superBack').addEventListener('click', function () { setTab(false); homeTab.focus(); });
-    function openClock(origin) { clockOrigin = origin; page.hidden = false; back.focus(); }
+    function openClock(origin) { clockOrigin = origin; page.hidden = false; if (window.clockShowHud) window.clockShowHud(); back.focus(); }
     document.getElementById('openClockModule').addEventListener('click', function () { openClock(this); });
     function openCalendar(origin) { calendarReturn = origin; calendarPage.hidden = false; calendarBack.focus(); if (window.calendarOnOpen) window.calendarOnOpen(); }
     calendarOrigin.addEventListener('click', function () { openCalendar(calendarOrigin); });
@@ -947,7 +976,7 @@
       if (!drawerPage.hidden) { drawerPage.hidden = true; homeTab.focus(); return; }
       if (!calendarPage.hidden) { calendarPage.hidden = true; calendarReturn.focus(); return; }
       if (!weatherPage.hidden) { weatherPage.hidden = true; weatherOrigin.focus(); return; }
-      if (!page.hidden) { page.hidden = true; clockOrigin.focus(); return; }
+      if (!page.hidden) { if (window.clockReturnToHud && window.clockReturnToHud()) { back.focus(); return; } page.hidden = true; clockOrigin.focus(); return; }
       if (!superPage.hidden) { setTab(false); homeTab.focus(); }
     }
     drawerBack.addEventListener('click', goBack);
@@ -1011,16 +1040,35 @@
   // Interaksi pratinjau: tidak menjadwalkan alarm perangkat.
   (function () {
     function byId(id) { return document.getElementById(id); }
+    var activeClockTab = null;
+    function selectClockTab(name) {
+      activeClockTab = name;
+      byId('clockHud').hidden = name !== null;
+      byId('clockPanelScroll').hidden = name === null;
+      document.querySelectorAll('[data-clock-tab]').forEach(function (b) {
+        var active = b.getAttribute('data-clock-tab') === name;
+        b.classList.toggle('active', active); b.setAttribute('aria-pressed', String(active));
+      });
+      document.querySelectorAll('[data-clock-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-clock-panel') !== name; });
+      if (name !== null) byId('clockPanelScroll').scrollTop = 0;
+    }
+    window.clockShowHud = function () { selectClockTab(null); updateHud(); };
+    window.clockReturnToHud = function () { if (activeClockTab === null) return false; selectClockTab(null); return true; };
     document.querySelectorAll('[data-clock-tab]').forEach(function (button) {
       button.addEventListener('click', function () {
-        var name = button.getAttribute('data-clock-tab');
-        document.querySelectorAll('[data-clock-tab]').forEach(function (b) {
-          b.classList.toggle('active', b === button);
-          b.setAttribute('aria-pressed', b === button ? 'true' : 'false');
-        });
-        document.querySelectorAll('[data-clock-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-clock-panel') !== name; });
+        var name = button.getAttribute('data-clock-tab'); selectClockTab(activeClockTab === name ? null : name);
       });
     });
+    function updateHud() {
+      var now = new Date();
+      var padClock = function (n) { return String(n).padStart(2, '0'); };
+      var value = padClock(now.getHours()) + ':' + padClock(now.getMinutes()) + ':' + padClock(now.getSeconds());
+      byId('clockHudText').textContent = value;
+      byId('clockHud').setAttribute('aria-label', 'Jam ' + value);
+      byId('clockHudMarker').setAttribute('transform', 'rotate(' + (now.getSeconds() * 6) + ' 120 120)');
+    }
+    function tickHud() { updateHud(); setTimeout(tickHud, 1000 - (Date.now() % 1000) + 10); }
+    tickHud();
     byId('previewAddAlarm').addEventListener('click', function () { byId('previewAlarmForm').hidden = !byId('previewAlarmForm').hidden; });
     var alarms = [];
     byId('previewSaveAlarm').addEventListener('click', function () {

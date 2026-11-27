@@ -12,6 +12,10 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
 | Sistem | Android 15 (XOS 15), API 35 |
 | Bodi | 163,7 × 75,8 × 8,0 mm |
 
+Saat membuka **Jam**, HUD waktu lokal HH:mm:ss tampil di tengah dalam lingkaran
+jam analog. Bilah bawah membuka Alarm, Jam Dunia, Timer, dan Stopwatch. Ketuk
+lagi ikon aktif atau gunakan kembali untuk menuju HUD.
+
 ## Desain aplikasi bawaan
 
 Jam, Kalender, Cuaca, Super App, dan laci aplikasi memakai palet dan kontrol
