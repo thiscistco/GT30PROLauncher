@@ -12,8 +12,8 @@
   // Displacements are in source-image pixels, not CSS pixels.
   function updateShift() {
     var scale=Math.max(screen.clientWidth / 1224, screen.clientHeight / 2720);
-    screen.style.setProperty('--clock-shift', (2155 * scale) + 'px');
-    screen.style.setProperty('--clock-right', (725 * scale) + 'px');
+    screen.style.setProperty('--clock-shift', (2165 * scale) + 'px');
+    screen.style.setProperty('--clock-right', (735 * scale) + 'px');
     screen.style.setProperty('--battery-shift', (1470 * scale) + 'px');
     screen.style.setProperty('--battery-right', (495 * scale) + 'px');
   }
