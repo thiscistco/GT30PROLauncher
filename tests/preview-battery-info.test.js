@@ -8,10 +8,10 @@ assert.match(html,/Informasi baterai di preview adalah simulasi/);
 assert.match(html,/\.battery-info-spacer \{ height:2\.3mm; \}/);
 assert.match(view,/spacer\.setVisibility\(View\.INVISIBLE\)/);
 assert.match(html,/Informasi baterai, data simulasi preview/);
-assert.match(html,/\.battery-info \{[^}]*z-index:6;[^}]*bottom:calc\(14% \+ 100px\)/);
+assert.match(html,/\.battery-info \{[^}]*z-index:6;[^}]*bottom:calc\(14% \+ 110px\)/);
 assert.match(html,/\.battery-info \{[^}]*pointer-events:none/);
-assert.match(html,/\.battery-info-cell:nth-child\(even\) \{ transform:translateX\(-20px\); \}/);
-assert.match(view,/for\(int i=1;i<cells\.length;i\+=2\) cells\[i\]\.setTranslationX\(-20f\*cssPixel\)/);
+assert.match(html,/\.battery-info-cell:nth-child\(even\) \{ transform:translateX\(-30px\); \}/);
+assert.match(view,/for\(int i=1;i<cells\.length;i\+=2\) cells\[i\]\.setTranslationX\(-30f\*cssPixel\)/);
 for(const label of ['LEVEL','STATUS','SUMBER','KONDISI','SUHU','TEGANGAN','ARUS SAAT INI','ARUS RATA-RATA','MUATAN TERSISA','ENERGI TERSISA','SIKLUS','TEKNOLOGI','BATERAI TERDETEKSI','BATERAI RENDAH','PERKIRAAN PENUH']) {
  assert(html.includes('>'+label+'</span>'),label); assert(view.includes('"'+label+'"'),label);
 }
@@ -22,11 +22,14 @@ const layout=main.match(/private void updateBatteryInfoLayout\([\s\S]*?\n    }/)
 assert.match(layout,/root\.getWidth\(\)\/70\.9f/);
 assert.match(layout,/25\.4f\/96f/);
 assert.match(layout,/batteryInfo\.setColumnOffset\(cssPixel\)/);
-assert.match(layout,/root\.getHeight\(\)\*\.14f\+100f\*cssPixel/);
+assert.match(layout,/batteryInfo\.setTranslationX\(-10f\*cssPixel\)/);
+assert.match(html,/\.battery-info \{[^}]*left:calc\(8% - 10px\)/);
+assert.match(layout,/root\.getHeight\(\)\*\.14f\+110f\*cssPixel/);
 for (const width of [269,405,1224]) {
  const cssPixel=width/70.9*25.4/96, height=width*2720/1224;
- const oldBottom=height*.14+50*cssPixel, newBottom=height*.14+100*cssPixel;
- assert(Math.abs((newBottom-oldBottom)/cssPixel-50)<1e-9);
+ const oldBottom=height*.14+100*cssPixel, newBottom=height*.14+110*cssPixel;
+ assert(Math.abs((newBottom-oldBottom)/cssPixel-10)<1e-9);
+ assert(Math.abs((-30*cssPixel - (-20*cssPixel))/cssPixel+10)<1e-9);
 }
 assert.match(main,/screenGlass\.setElevation\(8f/);
 assert.match(main,/batteryInfo\.update\(intent\)/);

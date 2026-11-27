@@ -39,7 +39,7 @@ final class BatteryInfoView extends LinearLayout {
         setLightGlass(false);
     }
     void setColumnOffset(float cssPixel) {
-        for(int i=1;i<cells.length;i+=2) cells[i].setTranslationX(-20f*cssPixel);
+        for(int i=1;i<cells.length;i+=2) cells[i].setTranslationX(-30f*cssPixel);
     }
     private int dp(float value) { return Math.round(value*getResources().getDisplayMetrics().density); }
     void setLightGlass(boolean light) {

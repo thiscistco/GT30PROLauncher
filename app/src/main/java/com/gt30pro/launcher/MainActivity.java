@@ -144,6 +144,8 @@ public class MainActivity extends BottomSwipeActivity {
         batteryLed.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
         batteryLed.setSingleLine(true);
         batteryLed.setText("85");
+        // Keep this measured anchor for the charging bolt and voice button; hide the old number.
+        batteryLed.setVisibility(View.INVISIBLE);
         batteryLed.setContentDescription("Baterai 85 persen");
         // Three digits fit without changing the right edge as the percentage changes.
         float batteryDigitAdvance = batteryLed.getPaint().measureText("0")
@@ -268,7 +270,8 @@ public class MainActivity extends BottomSwipeActivity {
         FrameLayout.LayoutParams p=(FrameLayout.LayoutParams)batteryInfo.getLayoutParams();
         float cssPixel=(root.getWidth()/70.9f)*25.4f/96f;
         batteryInfo.setColumnOffset(cssPixel);
-        int width=Math.round(root.getWidth()*.84f), bottom=Math.round(root.getHeight()*.14f+100f*cssPixel);
+        batteryInfo.setTranslationX(-10f*cssPixel);
+        int width=Math.round(root.getWidth()*.84f), bottom=Math.round(root.getHeight()*.14f+110f*cssPixel);
         if(p.width!=width || p.bottomMargin!=bottom) { p.width=width; p.bottomMargin=bottom; batteryInfo.setLayoutParams(p); }
     }
 
