@@ -58,7 +58,7 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=14"/);
+assert.match(html,/src="calendar\.js\?v=15"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
@@ -249,3 +249,15 @@ assert.match(nativeCalendar,/month.setOnClickListener\(v -> \{ selected=LocalDat
 assert.match(nativeCalendar,/month.setOnLongClickListener/);assert.match(nativeCalendar,/0xFF743B00/);
 assert.match(html,/calendar-holiday-entry \.calendar-entry-kind \{[^}]*font-weight:900/);
 console.log('Month control resets today, accessible alternative navigation and stronger holiday labels: OK');
+
+assert.equal(calendar.marqueeMetrics(200,200),null);assert.equal(calendar.marqueeMetrics(200,201),null);assert.equal(calendar.marqueeMetrics(0,400),null);
+assert.deepEqual(calendar.marqueeMetrics(200,260),{distance:60,duration:5});assert.equal(calendar.marqueeMetrics(100,1000).duration,30);
+assert.match(html,/@media \(prefers-reduced-motion: reduce\) \{\s*\.calendar-entry-name\.is-marquee/);
+assert.match(nativeCalendar,/TruncateAt\.MARQUEE/);assert.match(nativeCalendar,/ValueAnimator\.areAnimatorsEnabled\(\)/);
+console.log('Calendar marquee metrics, overflow gating and reduced motion: OK');
+
+const properties={}; let active=false;
+const box={clientWidth:120,classList:{toggle:(name,on)=>{assert.equal(name,'is-marquee');active=on;}},style:{setProperty:(key,value)=>properties[key]=value}};
+const track={offsetWidth:180};calendar.updateMarquee(box,track);assert(active);assert.equal(properties['--marquee-distance'],'-60px');assert.equal(properties['--marquee-duration'],'5s');
+box.clientWidth=200;calendar.updateMarquee(box,track);assert(!active);box.clientWidth=0;calendar.updateMarquee(box,track);assert(!active);
+console.log('Calendar marquee resizing and overflow state: OK');

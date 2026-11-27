@@ -454,6 +454,13 @@
   .calendar-entry-kind, .calendar-entry-name { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .calendar-entry-kind { color:var(--cal-muted); font-size:2.4mm; }
   .calendar-entry-name { color:var(--cal-text); font-size:3.4mm; font-weight:900; font-variation-settings:'wght' 900; }
+  .calendar-entry-name.is-marquee { text-overflow:clip; }
+  .calendar-entry-name.is-marquee .calendar-entry-name-track { display:inline-block; white-space:nowrap; animation:calendar-marquee var(--marquee-duration, 8s) linear infinite alternate; }
+  @keyframes calendar-marquee { 0%, 12% { transform:translateX(0); } 88%, 100% { transform:translateX(var(--marquee-distance, 0px)); } }
+  @media (prefers-reduced-motion: reduce) {
+    .calendar-entry-name.is-marquee { text-overflow:ellipsis; }
+    .calendar-entry-name.is-marquee .calendar-entry-name-track { display:inline; animation:none; transform:none; }
+  }
   .calendar-holiday-entry .calendar-entry-kind { color:var(--cal-agenda-observe); font-size:2.6mm; font-weight:900; font-variation-settings:'wght' 900; }
   .calendar-holiday-entry.holiday .calendar-entry-kind { color:var(--cal-agenda-holiday); }
   .calendar-page .calendar-event button.calendar-entry-main { background:transparent; }
@@ -1040,7 +1047,7 @@
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=14"></script>
+<script src="calendar.js?v=15"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

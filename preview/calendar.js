@@ -119,6 +119,19 @@
   function holidayText(entry) {
     return holidayKind(entry) + ' · ' + entry.name;
   }
+  function marqueeMetrics(available, width) {
+    if (!Number.isFinite(available) || !Number.isFinite(width) || available <= 0 || width <= available + 1) return null;
+    var distance=Math.ceil(width-available);
+    return {distance:distance, duration:Math.max(5,Math.min(30,2 + distance/24))};
+  }
+  function updateMarquee(box, track) {
+    var metrics=marqueeMetrics(box.clientWidth,track.offsetWidth);
+    box.classList.toggle('is-marquee',!!metrics);
+    if (metrics) {
+      box.style.setProperty('--marquee-distance','-' + metrics.distance + 'px');
+      box.style.setProperty('--marquee-duration',metrics.duration + 's');
+    }
+  }
   function mount(win) {
     var doc = win.document, byId = function (id) { return doc.getElementById(id); };
     var grid = byId('calendarGrid'), form = byId('calendarForm'), selected = today(), records = [], expanded = false;
@@ -183,12 +196,30 @@
       try { win.localStorage.setItem(key, JSON.stringify(records)); }
       catch (e) { writable = false; showStorageNote(); }
     }
+    var marqueeNodes=[], marqueeFramePending=false;
+    function measureMarquees() {
+      marqueeFramePending=false;
+      marqueeNodes.forEach(function (item) {
+        updateMarquee(item.box,item.track);
+      });
+    }
+    function scheduleMarqueeMeasure() {
+      if (marqueeFramePending) return;
+      if (win.requestAnimationFrame) { marqueeFramePending=true; win.requestAnimationFrame(measureMarquees); }
+      else measureMarquees();
+    }
+    var marqueeObserver=win.ResizeObserver ? new win.ResizeObserver(scheduleMarqueeMeasure) : null;
+    if (win.addEventListener) win.addEventListener('resize',scheduleMarqueeMeasure);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(scheduleMarqueeMeasure);
+    if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener('loadingdone',scheduleMarqueeMeasure);
     function discardForm() { form.hidden = true; form.reset(); error.hidden = true; }
     function makeEntry(kind, name, info, holidayType) {
       var row=doc.createElement('div'); row.className='clock-entry calendar-event' + (holidayType ? ' calendar-holiday-entry' : '') + (holidayType==='libur' ? ' holiday' : '');
       var main=doc.createElement('button'); main.type='button'; main.className='calendar-entry-main';
       var first=doc.createElement('span'); first.className='calendar-entry-kind'; first.textContent=kind;
-      var second=doc.createElement('span'); second.className='calendar-entry-name'; second.textContent=name;
+      var second=doc.createElement('span'); second.className='calendar-entry-name';
+      var track=doc.createElement('span'); track.className='calendar-entry-name-track'; track.textContent=name; second.appendChild(track);
+      marqueeNodes.push({box:second,track:track});
       main.appendChild(first); main.appendChild(second);
       main.setAttribute('aria-label', kind + ', ' + name + '. Lihat rincian');
       main.addEventListener('click',function () { win.alert(name + '\n' + info); });
@@ -199,6 +230,8 @@
       return makeEntry(kind + ' · ' + date, item.entry.name, kind + '\n' + date, item.entry.type);
     }
     function render() {
+      if (marqueeObserver) marqueeObserver.disconnect();
+      marqueeNodes=[];
       var selectedKey = dateKey(selected), todayKey = dateKey(today());
       byId('calendarMonthLabel').textContent = months[selected.month-1];
       byId('calendarYear').textContent = String(selected.year);
@@ -297,6 +330,8 @@
         });
         row.appendChild(remove); list.appendChild(row);
       });
+      if (marqueeObserver) marqueeNodes.forEach(function (item) { marqueeObserver.observe(item.box); });
+      scheduleMarqueeMeasure();
     }
     function changePeriod(delta) { selected = expanded ? shiftMonth(selected, delta) : shiftWeek(selected, delta); discardForm(); render(); }
     win.calendarOnOpen = function () { selected = today(); expanded = false; discardForm(); closeThemeMenu(); closeMonthMenu(); render(); if (updater) updater.refresh(true); };
@@ -391,5 +426,5 @@
     render();
   }
   return {daysInMonth:daysInMonth, leadingDays:leadingDays, shiftMonth:shiftMonth, dateKey:dateKey,
-    validTime:validTime, validTitle:validTitle, validDate:validDate, validRange:validRange, validReminder:validReminder, reminderLabel:reminderLabel, nextOccurrence:nextOccurrence, occurrences:occurrences, agendaEvents:agendaEvents, holidaysFor:holidaysFor, weekHolidayEntries:weekHolidayEntries, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
+    marqueeMetrics:marqueeMetrics, updateMarquee:updateMarquee, validTime:validTime, validTitle:validTitle, validDate:validDate, validRange:validRange, validReminder:validReminder, reminderLabel:reminderLabel, nextOccurrence:nextOccurrence, occurrences:occurrences, agendaEvents:agendaEvents, holidaysFor:holidaysFor, weekHolidayEntries:weekHolidayEntries, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
 });

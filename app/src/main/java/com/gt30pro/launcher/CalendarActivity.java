@@ -113,9 +113,9 @@ public class CalendarActivity extends SwipeBackActivity {
 
     @Override protected void onResume() {
         super.onResume();
-        LocalDate currentDay = LocalDate.now();
-        if (displayedToday != null && !currentDay.equals(displayedToday)) render();
-        displayedToday = currentDay; dateHandler.removeCallbacks(dateTick); dateHandler.postDelayed(dateTick, 60000L);
+        // Refresh after returning from settings, including changes to the system animation scale.
+        displayedToday = LocalDate.now(); render();
+        dateHandler.removeCallbacks(dateTick); dateHandler.postDelayed(dateTick, 60000L);
         CalendarReminders.restore(this);
         refreshHolidays(true);
     }
@@ -399,6 +399,15 @@ public class CalendarActivity extends SwipeBackActivity {
         if (bold) view.setFontVariationSettings("'wght' 900");
         return view;
     }
+    /** Let the platform marquee only overflowed titles, never the type/date line. */
+    private TextView eventTitle(String value) {
+        TextView view=singleLine(value,17,ink,true);
+        if (android.animation.ValueAnimator.areAnimatorsEnabled()) {
+            view.setEllipsize(android.text.TextUtils.TruncateAt.MARQUEE);
+            view.setMarqueeRepeatLimit(-1); view.setSelected(true);
+        }
+        return view;
+    }
     private void addHolidayEntries(LocalDate date) {
         JSONArray entries = holidaysFor(date);
         for (int i=0; i<entries.length(); i++) {
@@ -408,7 +417,7 @@ public class CalendarActivity extends SwipeBackActivity {
             row.setPadding(dp(12),dp(8),dp(12),dp(8)); row.setBackground(bg(eventColor));
             int kindColor = "libur".equals(entry.optString("type")) ? (dark ? 0xFFFFB0B9 : 0xFF85132A) : (dark ? 0xFFFFC98D : 0xFF743B00);
             row.addView(singleLine(kind + " · " + dateLabel(date),13,kindColor,true));
-            row.addView(singleLine(name,17,ink,true));
+            row.addView(eventTitle(name));
             row.setContentDescription(kind + ", " + dateLabel(date) + ", " + name + ". Lihat rincian");
             row.setFocusable(true); row.setOnClickListener(v -> showDialog(dialog().setTitle(name).setMessage(kind + "\n" + dateLabel(date)).setNegativeButton("Tutup",null).create()));
             page.addView(row); space(8);
@@ -551,7 +560,7 @@ public class CalendarActivity extends SwipeBackActivity {
             String kind=type.isEmpty()?"Acara":type;
             LinearLayout label = new LinearLayout(this); label.setOrientation(LinearLayout.VERTICAL);
             label.addView(singleLine(kind + " · " + when,12,muted,false));
-            label.addView(singleLine(title,17,ink,true));
+            label.addView(eventTitle(title));
             final String eventInfo=kind + "\n" + when + details;
             final String fullDetails=kind + "\n" + title + "\n" + when + details;
             label.setContentDescription(fullDetails + ". Lihat rincian acara"); label.setFocusable(true);

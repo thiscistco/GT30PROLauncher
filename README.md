@@ -27,8 +27,8 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
   libur dan memilih tanggal acara baru; tombol tambah di kanan bulan membuat acara.
   Agenda mingguan menampilkan seluruh acara dan libur/peringatan Senin–Minggu
   yang terlihat, termasuk yang sudah lewat. Libur/peringatan berada di atas acara;
-  acara pribadi diurutkan menurut tanggal dan waktu. Ketuk acara untuk rincian
-  lengkap. Agenda bulanan hanya menampilkan acara serta libur/peringatan hari ini,
+  acara pribadi diurutkan menurut tanggal dan waktu. Nama yang terpotong bergerak
+  otomatis, kecuali animasi dikurangi/dimatikan; ketuk acara untuk rincian lengkap. Agenda bulanan hanya menampilkan acara serta libur/peringatan hari ini,
   walaupun bulan lain dipilih; detail libur tanggal terpilih tetap terlihat. Kalender
   terbuka satu minggu, panah bawah membuka tampilan bulan; swipe pada kisi
   berpindah minggu atau bulan sesuai tampilan. Ketuk label bulan atau ikon kalender
