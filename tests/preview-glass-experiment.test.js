@@ -9,25 +9,25 @@ assert.match(html,/\.screen\.glass-over-home \.home-screen-glass \{ z-index:7; \
 assert.match(html,/\.screen\.glass-over-home \.punch-hole \{ z-index:8; \}/);
 assert.match(html,/\.super-page \{[^}]*z-index: 9/);
 assert.match(html,/\.path-draw \{[^}]*z-index: 12/);
-assert.match(html,/<script src="glass-preview\.js\?v=8"><\/script>/);
+assert.match(html,/<script src="glass-preview\.js\?v=9"><\/script>/);
 const classes=new Set(['glass-over-home']);
 const props={};const screen={clientWidth:269,clientHeight:597,style:{setProperty(k,v){props[k]=v;}},classList:{toggle(name,on){if(on) classes.add(name);else classes.delete(name);}}};
 const toggle={checked:true,addEventListener(name,fn){assert.equal(name,'change');this.change=fn;}};
 let resize;
 vm.runInNewContext(fs.readFileSync('preview/glass-preview.js','utf8'),{document:{getElementById:id=>id==='glassPreviewToggle'?toggle:null,querySelector:q=>q==='.screen'?screen:null},window:{addEventListener(name,fn){assert.equal(name,'resize');resize=fn;}}});
-for (const [property, pixels] of [['--clock-shift',2070],['--clock-right',500],['--battery-shift',1470],['--battery-right',475]]) {
+for (const [property, pixels] of [['--clock-shift',2120],['--clock-right',550],['--battery-shift',1470],['--battery-right',485]]) {
   assert(Math.abs(parseFloat(props[property]) - pixels*Math.max(269/1224,597/2720))<1e-9);
 }
 screen.clientWidth=612;screen.clientHeight=1000;resize();
-assert.equal(parseFloat(props['--clock-shift']),1035); // cover uses width here
-assert.equal(parseFloat(props['--clock-right']),250);
+assert.equal(parseFloat(props['--clock-shift']),1060); // cover uses width here
+assert.equal(parseFloat(props['--clock-right']),275);
 assert.equal(parseFloat(props['--battery-shift']),735);
-assert.equal(parseFloat(props['--battery-right']),237.5);
+assert.equal(parseFloat(props['--battery-right']),242.5);
 screen.clientWidth=500;screen.clientHeight=1360;resize();
-assert.equal(parseFloat(props['--clock-shift']),1035); // cover uses height here
-assert.equal(parseFloat(props['--clock-right']),250);
+assert.equal(parseFloat(props['--clock-shift']),1060); // cover uses height here
+assert.equal(parseFloat(props['--clock-right']),275);
 assert.equal(parseFloat(props['--battery-shift']),735);
-assert.equal(parseFloat(props['--battery-right']),237.5);
+assert.equal(parseFloat(props['--battery-right']),242.5);
 assert.match(html,/\.battery-value \{[^}]*translate\(var\(--battery-right, 0px\), calc\(0px - var\(--battery-shift, 0px\)\)\) scale\(1\.5\)/);
 assert.match(html,/transform: translate\(calc\(-50% \+ var\(--clock-right, 0px\)\), calc\(0px - var\(--clock-shift, 0px\)\)\) scale\(1\.2\)/);
 assert.match(html,/\.home-weather \{[^}]*color: #ffcd6a/);
