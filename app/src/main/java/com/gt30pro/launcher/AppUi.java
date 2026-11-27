@@ -67,9 +67,14 @@ final class AppUi {
         button.setScaleType(ImageView.ScaleType.FIT_CENTER); button.setPadding(dp(a,12),dp(a,12),dp(a,12),dp(a,12));
         button.setBackgroundColor(Color.TRANSPARENT); button.setContentDescription(description); button.setTooltipText(description); return button;
     }
+    /** Same dot-matrix arrow and 48 dp touch target as Calendar. */
+    ImageButton backButton(Activity a) {
+        ImageButton back = icon(a,R.drawable.ic_calendar_back,"Kembali");
+        back.setOnClickListener(v -> a.finish()); return back;
+    }
     LinearLayout header(Activity a, Typeface font, String title) {
         LinearLayout row = new LinearLayout(a); row.setGravity(Gravity.CENTER_VERTICAL);
-        ImageButton back=icon(a,R.drawable.ic_calendar_back,"Kembali"); back.setOnClickListener(v -> a.finish());
+        ImageButton back=backButton(a);
         row.addView(back,new LinearLayout.LayoutParams(dp(a,48),dp(a,48)));
         TextView label=new TextView(a); label.setText(title); label.setTextSize(20); label.setTextColor(ink);
         label.setTypeface(font); label.setFontVariationSettings("'wght' 800"); label.setSingleLine(true); label.setEllipsize(android.text.TextUtils.TruncateAt.END);

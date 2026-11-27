@@ -26,8 +26,8 @@ public class SuperAppActivity extends SwipeBackActivity {
         root.setBackgroundColor(ui.canvas);
         android.widget.LinearLayout content = findViewById(R.id.content);
         root.setOnApplyWindowInsetsListener((v, insets) -> {
-            content.setPadding(content.getPaddingLeft(), insets.getSystemWindowInsetTop(),
-                    content.getPaddingRight(), insets.getSystemWindowInsetBottom());
+            content.setPadding(dp(20), dp(16) + insets.getSystemWindowInsetTop(),
+                    dp(20), dp(24) + insets.getSystemWindowInsetBottom());
             return insets;
         });
 

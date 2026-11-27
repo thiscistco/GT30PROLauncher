@@ -3,7 +3,9 @@
 Kalender adalah acuan untuk seluruh halaman milik launcher. `AppUi` adalah
 sumber palet dan komponen Android: Doto tebal, latar dan kartu, teks kontras,
 kontrol squircle, header panah kembali + judul + pilihan tema, serta warna
-status/navigation bar. Gunakan `new AppUi(activity)`, `ui.window(activity)`,
+status/navigation bar. Panah kembali memakai `AppUi.backButton` yang sama
+dengan Kalender (ikon 24 dp, target sentuh 48 dp, padding halaman 20 dp kiri
+dan 16 dp atas ditambah inset sistem). Gunakan `new AppUi(activity)`, `ui.window(activity)`,
 `ui.header(activity, font, title)`, `ui.surface(activity, ui.card/control)` dan
 `ui.dialog(activity)` saat membuat halaman baru. Berikan target sentuh minimal
 48 dp dan label aksesibilitas pada setiap ikon; pertahankan `SwipeBackActivity`

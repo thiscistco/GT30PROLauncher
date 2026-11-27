@@ -39,10 +39,8 @@ public class AppDrawerActivity extends SwipeBackActivity {
         android.widget.LinearLayout content = findViewById(R.id.content);
         root.setBackgroundColor(ui.canvas);
         root.setOnApplyWindowInsetsListener((v, insets) -> {
-            content.setPadding(content.getPaddingLeft(),
-                    insets.getSystemWindowInsetTop(),
-                    content.getPaddingRight(),
-                    insets.getSystemWindowInsetBottom());
+            content.setPadding(dp(20), dp(16) + insets.getSystemWindowInsetTop(),
+                    dp(20), dp(24) + insets.getSystemWindowInsetBottom());
             return insets;
         });
 
@@ -86,6 +84,8 @@ public class AppDrawerActivity extends SwipeBackActivity {
     }
 
     @Override protected void onResume() { super.onResume(); AppUi current = new AppUi(this); if (ui != null && (ui.dark != current.dark || !ui.choice.equals(current.choice))) recreate(); }
+
+    private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
 
     private void loadApps() {
         new Thread(() -> {

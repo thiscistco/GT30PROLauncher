@@ -428,7 +428,7 @@ public class CalendarActivity extends SwipeBackActivity {
         page.removeAllViews();
         LocalDate actualToday = LocalDate.now();
         LinearLayout top = new LinearLayout(this); top.setGravity(Gravity.CENTER_VERTICAL);
-        ImageButton back = actionIcon(R.drawable.ic_calendar_back, "Kembali", this::finish);
+        ImageButton back = new AppUi(this).backButton(this);
         top.addView(back,new LinearLayout.LayoutParams(dp(48),dp(48)));
         TextView year = text("Kalender " + selected.getYear(), 20, ink);
         year.setContentDescription("Kalender, tahun " + selected.getYear()); top.addView(year);
