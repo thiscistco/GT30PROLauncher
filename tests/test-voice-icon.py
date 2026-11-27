@@ -10,11 +10,19 @@ path,expected=generator.generate()
 assert path.read_text(encoding='utf8')==expected
 svg,svg_expected=generator.generate_svg()
 assert svg.read_text(encoding='utf8')==svg_expected
-assert len(generator.ROWS)==13 and all(len(row)==13 for row in generator.ROWS)
+assert len(generator.BARS)==5 and generator.WIDTH==3
+bars=generator.BARS
+assert [bar[0] for bar in bars]==[1.5,6.75,12,17.25,22.5]
+assert bars[0][1:]==bars[4][1:] and bars[1][1:]==bars[3][1:]
+assert all(abs((top+bottom)/2-12)<1e-8 for _,top,bottom in bars)
+assert bars[0][2]-bars[0][1] < bars[1][2]-bars[1][1] < bars[2][2]-bars[2][1]
 icon=ET.parse(path).getroot()
 ns='{http://schemas.android.com/apk/res/android}'
-assert icon.get(ns+'viewportWidth')=='13' and icon.get(ns+'viewportHeight')=='13'
-assert icon.find('path').get(ns+'pathData').count('a.36,.36') >= 50
+assert icon.get(ns+'viewportWidth')=='24' and icon.get(ns+'viewportHeight')=='24'
+assert icon.find('path').get(ns+'pathData').count('M')==5
+assert icon.find('path').get(ns+'strokeLineCap')=='round'
+svgroot=ET.parse(svg).getroot()
+assert svgroot.get('stroke-linecap')=='round' and len(list(svgroot))==5
 java=root/'app/src/main/java/com/gt30pro/launcher'
 ctl=(java/'VoiceController.java').read_text(); service=(java/'VoiceService.java').read_text()
 assert 'R.drawable.ic_voice_command' in ctl
@@ -27,6 +35,8 @@ assert 'R.drawable.ic_voice_mic' in service # solid notification small icon rema
 home=(java/'MainActivity.java').read_text()
 assert 'VoiceController.setButtonColor(voiceButton,dark ?' in home
 assert 'mic.setElevation(4f*' in home
+assert 'new FrameLayout.LayoutParams(micSize,micSize,Gravity.CENTER)' in home
+assert 'micParams.topMargin' not in home and 'micParams.rightMargin' not in home
 assert 'VoiceController.button' in (java/'AppUi.java').read_text()
 assert 'VoiceController.button' in (java/'CalendarActivity.java').read_text()
 print('Voice icon generation, click/long-click, state, theme and lifecycle wiring: OK')

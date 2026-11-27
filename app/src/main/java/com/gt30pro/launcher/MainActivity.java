@@ -106,9 +106,7 @@ public class MainActivity extends BottomSwipeActivity {
         FrameLayout micRoot=findViewById(R.id.root);
         android.widget.ImageButton mic=VoiceController.button(this,0xFFB7CBD6); voiceButton=mic;
         int micSize=Math.round(48*getResources().getDisplayMetrics().density);
-        FrameLayout.LayoutParams micParams=new FrameLayout.LayoutParams(micSize,micSize,Gravity.TOP|Gravity.END);
-        micParams.topMargin=Math.round(40*getResources().getDisplayMetrics().density);
-        micParams.rightMargin=Math.round(12*getResources().getDisplayMetrics().density);
+        FrameLayout.LayoutParams micParams=new FrameLayout.LayoutParams(micSize,micSize,Gravity.CENTER);
         mic.setElevation(4f*getResources().getDisplayMetrics().density); micRoot.addView(mic,micParams);
 
         ImageView wallpaper = findViewById(R.id.wallpaper);
