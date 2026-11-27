@@ -270,13 +270,13 @@ public class MainActivity extends BottomSwipeActivity {
         batteryBolt.setTranslationY(top - params.topMargin);
         batteryBolt.setLayoutParams(params);
         // Anchor to the bolt's untransformed position, not the shifted battery percentage.
-        // Shift the voice button 25 preview pixels left and 10 up; keep it available
+        // Shift the voice button 35 preview pixels left and 10 up; keep it available
         // even when the charging bolt is hidden.
         if (voiceButton != null) {
             FrameLayout.LayoutParams voiceParams=(FrameLayout.LayoutParams) voiceButton.getLayoutParams();
             int margin=Math.max(0,Math.round(root.getHeight() - top + pixelsPerMm + 10f * cssPixel));
             if (voiceParams.bottomMargin != margin) { voiceParams.bottomMargin=margin; voiceButton.setLayoutParams(voiceParams); }
-            voiceButton.setTranslationX(-24f * cssPixel);
+            voiceButton.setTranslationX(-34f * cssPixel);
         }
     }
 
