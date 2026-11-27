@@ -45,7 +45,9 @@ aplikasi bawaan baru tersedia di `docs/app-ui.md`.
   dengan transparansi 25%. Di mode gelap, indikator utama putih keabu-abuan
   dan aksen jam/cuaca amber; di mode terang, indikator gelap dan aksen amber
   lebih pekat. Label hari/bulan memakai warna sekunder. Ikon dan label berada di atas kaca; lapisan ini
-  tidak menghalangi sentuhan atau mengubah wallpaper asli.
+  tidak menghalangi sentuhan atau mengubah wallpaper asli. Preview menyediakan
+  percobaan ikon dan label di balik kaca yang dapat dibandingkan dengan versi APK;
+  percobaan ini tidak mengubah perilaku aplikasi Android.
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
   long-press = menu pintasan (Super App / Semua Aplikasi / Setelan).
 - **App Drawer** — daftar semua aplikasi terpasang + pencarian real-time.

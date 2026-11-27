@@ -140,6 +140,9 @@
   .amber-glow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   .amber-glow.off { display: none; }
   .home-screen-glass { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; user-select:none; }
+  /* Preview experiment only: keep app pages above the glass and home controls tappable. */
+  .screen.glass-over-home .home-screen-glass { z-index:7; }
+  .screen.glass-over-home .punch-hole { z-index:8; }
   .home-screen-glass.dark { display:none; }
   @media (prefers-color-scheme: dark) {
     .home-screen-glass.light { display:none; }
@@ -261,6 +264,9 @@
   .phone-row { display: flex; align-items: stretch; }
   .charging-toggle { color: #c3cad4; font: 600 12px 'Doto', monospace; display: flex; gap: 8px; align-items: center; }
   .charging-toggle input { accent-color: #f7a23b; }
+  .glass-preview-control { margin:10px auto 0; display:flex; align-items:center; justify-content:center; gap:8px; font:700 12px/1.4 'Doto',monospace; color:#e9ecf1; }
+  .glass-preview-control input { accent-color:#f7a23b; }
+  .glass-preview-note { margin:4px auto 0; font:600 10px/1.4 'Doto',monospace; color:#a7aeba; }
   .animation-status { color: #a7aeba; font: 600 11px 'Doto', monospace; text-align: center; }
   .ram-simulation { width: min(100%, 430px); display: grid; gap: 7px; padding: 12px 14px; border: 1px solid rgba(247,162,59,.3); border-radius: 12px; background: rgba(20,22,26,.92); color: #c3cad4; font: 600 12px/1.5 'Doto', monospace; }
   .ram-simulation input { width: 100%; accent-color: #f7a23b; }
@@ -798,6 +804,8 @@
         <button id="tabHome" class="active" type="button" aria-pressed="true">Homescreen</button>
         <button id="tabSuper" type="button" aria-pressed="false">Super App</button>
       </div>
+      <label class="glass-preview-control"><input type="checkbox" id="glassPreviewToggle" aria-describedby="glassPreviewHelp" checked> Ikon dan label di balik kaca</label>
+      <p class="glass-preview-note" id="glassPreviewHelp">Percobaan preview saja. Matikan untuk membandingkan dengan tampilan APK saat ini.</p>
     </header>
 
     <div class="stage">
@@ -807,7 +815,7 @@
             <div class="side-btn vol-up"></div>
             <div class="side-btn vol-down"></div>
             <div class="side-btn power"></div>
-            <div class="screen">
+            <div class="screen glass-over-home">
               <div class="wallpaper" id="wallpaper"></div>
               <canvas class="amber-glow" id="amberGlow" aria-hidden="true"></canvas>
               <img class="home-screen-glass light" src="assets/home-screen-glass.png?v=5" alt="" aria-hidden="true" draggable="false">
@@ -1393,6 +1401,7 @@
     }, 50);
   })();
 </script>
+<script src="glass-preview.js?v=1"></script>
 <script src="home-date.js?v=2"></script>
 <script src="weather-page.js?v=2"></script>
 <script src="weather.js?v=6"></script>
