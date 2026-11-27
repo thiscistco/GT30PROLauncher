@@ -16,7 +16,9 @@ Saat membuka **Jam**, HUD waktu lokal HH:mm:ss tampil di tengah dalam lingkaran
 jam analog di bagian atas bingkai squircle. Angka jam putih berlatar gelap,
 dan ikon Alarm, Jam Dunia, Timer, dan Stopwatch rata tengah di bawah lingkaran.
 Fitur terbuka sebagai panel pada halaman yang sama; daftar alarm menampilkan
-hitung mundur menuju alarm berikutnya. Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
+hitung mundur menuju alarm berikutnya. Editor alarm menyediakan pilihan hari
+Senin–Minggu dalam satu baris, serta ikon nada dan getar di samping waktu.
+Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
 
 ## Desain aplikasi bawaan
 

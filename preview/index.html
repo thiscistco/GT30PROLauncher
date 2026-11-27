@@ -598,7 +598,25 @@
   #clockPage .clock-tabs button img { width:3.81mm; height:3.81mm; }
   #clockPage .clock-action { border-radius:2.5mm; }
   .clock-alarm-header { display:flex; align-items:center; justify-content:space-between; gap:2mm; }
-  #clockPage .clock-alarm-add { width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
+  #clockPage .clock-alarm-add { width:7.62mm; height:7.62mm; padding:2.54mm; display:grid; place-items:center; }
+  #clockPage .clock-alarm-add .calendar-action-icon { width:2.54mm; height:2.54mm; }
+  .alarm-time-options { display:flex; align-items:center; gap:.64mm; }
+  #clockPage .alarm-time-options > input { flex:1; width:0; min-width:0; height:7.62mm; box-sizing:border-box; }
+  #clockPage .alarm-option { position:relative; box-sizing:border-box; flex:0 0 7.62mm; width:7.62mm; height:7.62mm; display:grid; place-items:center; padding:1.905mm; margin:0; background:var(--app-control); border:1px solid var(--app-border); border-radius:2.5mm; color:var(--app-text); cursor:pointer; }
+  #clockPage .alarm-option input, #clockPage .alarm-days input { position:absolute; opacity:0; width:1px; height:1px; padding:0; margin:0; }
+  #clockPage .alarm-vibrate:has(input:checked) { background:var(--app-selected); color:var(--app-selected-text); }
+  #clockPage .alarm-option:focus-within, #clockPage .alarm-days label:focus-within { outline:2px solid var(--app-text); outline-offset:1px; }
+  .alarm-sound-icon { mask-image:url('assets/alarm-sound.svg?v=1'); -webkit-mask-image:url('assets/alarm-sound.svg?v=1'); }
+  .alarm-vibrate-icon { mask-image:url('assets/alarm-vibrate.svg?v=1'); -webkit-mask-image:url('assets/alarm-vibrate.svg?v=1'); }
+  #clockPage .alarm-days { display:flex; flex-wrap:nowrap; gap:.48mm; overflow-x:auto; margin:1.27mm 0; }
+  #clockPage .alarm-days label { position:relative; flex:0 0 7.62mm; height:7.62mm; margin:0; font-size:1.75mm; }
+  #clockPage .alarm-days label span { display:grid; place-items:center; box-sizing:border-box; width:100%; height:100%; background:var(--app-control); color:var(--app-text); border:1px solid var(--app-border); border-radius:2mm; }
+  #clockPage .alarm-days input:checked + span { background:var(--app-selected); color:var(--app-selected-text); }
+  .alarm-editor-actions { display:flex; gap:1.27mm; }
+  .alarm-editor-actions button { flex:1; }
+  #previewSound { width:100%; margin-top:1mm; }
+  .alarm-card-head { display:flex; align-items:center; gap:1.27mm; }
+  .alarm-card-time { flex:1; font-size:4.3mm; }
   .clock-alarm-countdown { margin:.8mm 0; font-size:2.2mm; color:var(--app-muted); }
   #clockPage .clock-entry, #clockPage .alarm-form, #clockPage input, #clockPage select { border-radius:3mm; }
   #clockPage .clock-display { background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; padding:2mm; }
@@ -756,16 +774,17 @@
                   <div class="clock-panel-scroll" id="clockPanelScroll" hidden>
                 <div class="clock-section" data-clock-panel="alarm" hidden>
                   <div class="clock-alarm-header"><h3>ALARM</h3><button class="clock-action clock-alarm-add" id="previewAddAlarm" type="button" aria-label="Tambah alarm" title="Tambah alarm"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
-                  <p class="clock-muted">Simulasi preview; alarm aktif di aplikasi Android.</p>
                   <div class="alarm-form" id="previewAlarmForm" hidden>
-                    <label>Waktu <input id="previewAlarmTime" type="time" value="07:00"></label>
-                    <div class="clock-muted">Ulangi (kosong = sekali)</div>
-                    <div class="alarm-days" id="previewAlarmDays">
-                      <label><input type="checkbox" value="0"> Min</label><label><input type="checkbox" value="1"> Sen</label><label><input type="checkbox" value="2"> Sel</label><label><input type="checkbox" value="3"> Rab</label><label><input type="checkbox" value="4"> Kam</label><label><input type="checkbox" value="5"> Jum</label><label><input type="checkbox" value="6"> Sab</label>
+                    <div class="alarm-time-options">
+                      <input id="previewAlarmTime" type="time" value="07:00" aria-label="Waktu alarm">
+                      <button class="clock-action alarm-option" id="previewSoundButton" type="button" aria-label="Nada alarm" title="Nada alarm" aria-expanded="false" aria-controls="previewSound"><span class="calendar-action-icon alarm-sound-icon" aria-hidden="true"></span></button>
+                      <label class="alarm-option alarm-vibrate" title="Getar"><input id="previewVibrate" type="checkbox" aria-label="Getar" checked><span class="calendar-action-icon alarm-vibrate-icon" aria-hidden="true"></span></label>
                     </div>
-                    <label>Nada <select id="previewSound"><option>Nada alarm</option><option>Hening</option></select></label>
-                    <label><input id="previewVibrate" type="checkbox" checked> Getar</label>
-                    <button class="clock-action clock-wide" id="previewSaveAlarm" type="button">Simpan</button>
+                    <select id="previewSound" aria-label="Nada alarm" hidden><option>Nada alarm</option><option>Hening</option></select>
+                    <div class="alarm-days" id="previewAlarmDays" role="group" aria-label="Hari pengulangan">
+                      <label><input type="checkbox" value="1"><span>Sen</span></label><label><input type="checkbox" value="2"><span>Sel</span></label><label><input type="checkbox" value="3"><span>Rab</span></label><label><input type="checkbox" value="4"><span>Kam</span></label><label><input type="checkbox" value="5"><span>Jum</span></label><label><input type="checkbox" value="6"><span>Sab</span></label><label><input type="checkbox" value="0"><span>Min</span></label>
+                    </div>
+                    <div class="alarm-editor-actions"><button class="clock-action" id="previewCancelAlarm" type="button">Batal</button><button class="clock-action" id="previewSaveAlarm" type="button">Simpan</button></div>
                   </div>
                   <div id="previewAlarms" class="clock-muted">Belum ada alarm. Tambahkan pengingat pertama.</div>
                 </div>
@@ -1079,6 +1098,9 @@
     function tickHud() { updateHud(); setTimeout(tickHud, 1000 - (Date.now() % 1000) + 10); }
     tickHud();
     byId('previewAddAlarm').addEventListener('click', function () { byId('previewAlarmForm').hidden = !byId('previewAlarmForm').hidden; });
+    byId('previewCancelAlarm').addEventListener('click', function () { byId('previewAlarmForm').hidden = true; });
+    byId('previewSoundButton').addEventListener('click', function () { var select=byId('previewSound'); select.hidden=!select.hidden; this.setAttribute('aria-expanded', String(!select.hidden)); if (!select.hidden) select.focus(); });
+    byId('previewSound').addEventListener('change', function () { var button=byId('previewSoundButton'); button.setAttribute('aria-label','Nada alarm: '+this.value); button.title='Nada alarm: '+this.value; this.hidden=true; button.setAttribute('aria-expanded','false'); button.focus(); });
     var alarms = [];
     function nextPreviewAlarm(alarm, now) {
       var parts = alarm.time.split(':'), hour = Number(parts[0]), minute = Number(parts[1]);
@@ -1107,7 +1129,7 @@
       var time = byId('previewAlarmTime').value;
       if (!time) return;
       var days = Array.from(byId('previewAlarmDays').querySelectorAll('input:checked')).map(function (x) { return Number(x.value); });
-      var alarm = { time: time, days: days, vibrate: byId('previewVibrate').checked, enabled:true };
+      var alarm = { time: time, days: days, vibrate: byId('previewVibrate').checked, sound:byId('previewSound').value, enabled:true };
       alarm.next=nextPreviewAlarm(alarm,Date.now()); alarms.push(alarm);
       byId('previewAlarmForm').hidden = true;
       renderAlarms();
@@ -1117,7 +1139,12 @@
       if (!alarms.length) { list.textContent = 'Belum ada alarm. Tambahkan pengingat pertama.'; return; }
       alarms.forEach(function (alarm, i) {
         var card = document.createElement('div'); card.className = 'clock-entry';
-        var text = document.createElement('div'); text.textContent = alarm.time + '  ·  ' + (alarm.days.length ? alarm.days.map(function (d) { return ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d]; }).join(' · ') : 'Sekali') + (alarm.vibrate ? '  ·  Getar' : ''); card.appendChild(text);
+        var head = document.createElement('div'); head.className='alarm-card-head';
+        var time = document.createElement('span'); time.className='alarm-card-time'; time.textContent=alarm.time; head.appendChild(time);
+        [['alarm-sound-icon','Nada alarm: '+alarm.sound,alarm.sound !== 'Hening'],['alarm-vibrate-icon',alarm.vibrate ? 'Getar aktif' : 'Getar tidak aktif',alarm.vibrate]].forEach(function (option) {
+          var icon=document.createElement('span'); icon.className='calendar-action-icon '+option[0]; icon.setAttribute('role','img'); icon.setAttribute('aria-label',option[1]); icon.title=option[1]; if (!option[2]) icon.style.opacity='.4'; head.appendChild(icon);
+        }); card.appendChild(head);
+        var text = document.createElement('div'); text.textContent = alarm.days.length ? alarm.days.map(function (d) { return ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d]; }).join(' · ') : 'Sekali'; card.appendChild(text);
         var countdown = document.createElement('div'); countdown.className = 'clock-alarm-countdown'; card.appendChild(countdown); alarm.countdown=countdown;
         var toggle = document.createElement('label'), checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.checked=alarm.enabled;
         alarm.checkbox=checkbox; checkbox.addEventListener('change', function () { alarm.enabled=checkbox.checked; if (alarm.enabled) alarm.next=nextPreviewAlarm(alarm,Date.now()); updatePreviewCountdowns(); });
