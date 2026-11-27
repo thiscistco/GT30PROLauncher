@@ -10,7 +10,7 @@ import android.graphics.Typeface;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
-/** Explicitly sized home clock with a five-dot sequential gunmetal pulse. */
+/** Explicitly sized home clock with a five-dot accumulating gunmetal animation. */
 final class HomeClockView extends View {
     static final float WIDTH_MM = 3.6f;
     static final float CONTENT_HEIGHT_MM = 5.731f;
@@ -33,8 +33,8 @@ final class HomeClockView extends View {
     void startSeparator() {
         stopSeparator();
         if (!ValueAnimator.areAnimatorsEnabled()) return;
-        separatorAnimator = ValueAnimator.ofFloat(0f, 5f);
-        separatorAnimator.setDuration(5000);
+        separatorAnimator = ValueAnimator.ofFloat(0f, 6f);
+        separatorAnimator.setDuration(6000);
         separatorAnimator.setInterpolator(new LinearInterpolator());
         separatorAnimator.setRepeatCount(ValueAnimator.INFINITE);
         separatorAnimator.addUpdateListener(animation -> {
@@ -98,11 +98,11 @@ final class HomeClockView extends View {
         float top = GLOW_PAD_MM * pxPerMm;
         drawDigits(canvas, hour, top, line);
         float cssPx = pxPerMm * 25.4f / 96f;
-        // Preserve both digit rows and place the actual dot glyphs midway between them.
+        // Preserve both digit rows: center the dots, then raise only the separator by half a final CSS pixel.
         float originalDotTop = top + line + .461f * pxPerMm - cssPx;
         float minuteTop = originalDotTop + .22f * pxPerMm + .45f * pxPerMm;
         float r = .14f * pxPerMm;
-        float dotTop = (top + line + minuteTop - cssPx / HOME_SCALE) / 2f - r;
+        float dotTop = (top + line + minuteTop - cssPx / HOME_SCALE) / 2f - r - .5f * cssPx / HOME_SCALE;
         float total = 2.8f * pxPerMm - .76f * cssPx;
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;

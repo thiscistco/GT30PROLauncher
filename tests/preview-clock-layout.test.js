@@ -13,6 +13,8 @@ assert.match(clock, /font-variation-settings:\s*'wght'\s*800/);
 assert.match(clock, /letter-spacing:\s*0\.2mm/);
 assert.match(clock, /padding-bottom:\s*1px/);
 assert.match(sep, /height:\s*0\.22mm/);
+assert.match(sep, /transform:translateY\(-0\.4385965px\)/);
+assert.match(view,/float dotTop = \(top \+ line \+ minuteTop - cssPx \/ HOME_SCALE\) \/ 2f - r - \.5f \* cssPx \/ HOME_SCALE/);
 assert.match(sep, /margin:\s*calc\(0\.4555mm - 0\.9385965px\) 0 calc\(0\.4555mm - 0\.0614035px\) 0/);
 const digits = html.match(/\.clock-led > span:not\(\.clock-sep\),\s*\.date-led > span\s*\{([^}]*)\}/)[1];
 // Both home overlays retain an amber gradient tuned to the home palette.
@@ -21,10 +23,15 @@ assert.match(digits, /drop-shadow\(0 0 0\.4mm rgba\(255, 105, 25, 0\.65\)\)/);
 assert.match(sep, /color:#adc3ca/);
 assert.match(html, /\.clock-sep \{ color:#425860; \}/);
 assert.match(html, /<span class="clock-sep" aria-hidden="true">(?:<i><\/i>){5}<\/span>/);
-assert.match(html, /animation:clockDotPulse 5s linear infinite/);
-assert.match(html, /@keyframes clockDotPulse \{ 0%,20%,100% \{ opacity:1; \} 10% \{ opacity:0;/);
+assert.match(html, /animation-duration:6s; animation-iteration-count:infinite/);
+for (const [i,at] of [[1,'8.333333'],[2,'25'],[3,'41.666667'],[4,'58.333333'],[5,'75']]) {
+  assert(html.includes(`.clock-sep i:nth-child(${i}) { animation-name:clockDot${i}; }`));
+  const frames=html.match(new RegExp(`@keyframes clockDot${i} \\{([^\\n]*)`))[1];
+  assert(frames.includes(`${at}% { opacity:1;`));
+  assert(frames.includes('91.666667%,100% { opacity:0;'));
+}
+assert.match(html, /83\.333333% \{ opacity:1; animation-timing-function:linear; \}/);
 assert.match(view,/dots\.setAlpha\(Math\.round\(255f \* pulse\)\)/);
-for (let i=2; i<=5; i++) assert(html.includes(`.clock-sep i:nth-child(${i}) { animation-delay:${i-1}s; }`));
 assert.match(html, /prefers-reduced-motion:reduce[^}]*\.clock-sep i \{ animation:none; opacity:1/);
 assert.match(html, /#clockMin \{ transform: translate\(0px, -0\.877193px\)/);
 assert(Math.abs(1.14 / 1.2 - .95)<1e-9);
@@ -53,7 +60,7 @@ assert.match(view, /text\.setFontVariationSettings\("'wght' 800"\)/);
 assert.match(view, /text\.setShadowLayer\(\.4f \* pixelsPerMm/);
 assert.match(view, /for \(int i = 0; i < 5; i\+\+\)/);
 assert.match(view,/HomeClockPulse\.intensity\(separatorPhase, i\)/);
-assert.match(view,/setDuration\(5000\)/);
+assert.match(view,/setDuration\(6000\)/);
 assert.match(view,/ValueAnimator\.areAnimatorsEnabled\(\)/);
 assert.match(java,/clockLed\.startSeparator\(\)/);
 assert.match(java,/clockLed\.stopSeparator\(\)/);
@@ -78,6 +85,9 @@ for (const [w,h] of [[269,596],[1224,2720],[720,1600]]) {
   const minuteTop=oldDotTop+.22*mm+.45*mm-css/1.14;
   const dotTop=(hourBottom+minuteTop)/2-.14*mm;
   assert(Math.abs((dotTop-hourBottom)-(minuteTop-(dotTop+.28*mm)))<1e-9);
+  const shiftedDotTop=dotTop-.5*css/1.14;
+  assert(Math.abs((dotTop-shiftedDotTop)*1.14-.5*css)<1e-9);
+  assert(Math.abs(.4385965*1.14-.5)<1e-6);
   const topMargin=.4555*mm-.9385965*css;
   const bottomMargin=.4555*mm-.0614035*css-css/1.14;
   assert(Math.abs(topMargin-bottomMargin)<1e-6*css);

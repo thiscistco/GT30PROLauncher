@@ -205,3 +205,6 @@ Menit homescreen bergeser 1 px ke kanan, panel informasi turun 50 px, dan tombol
 
 ### Penyesuaian v0.1.213
 Suhu homescreen diturunkan 8 px dan label informasi dinaikkan 25 px (berdasarkan skala preview). Titik pemisah dipusatkan di antara jam dan menit dan memudar hilang-muncul berurutan; animasi berhenti jika animasi sistem dinonaktifkan. Tombol kembali dan tema tidak lagi bergaya kaca.
+
+### Penyesuaian v0.1.214
+Titik pembatas dinaikkan 0,5 px (berdasarkan skala preview). Titik muncul satu per satu dan tetap terlihat; setelah titik kelima memudar, semuanya menghilang dan siklus berulang. Nama perangkat di preview adalah contoh GT30Pro; pada Android nama tetap berasal dari perangkat.

@@ -15,6 +15,9 @@ assert.match(view,/for\(int i=1;i<cells\.length;i\+=2\) cells\[i\]\.setTranslati
 for(const label of ['LEVEL','STATUS','SUMBER','KONDISI','SUHU','TEGANGAN','ARUS SAAT INI','ARUS RATA-RATA','MUATAN TERSISA','SIKLUS','BATERAI TERDETEKSI','BATERAI RENDAH','PERKIRAAN PENUH','PERANGKAT','ANDROID','CPU','CORE CPU','RAM TERSEDIA','PENYIMPANAN TERSEDIA']) {
  assert(html.includes('>'+label+'</span>'),label); assert(view.includes('"'+label+'"'),label);
 }
+assert(html.includes('>PERANGKAT</span>GT30Pro</div>'));
+assert(!html.includes('Contoh GT30</div>'));
+assert.match(view,/clean\(Build\.MANUFACTURER \+ " " \+ Build\.MODEL\)/);
 assert(!html.includes('navigator.getBattery('));
 assert.match(html,/previewBatteryStatus'\)\.textContent = toggle.checked/);
 assert.match(main,/batteryInfo\.setElevation\(4f/);

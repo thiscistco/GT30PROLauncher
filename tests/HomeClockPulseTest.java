@@ -6,15 +6,20 @@ public class HomeClockPulseTest {
     }
     public static void main(String[] args) {
         for (int dot=0;dot<5;dot++) {
-            for (int i=0;i<5;i++) {
-                near(HomeClockPulse.intensity(dot+.5f,i),i==dot ? 0f : 1f);
-                near(HomeClockPulse.intensity(dot+5.5f,i),HomeClockPulse.intensity(dot+.5f,i));
-            }
             near(HomeClockPulse.intensity(-1f,dot),1f);
-            near(HomeClockPulse.intensity(dot,dot),1f);
-            near(HomeClockPulse.intensity(dot+.25f,dot),.5f);
-            near(HomeClockPulse.intensity(dot+.75f,dot),.5f);
+            near(HomeClockPulse.intensity(0.25f,dot),0f);
+            for (int step=0;step<5;step++) {
+                float phase=step+.75f, expected=dot<=step ? 1f : 0f;
+                near(HomeClockPulse.intensity(phase,dot),expected);
+                near(HomeClockPulse.intensity(phase+6f,dot),expected);
+            }
+            near(HomeClockPulse.intensity(5.25f,dot),dot==4 ? .5f : 1f);
+            near(HomeClockPulse.intensity(5.5f,dot),0f);
+            near(HomeClockPulse.intensity(5.9f,dot),0f);
+            near(HomeClockPulse.intensity(6.25f,dot),0f);
         }
-        System.out.println("Five-dot sequential fade out/in, loop and reduced motion: OK");
+        near(HomeClockPulse.intensity(3f,-1),0f);
+        near(HomeClockPulse.intensity(3f,5),0f);
+        System.out.println("Five dots accumulate and stay, last fades then clear; loop and reduced motion: OK");
     }
 }
