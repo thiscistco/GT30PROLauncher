@@ -17,7 +17,7 @@ assert.match(java, /batteryLed\.setText\("85"\)/);
 const offset = java.match(/private void updateBatteryOffset\([\s\S]*?\n    }/)[0];
 assert.match(offset, /pixelsPerMm = root\.getWidth\(\) \/ 70\.9f/);
 assert.match(offset, /cssPixel = pixelsPerMm \* 25\.4f \/ 96f/);
-assert.match(offset, /batteryBox\.setTranslationX\(cssPixel \+ 200f \* wallpaperScale\(root\)\)/);
+assert.match(offset, /batteryBox\.setTranslationX\(cssPixel \+ 450f \* wallpaperScale\(root\)\)/);
 assert.match(offset, /batteryBox\.setTranslationY\(cssPixel - 1470f \* wallpaperScale\(root\)\)/);
 assert.match(offset, /float left = root\.getWidth\(\) \/ 2f \+ cssPixel - boltWidth \/ 2f/);
 assert.match(offset, /float top = batteryBox\.getBottom\(\) - 2\.75f \* cssPixel - 2f \* pixelsPerMm/);

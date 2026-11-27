@@ -240,7 +240,7 @@ public class MainActivity extends BottomSwipeActivity {
         if (root.getWidth() <= 0) return;
         float pixelsPerMm = root.getWidth() / 70.9f;
         float cssPixel = pixelsPerMm * 25.4f / 96f;
-        batteryBox.setTranslationX(cssPixel + 200f * wallpaperScale(root));
+        batteryBox.setTranslationX(cssPixel + 450f * wallpaperScale(root));
         batteryBox.setTranslationY(cssPixel - 1470f * wallpaperScale(root));
         if (batteryBolt == null || batteryBox.getBottom() <= 0) return;
         int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
@@ -274,7 +274,7 @@ public class MainActivity extends BottomSwipeActivity {
         params.leftMargin = Math.round(left);
         params.topMargin = Math.round(top);
         clockBox.setTranslationX(left - params.leftMargin);
-        clockBox.setTranslationY(top - params.topMargin - 1720f * wallpaperScale(root));
+        clockBox.setTranslationY(top - params.topMargin - 1970f * wallpaperScale(root));
         clockBox.setScale(pixelsPerMm);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
