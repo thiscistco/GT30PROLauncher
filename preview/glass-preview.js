@@ -9,10 +9,10 @@
   update();
 
   // Match background-size: cover of the 1224 × 2720 wallpaper. This is
-  // an 800-pixel displacement in source-image coordinates, not CSS pixels.
+  // a 1120-pixel displacement (800 + 40% of 800) in source-image coordinates, not CSS pixels.
   function updateShift() {
     var scale=Math.max(screen.clientWidth / 1224, screen.clientHeight / 2720);
-    screen.style.setProperty('--home-shift', (800 * scale) + 'px');
+    screen.style.setProperty('--home-shift', (1120 * scale) + 'px');
   }
   updateShift();
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(updateShift).observe(screen);

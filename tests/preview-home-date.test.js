@@ -23,7 +23,7 @@ const css=html.match(/\.date-led\s*\{([^}]*)\}/)[1];
 assert.match(css,/left:\s*calc\(49%\s*\+\s*115px\)/);assert.match(css,/bottom:\s*calc\(6%\s*\+\s*384\.55px\)/);assert.match(css,/font-size:\s*calc\(2\.2572mm \+ 8\.55px\)/);assert.match(css,/letter-spacing:\s*calc\(0\.22572mm \+ 0\.855px\)/);assert.match(css,/line-height:\s*1\s*;/);assert.match(css,/gap:\s*1px/);assert.match(css,/cursor:\s*pointer/); assert(!/pointer-events:\s*none/.test(css));
 assert.match(css,/animation:\s*datePulse 2s ease-in-out infinite alternate/);
 assert.match(css,/opacity:\s*0\.85/);
-assert.match(html,/@keyframes datePulse\s*\{\s*from\s*\{\s*opacity:\s*0\.55;\s*\}\s*to\s*\{\s*opacity:\s*0\.85;/);
+assert.match(html,/@keyframes datePulse\s*\{\s*from\s*\{\s*opacity:\s*0\.8;\s*\}\s*to\s*\{\s*opacity:\s*1;/);
 assert.match(html,/prefers-reduced-motion:\s*reduce\)\s*\{\s*\.date-led\s*\{\s*animation:\s*none/);
 const dateAnim = java.match(/private void startDateAnimation\(\)\s*\{[\s\S]*?\n    }/)[0];
 assert.match(dateAnim,/!ValueAnimator\.areAnimatorsEnabled\(\)/);
