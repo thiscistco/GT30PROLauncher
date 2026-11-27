@@ -46,8 +46,8 @@ aplikasi bawaan baru tersedia di `docs/app-ui.md`.
   mengikuti mode terang/gelap; saat mengisi daya, warnanya amber.
   Indikator non-gunmetal memakai warna inti cahaya jalur (#FFCD6A). Label hari/bulan memakai warna sekunder. Ikon dan label berada di
   balik kaca; lapisan ini tidak menghalangi sentuhan atau mengubah wallpaper asli.
-  Jam digeser naik 1.970 piksel gambar dan diperbesar 20%. Angka baterai
-  digeser naik 1.470 piksel, ke kanan 450 piksel gambar, dan diperbesar 50%
+  Jam digeser naik 2.070 piksel dan ke kanan 500 piksel gambar, serta diperbesar
+  20%. Angka baterai digeser naik 1.470 piksel, ke kanan 475 piksel gambar, dan diperbesar 50%
   dari ukuran awal. Ikon pengisian tetap di bawah.
   Indikator dibuat lebih kontras, walaupun kaca tetap mengurangi keterlihatannya.
   Preview memungkinkan perbandingan posisi kaca di atas atau di bawah indikator.

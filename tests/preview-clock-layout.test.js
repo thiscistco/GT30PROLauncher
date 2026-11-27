@@ -33,7 +33,7 @@ assert.match(java, /clockLed\.setVisibility\(View\.VISIBLE\)/);
 assert.match(java, /clockLed\.bringToFront\(\)/);
 assert.match(java, /clockLed\.setTime\(t\.substring\(0, 2\), t\.substring\(3, 5\)\)/);
 assert(!/setSeparatorAlpha/.test(java), 'charging no longer animates the clock');
-assert.match(java, /width \* \.357f - \.5f \* cssPixel - boxWidth \/ 2f/);
+assert.match(java, /width \* \.357f - \.5f \* cssPixel - boxWidth \/ 2f\s*\+ 500f \* wallpaperScale\(root\)/);
 assert.match(java, /height \* \.06f \+ \.55f \* cssPixel/);
 assert.match(view, /setLayerType\(View\.LAYER_TYPE_SOFTWARE, null\)/);
 assert.match(view, /text\.setTextSize\(2f \* pixelsPerMm\)/);

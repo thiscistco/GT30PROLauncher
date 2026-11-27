@@ -240,7 +240,7 @@ public class MainActivity extends BottomSwipeActivity {
         if (root.getWidth() <= 0) return;
         float pixelsPerMm = root.getWidth() / 70.9f;
         float cssPixel = pixelsPerMm * 25.4f / 96f;
-        batteryBox.setTranslationX(cssPixel + 450f * wallpaperScale(root));
+        batteryBox.setTranslationX(cssPixel + 475f * wallpaperScale(root));
         batteryBox.setTranslationY(cssPixel - 1470f * wallpaperScale(root));
         if (batteryBolt == null || batteryBox.getBottom() <= 0) return;
         int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
@@ -265,7 +265,8 @@ public class MainActivity extends BottomSwipeActivity {
         int boxWidth = Math.max(1, Math.round(HomeClockView.WIDTH_MM * pixelsPerMm));
         int boxHeight = Math.max(1, Math.round(HomeClockView.HEIGHT_MM * pixelsPerMm));
         // Keep the content (not its glow padding) anchored to the preview position.
-        float left = width * .357f - .5f * cssPixel - boxWidth / 2f;
+        float left = width * .357f - .5f * cssPixel - boxWidth / 2f
+                + 500f * wallpaperScale(root);
         float bottom = height * .06f + .55f * cssPixel;
         float top = height - bottom - boxHeight + HomeClockView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) clockBox.getLayoutParams();
@@ -274,7 +275,7 @@ public class MainActivity extends BottomSwipeActivity {
         params.leftMargin = Math.round(left);
         params.topMargin = Math.round(top);
         clockBox.setTranslationX(left - params.leftMargin);
-        clockBox.setTranslationY(top - params.topMargin - 1970f * wallpaperScale(root));
+        clockBox.setTranslationY(top - params.topMargin - 2070f * wallpaperScale(root));
         clockBox.setScale(pixelsPerMm);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
