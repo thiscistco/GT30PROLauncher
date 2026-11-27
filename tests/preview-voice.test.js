@@ -2,7 +2,7 @@ const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const html=fs.readFileSync('preview/index.html','utf8');
 const js=fs.readFileSync('preview/voice-preview.js','utf8');
 assert.match(html,/<button class="home-voice" id="homeVoice"[^>]*type="button"/);
-assert.match(html,/\.home-voice \{[^}]*z-index:6;[^}]*bottom:calc\(1\.2% \+ 12\.75px \+ 3mm\);[^}]*left:calc\(50% - 39px\);[^}]*transform:translateX\(-50%\)/);
+assert.match(html,/\.home-voice \{[^}]*z-index:6;[^}]*bottom:calc\(1\.2% \+ 13\.75px \+ 3mm\);[^}]*left:calc\(50% - 40px\);[^}]*transform:translateX\(-50%\)/);
 assert.match(html,/\.screen\.glass-over-home \.home-screen-glass \{ z-index:7; \}/);
 assert.match(html,/\.home-screen-glass \{[^}]*pointer-events:none/);
 assert.match(html,/\.home-voice\[hidden\] \{ display:none; \}/);
