@@ -16,18 +16,27 @@ assert [old[i] for i in order]==['Jakarta','Makassar','Jayapura','Singapore','Se
 assert 'var cityOrder=[0,1,2,3,5,11,4,6,8,7,10,9]' in html
 assert 'getString("cities", "0,3,4,7,9")' in java
 assert 'setMultiChoiceItems(CITIES' not in java and 'toggle.setOnCheckedChangeListener((v,on) -> {' in java
-assert 'MAX_WORLD_CITIES = 3' in java and 'WorldCities.limit(selected,CITY_ORDER,MAX_WORLD_CITIES)' in java
+assert 'MAX_WORLD_CITIES = 5' in java and 'WorldCities.limit(selected,CITY_ORDER,MAX_WORLD_CITIES)' in java
 assert 'WorldCities.count(chosen)>=MAX_WORLD_CITIES' in java and 'v.setChecked(false)' in java
 assert 'R.drawable.ic_calendar_add,"Pilih kota"' in java
 assert 'id="previewCitiesButton" type="button" aria-label="Pilih kota"' in html
-assert "cityBox.querySelectorAll('input:checked').length>3" in html
+assert "cityBox.querySelectorAll('input:checked').length>5" in html
 assert 'world-city-time { flex:none; text-align:right' in html
 assert '.clock-stage:has([data-clock-panel="world"]:not([hidden]))' in html
-assert 'hud.setEditorOpen(selected == 1 || selected == 2)' in java
-# At the target phone size, title and three rows fit without scrolling.
+assert 'hud.setEditorOpen(selected >= 1)' in java
+# At the target phone size, the pinned title and five rows fit without scrolling.
 width,height=405,854; gap=8; dial=min(width-2*gap,height-2*gap-480)
 panel=height-(gap+dial+4+64)-16
-assert panel >= 8+48+8+3*(56+6)+20
+assert panel >= 48+8+5*(56+6)+20
+
+assert 'stage.addView(featureHeader,headerParams)' in java
+assert 'headerTop+(tab >= 1 ? dp(48) : 0)' in java
+assert 'featureHeader.setVisibility(selected >= 1 ? View.VISIBLE : View.GONE)' in java
+assert 'setFeatureTitle("JAM DUNIA")' in java and 'setFeatureTitle("TIMER")' in java and 'setFeatureTitle("STOPWATCH")' in java
+assert 'for(int i=0;i<laps.length();i++)' in java and "byId('previewLaps').appendChild(row)" in html
+for name in ('world','timer','stopwatch'):
+ assert f'data-clock-header="{name}"' in html
+assert 'clock-feature-header { display:none; position:absolute;' in html
 assert 'time.setGravity(Gravity.END)' in java and 'date.setGravity(Gravity.END)' in java
 assert 'lap.addView(lapLine("Total",formatElapsed(total)))' in java
 assert 'duration.setGravity(Gravity.END)' in java

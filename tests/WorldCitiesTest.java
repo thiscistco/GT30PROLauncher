@@ -9,6 +9,10 @@ public final class WorldCitiesTest {
         check(WorldCities.count(shown)==3 && shown[0] && shown[3] && shown[4],"old defaults limited by display order");
         check(saved[7] && saved[9] && WorldCities.count(saved)==5,"source remains unchanged");
         shown[0]=false; shown[5]=true; check(WorldCities.count(shown)==3,"replace selection");
+        boolean[] five=WorldCities.limit(saved,order,5);
+        check(WorldCities.count(five)==5 && five[0] && five[3] && five[4] && five[7] && five[9],"original five retained");
+        saved[5]=true; boolean[] capped=WorldCities.limit(saved,order,5);
+        check(WorldCities.count(capped)==5 && capped[5] && !capped[9],"sixth excluded by order");
         check(WorldCities.count(WorldCities.limit(new boolean[12],order,3))==0,"none");
         boolean[] duplicates=WorldCities.limit(new boolean[]{true,true},new int[]{0,0,1,7,-1},2);
         check(WorldCities.count(duplicates)==2,"duplicate and invalid indices");

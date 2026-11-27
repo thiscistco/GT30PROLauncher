@@ -579,7 +579,7 @@
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; padding:2.54mm 3.175mm; }
   #clockPage .app-top { flex:none; }
   .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
-  .clock-stage:has([data-clock-panel="alarm"]:not([hidden]) #previewAlarmForm:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
+  .clock-stage:has([data-clock-panel="alarm"]:not([hidden]) #previewAlarmForm:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])), .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
   .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
@@ -644,8 +644,15 @@
   #clockPage .alarm-delete { min-height:7.62mm; flex:0 0 7.62mm; width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
   .alarm-delete-icon { mask-image:url('assets/alarm-delete.svg?v=1'); -webkit-mask-image:url('assets/alarm-delete.svg?v=1'); }
   #clockPage [data-clock-panel="world"] { padding-top:0; }
-  .clock-world-header { display:flex; align-items:center; justify-content:space-between; gap:2mm; }
-  .clock-world-header h3 { margin:0; line-height:1.2; }
+  .clock-feature-header { display:none; position:absolute; left:2.54mm; right:2.54mm; top:min(calc(12mm + var(--clock-dial-size)), 100cqh); height:7.62mm; align-items:center; gap:.64mm; }
+  .clock-feature-header h3 { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin:0; color:var(--app-text); font-size:3.2mm; }
+  .clock-stage:has([data-clock-panel="world"]:not([hidden])) [data-clock-header="world"],
+  .clock-stage:has([data-clock-panel="timer"]:not([hidden])) [data-clock-header="timer"],
+  .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) [data-clock-header="stopwatch"] { display:flex; }
+  .clock-stage:has([data-clock-panel="world"]:not([hidden])) .clock-panel-scroll,
+  .clock-stage:has([data-clock-panel="timer"]:not([hidden])) .clock-panel-scroll,
+  .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) .clock-panel-scroll { top:min(calc(19.62mm + var(--clock-dial-size)), 100cqh); }
+  #clockPage [data-clock-panel="timer"], #clockPage [data-clock-panel="stopwatch"] { padding-top:0; }
   #clockPage .clock-world-choose { min-height:7.62mm; width:7.62mm; height:7.62mm; padding:2.54mm; display:grid; place-items:center; }
   #clockPage .clock-world-choose .calendar-action-icon { width:2.54mm; height:2.54mm; }
   #previewCities:not([hidden]) { position:absolute; z-index:4; inset:0; overflow-y:auto; margin:0; box-shadow:0 1mm 3mm #0004; }
@@ -845,26 +852,26 @@
                   <div id="previewAlarms" class="clock-muted">Belum ada alarm. Tambahkan pengingat pertama.</div>
                 </div>
                 <div class="clock-section" data-clock-panel="world" hidden>
-                  <div class="clock-world-header"><h3>JAM DUNIA</h3><button class="clock-action clock-world-choose" id="previewCitiesButton" type="button" aria-label="Pilih kota" title="Pilih kota" aria-expanded="false" aria-controls="previewCities"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
-                  <div class="alarm-form" id="previewCities" hidden><div class="city-chooser-header"><span>Pilih kota</span><button class="clock-action clock-world-choose" id="previewCitiesClose" type="button" aria-label="Tutup pilihan kota" title="Tutup"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button></div><p id="previewCityLimit" class="city-limit" role="status">Maksimal 3 kota</p></div><div id="previewWorld"></div>
+                  <div class="alarm-form" id="previewCities" hidden><div class="city-chooser-header"><span>Pilih kota</span><button class="clock-action clock-world-choose" id="previewCitiesClose" type="button" aria-label="Tutup pilihan kota" title="Tutup"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button></div><p id="previewCityLimit" class="city-limit" role="status">Maksimal 5 kota</p></div><div id="previewWorld"></div>
                 </div>
                 <div class="clock-section" data-clock-panel="timer" hidden>
-                  <h3>TIMER</h3><div class="clock-display" id="previewTimerDisplay">00:00:00</div>
+                  <div class="clock-display" id="previewTimerDisplay">00:00:00</div>
                   <div class="alarm-wheels" aria-label="Pemilih durasi timer">
                     <input type="hidden" id="timerHours" value="0"><input type="hidden" id="timerMinutes" value="0"><input type="hidden" id="timerSeconds" value="0">
                     <div class="alarm-wheel" id="timerHourWheel" role="spinbutton" tabindex="0" aria-label="Jam timer" aria-valuemin="0" aria-valuemax="999"><button type="button" class="wheel-prev" aria-label="Jam sebelumnya"></button><span class="wheel-value" aria-hidden="true"></span><button type="button" class="wheel-next" aria-label="Jam berikutnya"></button></div>
                     <div class="alarm-wheel" id="timerMinuteWheel" role="spinbutton" tabindex="0" aria-label="Menit timer" aria-valuemin="0" aria-valuemax="59"><button type="button" class="wheel-prev" aria-label="Menit sebelumnya"></button><span class="wheel-value" aria-hidden="true"></span><button type="button" class="wheel-next" aria-label="Menit berikutnya"></button></div>
                     <div class="alarm-wheel" id="timerSecondWheel" role="spinbutton" tabindex="0" aria-label="Detik timer" aria-valuemin="0" aria-valuemax="59"><button type="button" class="wheel-prev" aria-label="Detik sebelumnya"></button><span class="wheel-value" aria-hidden="true"></span><button type="button" class="wheel-next" aria-label="Detik berikutnya"></button></div>
                   </div>
-                  <div class="clock-control-row"><button class="clock-action clock-control" id="previewTimerStart" type="button" aria-label="Mulai timer" title="Mulai timer"><span class="calendar-action-icon clock-action-play" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewTimerCancel" type="button" aria-label="Batalkan timer" title="Batalkan timer"><span class="calendar-action-icon clock-action-stop" aria-hidden="true"></span></button></div>
                   <p class="clock-muted" id="previewTimerMessage">Pratinjau hanya simulasi; alarm berjalan di Android.</p>
                 </div>
                 <div class="clock-section" data-clock-panel="stopwatch" hidden>
-                  <h3>STOPWATCH</h3><div class="clock-display" id="previewStopwatchDisplay">00:00:00.000</div>
-                  <div class="clock-control-row"><button class="clock-action clock-control" id="previewStopwatchStart" type="button" aria-label="Mulai stopwatch" title="Mulai stopwatch"><span class="calendar-action-icon clock-action-play" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewLap" type="button" aria-label="Catat lap" title="Catat lap"><span class="calendar-action-icon clock-action-lap" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewReset" type="button" aria-label="Reset stopwatch" title="Reset stopwatch"><span class="calendar-action-icon clock-action-reset" aria-hidden="true"></span></button></div>
+                  <div class="clock-display" id="previewStopwatchDisplay">00:00:00.000</div>
                   <div id="previewLaps"></div>
                 </div>
                   </div>
+                  <div class="clock-feature-header" data-clock-header="world"><h3>JAM DUNIA</h3><button class="clock-action clock-world-choose" id="previewCitiesButton" type="button" aria-label="Pilih kota" title="Pilih kota" aria-expanded="false" aria-controls="previewCities"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
+                  <div class="clock-feature-header" data-clock-header="timer"><h3>TIMER</h3><button class="clock-action clock-control" id="previewTimerStart" type="button" aria-label="Mulai timer" title="Mulai timer"><span class="calendar-action-icon clock-action-play" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewTimerCancel" type="button" aria-label="Batalkan timer" title="Batalkan timer"><span class="calendar-action-icon clock-action-stop" aria-hidden="true"></span></button></div>
+                  <div class="clock-feature-header" data-clock-header="stopwatch"><h3>STOPWATCH</h3><button class="clock-action clock-control" id="previewStopwatchStart" type="button" aria-label="Mulai stopwatch" title="Mulai stopwatch"><span class="calendar-action-icon clock-action-play" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewLap" type="button" aria-label="Catat lap" title="Catat lap"><span class="calendar-action-icon clock-action-lap" aria-hidden="true"></span></button><button class="clock-action clock-control" id="previewReset" type="button" aria-label="Reset stopwatch" title="Reset stopwatch"><span class="calendar-action-icon clock-action-reset" aria-hidden="true"></span></button></div>
                 <nav class="clock-tabs" aria-label="Fitur jam">
                   <button data-clock-tab="alarm" type="button" aria-label="Alarm" aria-pressed="false" title="Alarm"><img src="assets/clock-alarm.svg?v=3" alt="" aria-hidden="true"></button>
                   <button data-clock-tab="world" type="button" aria-label="Jam Dunia" aria-pressed="false" title="Jam Dunia"><img src="assets/clock-world.svg?v=3" alt="" aria-hidden="true"></button>
@@ -1264,11 +1271,11 @@
       var city=cities[index], row=document.createElement('div'); row.className='clock-city';
       var name=document.createElement('span'); name.className='clock-city-name'; name.textContent=city[0]; row.appendChild(name);
       var label=document.createElement('label'); label.className='alarm-card-switch';
-      var input=document.createElement('input'); input.type='checkbox'; input.setAttribute('role','switch'); input.setAttribute('aria-label',city[0]); input.dataset.cityIndex=index; input.checked=[0,3,4].indexOf(index)!==-1;
+      var input=document.createElement('input'); input.type='checkbox'; input.setAttribute('role','switch'); input.setAttribute('aria-label',city[0]); input.dataset.cityIndex=index; input.checked=[0,3,4,7,9].indexOf(index)!==-1;
       var track=document.createElement('span'); track.className='alarm-switch-track'; track.setAttribute('aria-hidden','true');
       input.addEventListener('change',function(){
-        if (input.checked && cityBox.querySelectorAll('input:checked').length>3) { input.checked=false; byId('previewCityLimit').textContent='Maksimal 3 kota. Nonaktifkan kota lain terlebih dahulu.'; }
-        else byId('previewCityLimit').textContent='Maksimal 3 kota';
+        if (input.checked && cityBox.querySelectorAll('input:checked').length>5) { input.checked=false; byId('previewCityLimit').textContent='Maksimal 5 kota. Nonaktifkan kota lain terlebih dahulu.'; }
+        else byId('previewCityLimit').textContent='Maksimal 5 kota';
         renderWorld();
       }); label.appendChild(input); label.appendChild(track); row.appendChild(label); cityBox.appendChild(row);
     });
@@ -1325,7 +1332,7 @@
         var line=document.createElement('div'); line.className='stopwatch-lap-line';
         var caption=document.createElement('span'); caption.className='stopwatch-lap-caption'; caption.textContent=pair[0]; line.appendChild(caption);
         var duration=document.createElement('span'); duration.className='stopwatch-lap-time'; duration.textContent=pair[1]; line.appendChild(duration); row.appendChild(line);
-      }); byId('previewLaps').prepend(row);
+      }); byId('previewLaps').appendChild(row);
     });
     byId('previewReset').addEventListener('click', function () { elapsed = 0; running = false; laps = []; byId('previewLaps').textContent = ''; updateStopwatchButton(); });
     setInterval(function () {

@@ -54,13 +54,13 @@ public class ClockActivity extends SwipeBackActivity {
     private static final String[] CITIES = {"Jakarta", "Makassar", "Jayapura", "Singapore", "Tokyo", "Seoul", "Dubai", "London", "Paris", "New York", "Los Angeles", "Sydney"};
     // Keep the original city indices for existing saved selections. Overseas order is
     // approximate great-circle distance from Jakarta; Indonesian cities come first.
-    private static final int MAX_WORLD_CITIES = 3;
+    private static final int MAX_WORLD_CITIES = 5;
     private static final int[] CITY_ORDER = {0,1,2,3,5,11,4,6,8,7,10,9};
     private static final String[] ZONES = {"Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura", "Asia/Singapore", "Asia/Tokyo", "Asia/Seoul", "Asia/Dubai", "Europe/London", "Europe/Paris", "America/New_York", "America/Los_Angeles", "Australia/Sydney"};
     private static final String[] DAYS = {"Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"};
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Typeface doto;
-    private LinearLayout content, tabs;
+    private LinearLayout content, tabs, featureHeader;
     private HorizontalScrollView tabsScroll;
     private FrameLayout stage;
     private ClockHudView hud;
@@ -117,6 +117,9 @@ public class ClockActivity extends SwipeBackActivity {
         tabs = new LinearLayout(this); tabs.setOrientation(LinearLayout.HORIZONTAL); tabs.setGravity(Gravity.CENTER);
         tabs.setPadding(0,dp(8),0,0); tabsScroll.addView(tabs,new FrameLayout.LayoutParams(-1,-1));
         stage.addView(tabsScroll,new FrameLayout.LayoutParams(-1,dp(64),Gravity.TOP));
+        featureHeader=new LinearLayout(this); featureHeader.setGravity(Gravity.CENTER_VERTICAL);
+        FrameLayout.LayoutParams headerParams=new FrameLayout.LayoutParams(-1,dp(48),Gravity.TOP); headerParams.leftMargin=dp(16); headerParams.rightMargin=dp(16);
+        stage.addView(featureHeader,headerParams);
         stage.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,oright,ob) -> positionTabs());
         setContentView(root);
         showTab(tab);
@@ -125,12 +128,15 @@ public class ClockActivity extends SwipeBackActivity {
         if (stage.getHeight() <= 0) return;
         float density=getResources().getDisplayMetrics().density;
         int top=Math.round(ClockHudView.frameGap(stage.getWidth(),stage.getHeight(),density)
-                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,((tab == 1 || tab == 2) || (alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE))) + dp(4));
+                + ClockHudView.dialSize(stage.getWidth(),stage.getHeight(),density,(tab >= 1 || (alarmEditor != null && alarmEditor.getVisibility() == View.VISIBLE))) + dp(4));
         top=Math.max(0,Math.min(top,stage.getHeight()-dp(64)));
         FrameLayout.LayoutParams params=(FrameLayout.LayoutParams) tabsScroll.getLayoutParams();
         if (params.topMargin != top) { params.topMargin=top; tabsScroll.setLayoutParams(params); }
+        FrameLayout.LayoutParams headerParams=(FrameLayout.LayoutParams) featureHeader.getLayoutParams();
+        int headerTop=Math.min(stage.getHeight(),top+dp(64));
+        if (headerParams.topMargin != headerTop) { headerParams.topMargin=headerTop; featureHeader.setLayoutParams(headerParams); }
         FrameLayout.LayoutParams panelParams=(FrameLayout.LayoutParams) panelScroll.getLayoutParams();
-        int panelTop=Math.min(stage.getHeight(),top+dp(64));
+        int panelTop=Math.min(stage.getHeight(),headerTop+(tab >= 1 ? dp(48) : 0));
         if (panelParams.topMargin != panelTop) { panelParams.topMargin=panelTop; panelScroll.setLayoutParams(panelParams); }
     }
     @Override protected void onSaveInstanceState(Bundle state) {
@@ -159,7 +165,7 @@ public class ClockActivity extends SwipeBackActivity {
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     private void showTab(int selected) {
         saveTimerDraft(); timerHours = null; timerMinutes = null; timerSeconds = null;
-        hud.setEditorOpen(selected == 1 || selected == 2);
+        hud.setEditorOpen(selected >= 1);
         tab = selected; tabs.removeAllViews(); content.removeAllViews(); alarmRows.clear(); lastAlarmSecond=-1; alarmEditor=null; soundButton=null; timerDisplay = null; stopwatchDisplay = null; worldList = null;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = i;
@@ -177,6 +183,7 @@ public class ClockActivity extends SwipeBackActivity {
             if (i > 0) itemParams.leftMargin = dp(5);
             tabs.addView(item, itemParams);
         }
+        featureHeader.removeAllViews(); featureHeader.setVisibility(selected >= 1 ? View.VISIBLE : View.GONE);
         positionTabs();
         panelScroll.setVisibility(selected == -1 ? View.GONE : View.VISIBLE);
         if (selected == 0) showAlarms(); else if (selected == 1) showWorld(); else if (selected == 2) showTimer(); else if (selected == 3) showStopwatch();
@@ -387,9 +394,16 @@ public class ClockActivity extends SwipeBackActivity {
         for (String s : saved.split(",")) try { int i=Integer.parseInt(s); if(i>=0 && i<selected.length) selected[i]=true; } catch(NumberFormatException ignored) { }
         return WorldCities.limit(selected,CITY_ORDER,MAX_WORLD_CITIES);
     }
+    private void setFeatureTitle(String title) {
+        TextView label=text(title,19,AMBER); label.setSingleLine(true); label.setEllipsize(TextUtils.TruncateAt.END);
+        featureHeader.addView(label,new LinearLayout.LayoutParams(0,dp(48),1)); label.setGravity(Gravity.CENTER_VERTICAL);
+    }
+    private void addFeatureAction(ImageButton button) {
+        LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(dp(48),dp(48)); params.leftMargin=dp(4);
+        featureHeader.addView(button,params);
+    }
     private void showWorld() {
-        LinearLayout heading=new LinearLayout(this); heading.setGravity(Gravity.CENTER_VERTICAL);
-        heading.addView(text("JAM DUNIA",19,AMBER),new LinearLayout.LayoutParams(0,-2,1));
+        setFeatureTitle("JAM DUNIA");
         ImageButton choose=alarmOption(R.drawable.ic_calendar_add,"Pilih kota",() -> {
             boolean[] chosen=selectedCities();
             ScrollView chooser=new ScrollView(this);
@@ -405,7 +419,7 @@ public class ClockActivity extends SwipeBackActivity {
                 toggle.setContentDescription(CITIES[index]); toggle.setChecked(chosen[index]);
                 toggle.setOnCheckedChangeListener((v,on) -> {
                     if (on && WorldCities.count(chosen)>=MAX_WORLD_CITIES) {
-                        v.setChecked(false); Toast.makeText(this,"Maksimal 3 kota. Nonaktifkan kota lain terlebih dahulu.",Toast.LENGTH_SHORT).show(); return;
+                        v.setChecked(false); Toast.makeText(this,"Maksimal 5 kota. Nonaktifkan kota lain terlebih dahulu.",Toast.LENGTH_SHORT).show(); return;
                     }
                     chosen[index]=on;
                 }); row.addView(toggle,new LinearLayout.LayoutParams(-2,dp(48)));
@@ -416,8 +430,7 @@ public class ClockActivity extends SwipeBackActivity {
                 StringBuilder b=new StringBuilder(); for(int i=0;i<chosen.length;i++) if(chosen[i]) { if(b.length()>0)b.append(',');b.append(i); }
                 ClockAlarms.prefs(this).edit().putString("cities",b.toString()).apply(); showTab(1);
             }).setNegativeButton("Batal",null).show();
-        }); choose.setPadding(dp(16),dp(16),dp(16),dp(16)); heading.addView(choose,new LinearLayout.LayoutParams(dp(48),dp(48)));
-        content.addView(heading); addSpace(content,8);
+        }); choose.setPadding(dp(16),dp(16),dp(16),dp(16)); addFeatureAction(choose);
         worldList = new LinearLayout(this); worldList.setOrientation(LinearLayout.VERTICAL); content.addView(worldList); lastWorldSecond=-1; updateWorld();
     }
     private void updateWorld() {
@@ -440,7 +453,7 @@ public class ClockActivity extends SwipeBackActivity {
         try { return Math.max(0,Math.min(max,Integer.parseInt(value))); } catch (Exception ignored) { return 0; }
     }
     private void showTimer() {
-        content.addView(text("TIMER",19,AMBER)); addSpace(content,10);
+        setFeatureTitle("TIMER");
         timerDisplay=text("00:00:00",32,AMBER); timerDisplay.setGravity(Gravity.CENTER); timerDisplay.setBackground(bg(ui.card)); timerDisplay.setPadding(dp(8),dp(12),dp(8),dp(12)); content.addView(timerDisplay); addSpace(content,8);
         FrameLayout frame=new FrameLayout(this); View band=new View(this); band.setBackground(bg(ui.control)); frame.addView(band,new FrameLayout.LayoutParams(-1,dp(48),Gravity.CENTER));
         LinearLayout wheels=new LinearLayout(this); wheels.setGravity(Gravity.CENTER);
@@ -449,32 +462,27 @@ public class ClockActivity extends SwipeBackActivity {
         wheels.addView(timerMinutes,new LinearLayout.LayoutParams(0,dp(120),1));
         wheels.addView(timerSeconds,new LinearLayout.LayoutParams(0,dp(120),1));
         frame.addView(wheels,new FrameLayout.LayoutParams(-1,dp(120),Gravity.CENTER)); content.addView(frame); addSpace(content,8);
-        LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER);
-        row.addView(alarmOption(R.drawable.ic_clock_action_play,"Mulai timer",()->{
+        addFeatureAction(alarmOption(R.drawable.ic_clock_action_play,"Mulai timer",()->{
             long hours=timerHours.getValue(), minutes=timerMinutes.getValue(), seconds=timerSeconds.getValue();
             if(hours==0&&minutes==0&&seconds==0) { Toast.makeText(this,"Pilih durasi timer",Toast.LENGTH_LONG).show();return; }
             if(!ensureExact())return; long end=System.currentTimeMillis()+(hours*3600+minutes*60+seconds)*1000;
             if(ClockAlarms.scheduleAt(this,ClockAlarms.TIMER_FIRE,0,end)){ClockAlarms.prefs(this).edit().putLong("timer_end",end).apply(); updateLive();}
             else Toast.makeText(this,"Timer belum terjadwal. Periksa izin alarm.",Toast.LENGTH_LONG).show();
-        }),new LinearLayout.LayoutParams(dp(48),dp(48)));
-        LinearLayout.LayoutParams cancelParams=new LinearLayout.LayoutParams(dp(48),dp(48)); cancelParams.leftMargin=dp(8);
-        row.addView(alarmOption(R.drawable.ic_clock_action_stop,"Batalkan timer",()->{ClockAlarms.cancelTimer(this); ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(2000000); updateLive();}),cancelParams);
-        content.addView(row); addSpace(content,10); content.addView(text("Timer tetap berjalan saat halaman ditutup.",12,MUTED));
+        }));
+        addFeatureAction(alarmOption(R.drawable.ic_clock_action_stop,"Batalkan timer",()->{ClockAlarms.cancelTimer(this); ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(2000000); updateLive();}));
+        addSpace(content,10); content.addView(text("Timer tetap berjalan saat halaman ditutup.",12,MUTED));
     }
     private long elapsed() { return swAccumulated + (swRunning ? SystemClock.elapsedRealtime()-swStarted : 0); }
     private String formatElapsed(long ms) { return String.format(Locale.US,"%02d:%02d:%02d.%03d",ms/3600000,(ms/60000)%60,(ms/1000)%60,ms%1000); }
     private void showStopwatch() {
-        content.addView(text("STOPWATCH",19,AMBER));addSpace(content,14);
+        setFeatureTitle("STOPWATCH");
         stopwatchDisplay=text(formatElapsed(elapsed()),27,AMBER);stopwatchDisplay.setGravity(Gravity.CENTER);stopwatchDisplay.setBackground(bg(ui.card));stopwatchDisplay.setPadding(dp(8),dp(12),dp(8),dp(12));content.addView(stopwatchDisplay);addSpace(content,12);
-        LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER);
-        row.addView(alarmOption(swRunning ? R.drawable.ic_clock_action_pause : R.drawable.ic_clock_action_play,swRunning ? "Jeda stopwatch" : "Mulai stopwatch",()->{
+        addFeatureAction(alarmOption(swRunning ? R.drawable.ic_clock_action_pause : R.drawable.ic_clock_action_play,swRunning ? "Jeda stopwatch" : "Mulai stopwatch",()->{
             if(swRunning){swAccumulated=elapsed();swRunning=false;}else{swStarted=SystemClock.elapsedRealtime();swRunning=true;} saveStopwatch();showTab(3);
-        }),new LinearLayout.LayoutParams(dp(48),dp(48)));
-        LinearLayout.LayoutParams lapParams=new LinearLayout.LayoutParams(dp(48),dp(48)); lapParams.leftMargin=dp(8);
-        row.addView(alarmOption(R.drawable.ic_clock_action_lap,"Catat lap",()->{ if(!swRunning)return;laps.put(elapsed());saveStopwatch();showTab(3); }),lapParams);
-        LinearLayout.LayoutParams resetParams=new LinearLayout.LayoutParams(dp(48),dp(48)); resetParams.leftMargin=dp(8);
-        row.addView(alarmOption(R.drawable.ic_clock_action_reset,"Reset stopwatch",()->{swRunning=false;swAccumulated=0;swStarted=0;laps=new JSONArray();saveStopwatch();showTab(3);}),resetParams);content.addView(row);addSpace(content,12);
-        for(int i=laps.length()-1;i>=0;i--) {
+        }));
+        addFeatureAction(alarmOption(R.drawable.ic_clock_action_lap,"Catat lap",()->{ if(!swRunning)return;laps.put(elapsed());saveStopwatch();showTab(3); }));
+        addFeatureAction(alarmOption(R.drawable.ic_clock_action_reset,"Reset stopwatch",()->{swRunning=false;swAccumulated=0;swStarted=0;laps=new JSONArray();saveStopwatch();showTab(3);}));
+        for(int i=0;i<laps.length();i++) {
             long total=laps.optLong(i); long prior=i>0?laps.optLong(i-1):0;
             LinearLayout lap=new LinearLayout(this); lap.setOrientation(LinearLayout.VERTICAL); lap.setPadding(dp(8),dp(6),dp(8),dp(6));
             lap.addView(lapLine("Lap " + (i+1),formatElapsed(total-prior)));

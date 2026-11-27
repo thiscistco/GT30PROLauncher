@@ -22,9 +22,10 @@ getar. Editor menyesuaikan ruang yang tersedia agar lebih ringkas; pada layar
 kecil kontennya tetap dapat digulir. Ketuk waktu pada daftar untuk mengubah
 alarm; slider dan ikon tempat
 sampah berada di kanan.
-Jam Dunia menampilkan maksimal tiga kota; pilihan sebelumnya yang melebihi batas
-ditampilkan tiga kota terdekat menurut urutan pilihan, tanpa mengubah data tersimpan
-sampai pilihan baru disimpan. Pemilihan kota memakai slider, kota Indonesia lebih dahulu lalu kota lain
+Jam Dunia menampilkan maksimal lima kota; pilihan sebelumnya yang melebihi batas
+ditampilkan lima kota pertama menurut urutan pilihan, tanpa mengubah data tersimpan
+sampai pilihan baru disimpan. Kontrol Jam Dunia, Timer, dan Stopwatch tetap di
+baris judul saat daftar digulir; lap diurutkan dari pertama ke terakhir. Pemilihan kota memakai slider, kota Indonesia lebih dahulu lalu kota lain
 berdasarkan perkiraan jarak dari Jakarta; timer memakai roda jam–menit–detik.
 Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
 
