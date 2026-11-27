@@ -24,9 +24,11 @@ assert.match(html, /<span class="clock-sep" aria-hidden="true">(?:<i><\/i>){5}<\
 assert.match(html, /animation:clockDotPulse 5s linear infinite/);
 for (let i=2; i<=5; i++) assert(html.includes(`.clock-sep i:nth-child(${i}) { animation-delay:${i-1}s; }`));
 assert.match(html, /prefers-reduced-motion:reduce[^}]*\.clock-sep i \{ animation:none; opacity:1/);
-assert.match(html, /#clockMin \{ transform: translate\(-0\.877193px, -0\.877193px\)/);
+assert.match(html, /#clockMin \{ transform: translate\(0px, -0\.877193px\)/);
 assert(Math.abs(1.14 / 1.2 - .95)<1e-9);
 assert(Math.abs(.877193 * 1.14 - 1)<1e-6);
+// With the 1.14 clock scale, removing the -1/1.14 horizontal offset moves only minutes one final CSS px right.
+assert(Math.abs((0 - (-.877193))*1.14-1)<1e-6);
 const dateView = fs.readFileSync('app/src/main/java/com/gt30pro/launcher/HomeDateView.java', 'utf8');
 for (const source of [view, dateView]) {
   assert.match(source, /0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A, 0xFFFFCD6A/);
@@ -54,7 +56,7 @@ assert.match(view,/ValueAnimator\.areAnimatorsEnabled\(\)/);
 assert.match(java,/clockLed\.startSeparator\(\)/);
 assert.match(java,/clockLed\.stopSeparator\(\)/);
 assert.match(view,/dots\.setColor\(lightGlass \? 0xFF425860 : 0xFFADC3CA\)/);
-assert.match(view,/canvas\.translate\(-cssPx \/ HOME_SCALE, -cssPx \/ HOME_SCALE\)/);
+assert.match(view,/canvas\.translate\(0f, -cssPx \/ HOME_SCALE\)/);
 assert.match(view, /drawDigits\(canvas, hour/);
 assert.match(view, /drawDigits\(canvas, minute, dotTop \+ \.22f \* pxPerMm \+ \.45f \* pxPerMm, line\)/);
 // Explicit view bounds include glow padding, while the content remains anchored

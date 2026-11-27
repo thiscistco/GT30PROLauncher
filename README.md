@@ -199,3 +199,6 @@ Layanan mikrofon mencoba melanjutkan pengenalan di latar belakang dan menampilka
 
 ### Tampilan v0.1.211
 Informasi baterai dan perangkat tampil langsung di homescreen; properti yang tidak dilaporkan Android ditulis `-`. CPU memakai nama SoC jika tersedia, atau ABI yang diberi label sebagai fallback. Angka di preview hanyalah simulasi. Di aplikasi bawaan, kontrol suara berada pada tombol mengambang kanan bawah; tombol homescreen tetap di tempatnya. Kalender mingguan dapat ditarik ke bawah untuk membuka bulan. Transisi kalender dan indikator fitur Jam mengikuti pengaturan animasi sistem; gaya kaca Android menggunakan transparansi dan gradien, bukan blur konten layar.
+
+### Penyesuaian v0.1.212
+Menit homescreen bergeser 1 px ke kanan, panel informasi turun 50 px, dan tombol suara mengambang di aplikasi bergeser 10 px ke kiri dan ke atas (berdasarkan skala preview). Ikon daftar modul Super App kembali tanpa latar kaca; kontrol di dalam aplikasi tetap bergaya kaca.

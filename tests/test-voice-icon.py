@@ -66,4 +66,5 @@ assert 'VoiceController.button' not in (java/'AppUi.java').read_text()
 assert 'VoiceController.button' not in (java/'CalendarActivity.java').read_text()
 assert 'VoiceController.attachFloatingButton(this)' in (java/'BottomSwipeActivity.java').read_text()
 assert 'Gravity.BOTTOM|android.view.Gravity.RIGHT' in ctl and 'voice_fab' in ctl and 'a instanceof MainActivity' in ctl
+assert 'margin+Math.round(10f*cssPixel)' in ctl and 'p.rightMargin=shifted; p.bottomMargin=shifted' in ctl
 print('Voice icon generation, click/long-click, state, theme and lifecycle wiring: OK')

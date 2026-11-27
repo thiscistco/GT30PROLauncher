@@ -114,9 +114,9 @@ final class HomeClockView extends View {
             canvas.drawCircle(x, y, r, dots);
         }
         dots.setAlpha(255);
-        // The clock's view is scaled, so compensate to move the minute by one final CSS pixel.
+        // Only the minute retains its one-CSS-pixel upward offset; horizontal offset is now zero.
         canvas.save();
-        canvas.translate(-cssPx / HOME_SCALE, -cssPx / HOME_SCALE);
+        canvas.translate(0f, -cssPx / HOME_SCALE);
         drawDigits(canvas, minute, dotTop + .22f * pxPerMm + .45f * pxPerMm, line);
         canvas.restore();
     }

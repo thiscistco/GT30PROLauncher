@@ -44,3 +44,9 @@ for (const name of ['clock','calendar','timetable','settings']) {
  coords.forEach(([x,y],i)=>{ assert(Math.abs(x-paths[i][0]-.36)<1e-6); assert.equal(y,paths[i][1]); });
 }
 console.log('Super App: accessible white dot icons, matching Android/preview four-column grid: OK');
+
+// Module launchers remain plain, while controls inside built-in apps retain glass styling.
+const glass=html.match(/:is\(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage\) :is\(([^)]*)\) \{/)[1];
+assert(!glass.includes('super-icon-button') && !glass.includes('super-weather'));
+assert(glass.includes('app-back') && glass.includes('clock-action'));
+assert.match(html,/\.app-voice-fab \{[^}]*right:calc\(4mm \+ 10px\); bottom:calc\(4mm \+ 10px\)/);

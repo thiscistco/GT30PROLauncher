@@ -167,7 +167,7 @@
     font-weight: 100 900;
   }
   /* Informational home label; preview uses sample data, never reads device battery. */
-  .battery-info { position:absolute; z-index:6; left:calc(8% - 5px); width:84%; bottom:calc(14% + 97px); box-sizing:border-box;
+  .battery-info { position:absolute; z-index:6; left:calc(8% - 5px); width:84%; bottom:calc(14% + 47px); box-sizing:border-box;
     padding:1.5mm 2.2mm; border:0; background:transparent; color:#f1f2e9; pointer-events:none; }
   .battery-info-spacer { height:2.3mm; }
   .battery-info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:2mm; }
@@ -293,7 +293,7 @@
   .home-voice.voice-demo .home-voice-bar:nth-child(5) { animation-delay:-.3s; }
   @keyframes voice-wave-demo { from { transform:scaleY(.55); } to { transform:scaleY(1); } }
   @media (prefers-reduced-motion: reduce) { .home-voice.voice-demo .home-voice-bar { animation:none; } }
-  .app-voice-fab { display:none; position:absolute; right:4mm; bottom:4mm; z-index:13; width:10mm; height:10mm; border:1px solid #9aacb8; border-radius:50%; background:rgba(52,70,82,.92); color:#f5f8fa; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 .8mm 2mm #0006; }
+  .app-voice-fab { display:none; position:absolute; right:calc(4mm + 10px); bottom:calc(4mm + 10px); z-index:13; width:10mm; height:10mm; border:1px solid #9aacb8; border-radius:50%; background:rgba(52,70,82,.92); color:#f5f8fa; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 .8mm 2mm #0006; }
   .screen:has(.super-page:not([hidden]), .clock-page:not([hidden]), .calendar-page:not([hidden]), .weather-page:not([hidden]), .timetable-page:not([hidden]), .drawer-page:not([hidden])):not(:has(#pathDraw:not([hidden]))) .app-voice-fab { display:flex; }
   .app-voice-fab img { width:5mm; height:5mm; filter:brightness(0) invert(1); }
   .voice-preview-note { max-width:70.9mm; color:#c3cad4; font:600 11px/1.4 'Doto',monospace; text-align:center; }
@@ -377,7 +377,7 @@
     -webkit-text-fill-color: #aabac5;
     filter: drop-shadow(0 0 0.4mm rgba(20, 27, 31, 0.85)) brightness(1.4);
   }
-  #clockMin { transform: translate(-0.877193px, -0.877193px); }
+  #clockMin { transform: translate(0px, -0.877193px); }
   .clock-sep {
     display:flex; justify-content:space-around; align-items:center;
     position:relative; left:-0.63px; width:calc(100% - 0.76px); height:0.22mm;
@@ -665,7 +665,7 @@
   .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
   .clock-stage:has([data-clock-panel="alarm"]:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])), .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
   /* Glass-inspired controls: translucent layers, border and soft highlight. */
-  :is(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage) :is(.calendar-icon-button,.app-back,.app-theme-button,.clock-action,.weather-refresh-icon,.super-icon-button,.super-weather) {
+  :is(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage) :is(.calendar-icon-button,.app-back,.app-theme-button,.clock-action,.weather-refresh-icon) {
     background:linear-gradient(145deg,rgba(245,252,255,.28),rgba(128,158,174,.12)); border:1px solid rgba(149,177,192,.5); box-shadow:inset 0 1px 0 rgba(255,255,255,.35); backdrop-filter:blur(5px); border-radius:2.5mm;
   }
   #clockPage .clock-tabs::before { content:""; position:absolute; width:7.62mm; height:7.62mm; top:2mm; left:calc(50% - 3.81mm); border-radius:2.5mm; background:linear-gradient(145deg,rgba(190,225,240,.75),rgba(104,144,164,.45)); border:1px solid rgba(184,215,229,.7); box-shadow:inset 0 1px 0 #fff8,0 .5mm 1mm #0003; opacity:0; pointer-events:none; transition:transform .24s ease,opacity .18s ease; }

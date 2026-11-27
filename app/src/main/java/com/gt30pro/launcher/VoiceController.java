@@ -61,6 +61,16 @@ final class VoiceController {
         params.rightMargin=margin; params.bottomMargin=margin;
         button.setElevation(12*a.getResources().getDisplayMetrics().density);
         content.addView(button,params);
+        // Match preview CSS pixels to the actual width of the home design, across densities.
+        Runnable updatePosition=() -> {
+            if(content.getWidth()<=0) return;
+            float cssPixel=(content.getWidth()/70.9f)*25.4f/96f;
+            int shifted=margin+Math.round(10f*cssPixel);
+            android.widget.FrameLayout.LayoutParams p=(android.widget.FrameLayout.LayoutParams)button.getLayoutParams();
+            if(p.rightMargin!=shifted || p.bottomMargin!=shifted) { p.rightMargin=shifted; p.bottomMargin=shifted; button.setLayoutParams(p); }
+        };
+        content.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,oright,ob) -> { if(r-l!=oright-ol) updatePosition.run(); });
+        content.post(updatePosition);
     }
     static void setButtonColor(ImageButton b,int color) { buttons.put(b,color); updateButton(b,color); }
     static void refreshButtons() {

@@ -29,8 +29,10 @@ for css in ('--app-bg:#f4f7fa','--app-bg:#101820','--app-text:#142a3a','--app-te
     assert css in html, css
 assert 'home-screen-glass' not in html
 assert 'iconGlass(Context c, boolean selected)' in ui and 'GradientDrawable.Orientation.TOP_BOTTOM' in ui
-for activity in ('ClockActivity','CalendarActivity','WeatherActivity','SuperAppActivity','TimeTableActivity'):
+for activity in ('ClockActivity','CalendarActivity','WeatherActivity','TimeTableActivity'):
     assert 'iconGlass(' in (java/(activity+'.java')).read_text(), activity
+assert 'iconGlass(' not in (java/'SuperAppActivity.java').read_text()
+assert 'button.setBackgroundColor(Color.TRANSPARENT)' in (java/'SuperAppActivity.java').read_text()
 assert 'positionTabIndicator(true)' in clock and 'ValueAnimator.areAnimatorsEnabled()' in clock
 assert 'data-selected="alarm"' in html and 'prefers-reduced-motion:reduce' in html
 assert 'id="appVoiceFab"' in html and '.calendar-page:not([hidden])' in html
