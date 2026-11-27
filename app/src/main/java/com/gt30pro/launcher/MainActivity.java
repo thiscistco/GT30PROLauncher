@@ -267,6 +267,7 @@ public class MainActivity extends BottomSwipeActivity {
         if(batteryInfo==null || root.getWidth()<=0 || root.getHeight()<=0) return;
         FrameLayout.LayoutParams p=(FrameLayout.LayoutParams)batteryInfo.getLayoutParams();
         float cssPixel=(root.getWidth()/70.9f)*25.4f/96f;
+        batteryInfo.setColumnOffset(cssPixel);
         int width=Math.round(root.getWidth()*.84f), bottom=Math.round(root.getHeight()*.14f+100f*cssPixel);
         if(p.width!=width || p.bottomMargin!=bottom) { p.width=width; p.bottomMargin=bottom; batteryInfo.setLayoutParams(p); }
     }

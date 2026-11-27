@@ -13,6 +13,7 @@ import android.widget.TextView;
 final class BatteryInfoView extends LinearLayout {
     private final TextView title;
     private final TextView[] names=new TextView[15], values=new TextView[15];
+    private final LinearLayout[] cells=new LinearLayout[15];
     private static final String[] LABELS={"LEVEL","STATUS","SUMBER","KONDISI","SUHU","TEGANGAN",
             "ARUS SAAT INI","ARUS RATA-RATA","MUATAN TERSISA","ENERGI TERSISA","SIKLUS","TEKNOLOGI","BATERAI TERDETEKSI","BATERAI RENDAH","PERKIRAAN PENUH"};
     BatteryInfoView(Context c) {
@@ -25,7 +26,7 @@ final class BatteryInfoView extends LinearLayout {
             LinearLayout line=new LinearLayout(c); line.setOrientation(HORIZONTAL);
             for(int col=0;col<2;col++) {
                 int index=row*2+col; if(index>=LABELS.length) break;
-                LinearLayout cell=new LinearLayout(c); cell.setOrientation(VERTICAL);
+                LinearLayout cell=new LinearLayout(c); cell.setOrientation(VERTICAL); cells[index]=cell;
                 cell.setPadding(0,dp(3),col==0?dp(6):0,0);
                 TextView name=new TextView(c); name.setText(LABELS[index]); name.setTextSize(9); name.setTypeface(doto); name.setFontVariationSettings("'wght' 700");
                 name.setSingleLine(true); name.setEllipsize(TextUtils.TruncateAt.END);
@@ -35,6 +36,9 @@ final class BatteryInfoView extends LinearLayout {
             addView(line,new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
         }
         setLightGlass(false);
+    }
+    void setColumnOffset(float cssPixel) {
+        for(int i=1;i<cells.length;i+=2) cells[i].setTranslationX(-20f*cssPixel);
     }
     private int dp(float value) { return Math.round(value*getResources().getDisplayMetrics().density); }
     void setLightGlass(boolean light) {
