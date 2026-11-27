@@ -28,8 +28,8 @@ const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
 function createUI(openMonth=true){
  const ids = {};
  for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarMonthLabel','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarTodayAgendaLabel','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel','calendarExpand','calendarYear','calendarStartDate','calendarEndDate','calendarEndTime','calendarType','calendarRepeat','calendarCustomRepeat','calendarInterval','calendarUnit','calendarReminder','calendarCustomRepeatLabel','calendarCustomReminder','calendarCustomReminderLabel','calendarReminderAmount','calendarReminderUnit']) ids[id]=new Element();
- for (const prefix of ['clock','weather','super','drawer']) for (const suffix of ['Page','Theme','ThemeIcon','ThemeMenu','ThemeSystem','ThemeLight','ThemeDark']) ids[prefix+suffix]=new Element();
- for (const prefix of ['clock','weather','super','drawer']) ids[prefix+'ThemeMenu'].hidden=true;
+ for (const prefix of ['clock','weather','super','drawer','timetable']) for (const suffix of ['Page','Theme','ThemeIcon','ThemeMenu','ThemeSystem','ThemeLight','ThemeDark']) ids[prefix+suffix]=new Element();
+ for (const prefix of ['clock','weather','super','drawer','timetable']) ids[prefix+'ThemeMenu'].hidden=true;
  ids.calendarMonth.appendChild(ids.calendarMonthLabel); ids.calendarReminderUnit.value='1'; ids.calendarReminderAmount.value='1'; ids.calendarType.value='Pribadi'; ids.calendarUnit.value='day'; ids.calendarReminder.value='-1'; ids.calendarRepeat.value='none'; ids.calendarInterval.value='1';
  ids.calendarThemeMenu.hidden=true; ids.calendarMonthMenu.hidden=true; ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
@@ -60,7 +60,7 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=16"/);
+assert.match(html,/src="calendar\.js\?v=17"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
@@ -118,12 +118,12 @@ assert.match(interactive.calendarTheme.attrs['aria-label'],/Sistem/); assert.mat
 interactive._media.matches=false;interactive._media.change();assert.equal(interactive.calendarPage.attrs['data-theme'],'light');
 interactive.calendarTheme.fire('click');assert(!interactive.calendarThemeMenu.hidden);assert.equal(interactive.calendarTheme.attrs['aria-expanded'],'true');interactive.calendarThemeDark.fire('click');assert(interactive.calendarThemeMenu.hidden);assert.equal(storage.get('gt30-calendar-theme'),'dark');assert.match(interactive.calendarThemeIcon.attrs.class,/dark/);assert.equal(interactive.calendarThemeDark.attrs['aria-pressed'],'true');
 interactive._media.change();assert.equal(interactive.calendarPage.attrs['data-theme'],'dark');
-for (const prefix of ['clock','weather','super','drawer']) { assert.equal(interactive[prefix+'Page'].attrs['data-theme'],'dark'); assert.equal(interactive[prefix+'ThemeDark'].attrs['aria-pressed'],'true'); }
+for (const prefix of ['clock','weather','super','drawer','timetable']) { assert.equal(interactive[prefix+'Page'].attrs['data-theme'],'dark'); assert.equal(interactive[prefix+'ThemeDark'].attrs['aria-pressed'],'true'); }
 interactive.clockTheme.fire('click'); assert(!interactive.clockThemeMenu.hidden); interactive.clockThemeLight.fire('click');
 assert.equal(storage.get('gt30-calendar-theme'),'light'); assert(interactive.clockThemeMenu.hidden);
-for (const prefix of ['calendar','clock','weather','super','drawer']) assert.equal(interactive[prefix+'Page'].attrs['data-theme'],'light');
+for (const prefix of ['calendar','clock','weather','super','drawer','timetable']) assert.equal(interactive[prefix+'Page'].attrs['data-theme'],'light');
 interactive.weatherThemeSystem.fire('click'); assert.equal(storage.get('gt30-calendar-theme'),'system'); assert.equal(interactive.calendarPage.attrs['data-theme'],'light');
-interactive._media.matches=true; interactive._media.change(); for (const prefix of ['calendar','clock','weather','super','drawer']) assert.equal(interactive[prefix+'Page'].attrs['data-theme'],'dark');
+interactive._media.matches=true; interactive._media.change(); for (const prefix of ['calendar','clock','weather','super','drawer','timetable']) assert.equal(interactive[prefix+'Page'].attrs['data-theme'],'dark');
 interactive.calendarThemeDark.fire('click');
 const restored=createUI();assert.match(restored.calendarThemeIcon.attrs.class,/dark/);restored.calendarThemeLight.fire('click');assert.match(restored.calendarThemeIcon.attrs.class,/light/);assert.equal(restored.calendarPage.attrs['data-theme'],'light');restored.calendarThemeSystem.fire('click');assert.match(restored.calendarThemeIcon.attrs.class,/system/);
 const initialMonth=interactive.calendarMonth.textContent;

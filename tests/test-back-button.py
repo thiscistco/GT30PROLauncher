@@ -5,7 +5,7 @@ import re
 import xml.etree.ElementTree as ET
 root = Path(__file__).resolve().parents[1]
 html=(root/'preview/index.html').read_text()
-for name, button_class in [('calendar','calendar-icon-button'),('clock','app-back'),('weather','app-back'),('super','app-back'),('drawer','app-back')]:
+for name, button_class in [('calendar','calendar-icon-button'),('clock','app-back'),('weather','app-back'),('super','app-back'),('drawer','app-back'),('timetable','app-back')]:
     match=re.search(r'<button class="'+button_class+r'" id="'+name+r'Back"([^>]*)>(.*?)</button>',html)
     assert match, name
     assert 'aria-label="Kembali"' in match[1] and 'title="Kembali"' in match[1]

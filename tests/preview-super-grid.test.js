@@ -11,8 +11,10 @@ assert(!page.includes('Aplikasi di dalam launcher'));
 assert(!page.includes('super-card-text'));
 assert.match(page, /id="openClockModule" type="button" aria-label="Jam"><img src="assets\/module-clock\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
 assert.match(page, /id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets\/module-calendar\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
-assert.equal((page.match(/class="super-icon-button"/g) || []).length, 2, 'clock and calendar remain');
+assert.equal((page.match(/class="super-icon-button"/g) || []).length, 3, 'clock, calendar and timetable remain');
 assert.match(page, /id="superWeather"/);
+assert.match(page, /id="openTimetableModule" type="button" aria-label="Time Table"/);
+assert.match(java, /addModule\(container, R\.drawable\.ic_module_timetable, "Time Table", TimeTableActivity\.class\)/);
 assert.match(xml, /<GridLayout[\s\S]*?android:id="@\+id\/modules_container"[\s\S]*?android:columnCount="4"/);
 assert(!/super_subtitle|modules_subtitle/.test(xml));
 assert.match(java, /addModule\(container, R\.drawable\.ic_module_clock, "Jam", ClockActivity\.class\)/);
@@ -23,7 +25,7 @@ assert.match(java, /params\.height = dp\(76\)/);
 assert.match(java, /int cellWidth = Math\.max\(1, width \/ 4\)/);
 assert.match(java, /params\.width = cellWidth/);
 assert.match(java, /sizeGridCells\(container\)/);
-for (const name of ['clock','calendar']) {
+for (const name of ['clock','calendar','timetable']) {
  const svg = fs.readFileSync(`preview/assets/module-${name}.svg`, 'utf8');
  const vector = fs.readFileSync(`app/src/main/res/drawable/ic_module_${name}.xml`, 'utf8');
  assert.match(svg, /fill="#ffffff"/); assert.match(vector, /android:fillColor="#FFFFFF"/);

@@ -17,10 +17,10 @@ class Element {
 }
 const ids = ['chargeToggle','batteryLed','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
   'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
-  'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','drawerPage','drawerBack','pathDraw'];
+  'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','timetablePage','timetableBack','openTimetableModule','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.weatherPage.hidden = true; elements.superPage.hidden = true;
-elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
+elements.timetablePage.hidden = true; elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
 const screen = new Element(), separator = new Element(), doc = new Element();
 doc.getElementById = id => elements[id];
 doc.querySelector = selector => selector === '.screen' ? screen : separator;
@@ -67,6 +67,7 @@ assert.strictEqual(elements.superPage.hidden, true, 'home date does not require 
 elements.calendarBack.fire('click'); assert.strictEqual(elements.calendarPage.hidden, true);
 elements.homeDate.fire('keydown', {key:'Enter',preventDefault(){}}); assert.strictEqual(elements.calendarPage.hidden,false);
 swipe(440,100,360,100); assert.strictEqual(elements.calendarPage.hidden,true,'calendar swipe back to home');
+elements.tabSuper.fire('click'); elements.openTimetableModule.fire('click'); assert.strictEqual(elements.timetablePage.hidden,false); elements.timetableBack.fire('click'); assert.strictEqual(elements.timetablePage.hidden,true); assert.strictEqual(elements.superPage.hidden,false);
 // Home weather opens the same page without Super App and returns to its origin.
 elements.tabHome.fire('click'); let focused=false;
 elements.homeWeather.focus=()=>{ focused=true; };

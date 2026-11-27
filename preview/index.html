@@ -535,13 +535,13 @@
   .clock-city { display: flex; align-items: center; gap: 2mm; margin: 2mm 0; font-size: 2.8mm; }
 
   /* Shared Calendar-inspired design tokens for launcher-owned apps. */
-  :is(#clockPage,#weatherPage,#superPage,#drawerPage) {
+  :is(#clockPage,#weatherPage,#superPage,#drawerPage,#timetablePage) {
     --app-bg:#f4f7fa; --app-card:#fff; --app-text:#142a3a; --app-muted:#405465;
     --app-control:#e3eaf0; --app-border:#c9d5de; --app-selected:#304355; --app-selected-text:#fff; --app-event:#e5ecf2;
     background:var(--app-bg); color:var(--app-text); padding:5mm 4mm 8mm;
     font:800 2.8mm 'Doto', monospace; font-variation-settings:'wght' 800;
   }
-  :is(#clockPage,#weatherPage,#superPage,#drawerPage)[data-theme="dark"] {
+  :is(#clockPage,#weatherPage,#superPage,#drawerPage,#timetablePage)[data-theme="dark"] {
     color-scheme:dark; --app-bg:#101820; --app-card:#19252f; --app-text:#f5f8fa; --app-muted:#c7d3dd;
     --app-control:#2a3b49; --app-border:#516776; --app-selected:#dce8f0; --app-selected-text:#172a38; --app-event:#263743;
   }
@@ -575,6 +575,29 @@
   #weatherPage .weather-observed { color:#e5ecf2; }
   #weatherPage .weather-condition { color:#ffd49d; }
   #weatherPage .weather-hour svg, #weatherPage .weather-daily-row svg { fill:var(--app-text); }
+
+  .timetable-page { position:absolute; inset:0; z-index:10; overflow:hidden; }
+  .timetable-page[hidden] { display:none; }
+  #timetablePage:not([hidden]) { display:flex; flex-direction:column; box-sizing:border-box; }
+  .tt-title { display:flex; align-items:center; justify-content:space-between; gap:2mm; }
+  .tt-title h2 { margin:0; font-size:3.3mm; }
+  .tt-icon,.tt-actions button { width:7.62mm; height:7.62mm; min-height:0; padding:1.9mm; display:grid; place-items:center; border:1px solid var(--app-border); border-radius:2.5mm; background:var(--app-control); color:var(--app-text); cursor:pointer; }
+  .tt-hint { color:var(--app-muted); font-size:2mm; line-height:1.5; margin:1.5mm 0; }
+  .tt-scroll { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; }
+  .tt-table { border-collapse:separate; border-spacing:.6mm; table-layout:fixed; width:105mm; }
+  .tt-table th, .tt-table td { padding:0; text-align:center; vertical-align:middle; }
+  .tt-table th { height:7.62mm; font-size:2.2mm; background:var(--app-control); border:1px solid var(--app-border); border-radius:2mm; }
+  .tt-table th:first-child { width:14mm; } .tt-table th:not(:first-child) { width:17mm; }
+  .tt-table button { box-sizing:border-box; width:100%; min-height:13.3mm; padding:.8mm; border:1px solid var(--app-border); border-radius:2mm; background:var(--app-card); color:var(--app-text); font:800 2mm 'Doto',monospace; overflow-wrap:anywhere; white-space:pre-wrap; cursor:pointer; }
+  .tt-table button.tt-time { background:var(--app-control); } .tt-table button.tt-filled { background:var(--app-event); }
+  .tt-editor { position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; background:#0008; padding:4mm; }
+  .tt-editor[hidden], #ttTimeFields[hidden], #ttCellFields[hidden], .tt-actions button[hidden] { display:none; }
+  .tt-form { width:100%; max-height:95%; overflow:auto; box-sizing:border-box; padding:4mm; border:1px solid var(--app-border); border-radius:3mm; background:var(--app-card); }
+  .tt-form h3 { margin:0 0 2mm; font-size:3mm; } .tt-form label { display:block; margin:2mm 0; font-size:2.3mm; }
+  .tt-form input { box-sizing:border-box; width:100%; padding:2mm; margin-top:1mm; border:1px solid var(--app-border); border-radius:2mm; background:var(--app-control); color:var(--app-text); font:700 2.6mm 'Doto',monospace; }
+  .tt-error { color:#b12626; font-size:2.3mm; } #timetablePage[data-theme="dark"] .tt-error { color:#ffaaaa; }
+  .tt-actions { display:flex; justify-content:flex-end; gap:1.2mm; }
+
   /* Clock: one central local-time HUD and a fixed four-icon bottom bar. */
   #clockPage:not([hidden]) { display:flex; flex-direction:column; overflow:hidden; padding:2.54mm 3.175mm; }
   #clockPage .app-top { flex:none; }
@@ -816,6 +839,7 @@
                   <button class="super-icon-button" id="openClockModule" type="button" aria-label="Jam"><img src="assets/module-clock.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="super-icon-button" id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets/module-calendar.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg></button>
+                  <button class="super-icon-button" id="openTimetableModule" type="button" aria-label="Time Table"><img src="assets/module-timetable.svg?v=1" alt="" aria-hidden="true"></button>
                 </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
@@ -949,6 +973,18 @@
                   <p class="weather-status">Sumber: Open-Meteo · waktu sesuai lokasi perkiraan</p>
                 </div>
               </section>
+              <section class="timetable-page" id="timetablePage" aria-label="Time Table" hidden>
+                <div class="app-top"><button class="app-back" id="timetableBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Time Table</span><div class="app-theme"><button class="app-theme-button" id="timetableTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="timetableThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="timetableThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="timetableThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="timetableThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="timetableThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="timetableThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
+                <div class="tt-title"><h2>JADWAL MENGAJAR</h2><button type="button" id="ttAdd" class="tt-icon" aria-label="Tambah jam" title="Tambah jam"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
+                <p class="tt-hint">Ketuk jam untuk mengubah atau menghapus baris. Ketuk sel untuk mengisi jadwal. Geser tabel ke samping.</p>
+                <p id="ttStorage" class="tt-hint" role="status"></p>
+                <div class="tt-scroll" id="ttScroll"><table class="tt-table"><thead><tr><th scope="col">JAM</th><th scope="col">Senin</th><th scope="col">Selasa</th><th scope="col">Rabu</th><th scope="col">Kamis</th><th scope="col">Jumat</th></tr></thead><tbody id="ttRows"></tbody></table><p id="ttEmpty" class="tt-hint">Belum ada jam. Ketuk + untuk menambahkan baris waktu.</p></div>
+                <div class="tt-editor" id="ttEditor" role="dialog" aria-modal="true" aria-labelledby="ttEditorTitle" hidden><form id="ttForm" class="tt-form"><h3 id="ttEditorTitle"></h3>
+                  <div id="ttTimeFields"><label>Mulai <input id="ttStart" type="time" required></label><label>Selesai <input id="ttEnd" type="time" required></label></div>
+                  <div id="ttCellFields" hidden><label>Pelajaran / kegiatan <input id="ttSubject" maxlength="80" placeholder="Contoh: Matematika"></label><label>Kelas / catatan <input id="ttClass" maxlength="80" placeholder="Contoh: X IPA 1"></label></div>
+                  <p id="ttError" class="tt-error" role="alert"></p><div class="tt-actions"><button type="button" id="ttCancel" aria-label="Batal" title="Batal"><span class="calendar-action-icon calendar-cancel-icon" aria-hidden="true"></span></button><button type="button" id="ttDelete" aria-label="Hapus jam" title="Hapus jam" hidden><span class="calendar-action-icon alarm-delete-icon" aria-hidden="true"></span></button><button type="submit" aria-label="Simpan" title="Simpan"><span class="calendar-action-icon calendar-save-icon" aria-hidden="true"></span></button></div>
+                </form></div>
+              </section>
               <div class="punch-hole"></div>
             </div>
           </div>
@@ -1027,6 +1063,9 @@
     var page = document.getElementById('clockPage');
     var back = document.getElementById('clockBack');
     var calendarPage = document.getElementById('calendarPage');
+    var timetablePage = document.getElementById('timetablePage');
+    var timetableBack = document.getElementById('timetableBack');
+    var timetableOrigin = document.getElementById('openTimetableModule');
     var weatherPage = document.getElementById('weatherPage');
     var weatherBack = document.getElementById('weatherBack');
     var superWeather = document.getElementById('superWeather');
@@ -1044,6 +1083,8 @@
       page.hidden = true;
       calendarPage.hidden = true;
       weatherPage.hidden = true;
+      timetablePage.hidden = true;
+      if (window.timetableCloseEditor) window.timetableCloseEditor();
       drawerPage.hidden = true;
       superPage.hidden = !superActive;
       homeTab.classList.toggle('active', !superActive);
@@ -1063,6 +1104,7 @@
     function openWeather(origin) { weatherOrigin = origin; weatherPage.hidden = false; weatherBack.focus(); if (window.weatherPageOnOpen) window.weatherPageOnOpen(); }
     superWeather.addEventListener('click', function () { openWeather(superWeather); });
     homeWeather.addEventListener('click', function () { openWeather(homeWeather); });
+    timetableOrigin.addEventListener('click', function () { timetablePage.hidden=false; timetableBack.focus(); if (window.timetableOnOpen) window.timetableOnOpen(); });
     clockLed.addEventListener('click', function () { openClock(clockLed); });
     clockLed.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(clockLed); }
@@ -1073,6 +1115,7 @@
     function goBack() {
       if (!drawerPage.hidden) { drawerPage.hidden = true; homeTab.focus(); return; }
       if (!calendarPage.hidden) { calendarPage.hidden = true; calendarReturn.focus(); return; }
+      if (!timetablePage.hidden) { if (window.timetableCloseEditor && window.timetableCloseEditor()) return; timetablePage.hidden=true; timetableOrigin.focus(); return; }
       if (!weatherPage.hidden) { weatherPage.hidden = true; weatherOrigin.focus(); return; }
       if (!page.hidden) { if (window.clockReturnToHud && window.clockReturnToHud()) { back.focus(); return; } page.hidden = true; clockOrigin.focus(); return; }
       if (!superPage.hidden) { setTab(false); homeTab.focus(); }
@@ -1081,6 +1124,7 @@
     back.addEventListener('click', goBack);
     calendarBack.addEventListener('click', goBack);
     weatherBack.addEventListener('click', goBack);
+    timetableBack.addEventListener('click', goBack);
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') goBack();
     });
@@ -1094,7 +1138,7 @@
       var drawing = document.getElementById('pathDraw');
       if (event.button !== 0 || (drawing && !drawing.hidden)) return;
       var rect = screen.getBoundingClientRect();
-      var internal = !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !superPage.hidden || !drawerPage.hidden;
+      var internal = !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !timetablePage.hidden || !superPage.hidden || !drawerPage.hidden;
       var bottom = drawerPage.hidden && event.clientY >= rect.top + rect.height * .80 && event.clientY <= rect.bottom;
       var right = internal && event.clientX >= rect.right - rect.width * (32 / 445);
       if (bottom || right) swipe = { id: event.pointerId, x: event.clientX, y: event.clientY,
@@ -1351,7 +1395,8 @@
 <script src="weather.js?v=6"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=16"></script>
+<script src="calendar.js?v=17"></script>
+<script src="timetable.js?v=1"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

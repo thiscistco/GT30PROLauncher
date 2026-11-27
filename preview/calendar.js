@@ -155,7 +155,7 @@
     function applyTheme() {
       var dark = themeChoice === 'dark' || (themeChoice === 'system' && media && media.matches);
       if (calendarPage) calendarPage.setAttribute('data-theme', dark ? 'dark' : 'light');
-      ['clock','weather','super','drawer'].forEach(function (prefix) {
+      ['clock','weather','super','drawer','timetable'].forEach(function (prefix) {
         var appPage=byId(prefix+'Page'), appIcon=byId(prefix+'ThemeIcon'), appTheme=byId(prefix+'Theme');
         if (appPage) appPage.setAttribute('data-theme', dark ? 'dark' : 'light');
         if (appIcon) appIcon.setAttribute('class','calendar-theme-icon calendar-theme-'+themeChoice);
@@ -176,7 +176,7 @@
       });
     });
     // Reuse the same choice across all built-in pages, without changing the home glass.
-    ['clock','weather','super','drawer'].forEach(function (prefix) {
+    ['clock','weather','super','drawer','timetable'].forEach(function (prefix) {
       var appTheme=byId(prefix+'Theme'), menu=byId(prefix+'ThemeMenu');
       if (!appTheme || !menu) return;
       function close() { menu.hidden=true; appTheme.setAttribute('aria-expanded','false'); }

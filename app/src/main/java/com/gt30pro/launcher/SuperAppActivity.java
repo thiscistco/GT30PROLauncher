@@ -47,6 +47,7 @@ public class SuperAppActivity extends SwipeBackActivity {
         weatherView.setOpensDetails(true);
         weatherView.setContentDescription("Buka Cuaca");
         weatherView.setOnClickListener(v -> startActivity(new Intent(this, WeatherActivity.class)));
+        addModule(container, R.drawable.ic_module_timetable, "Time Table", TimeTableActivity.class);
         container.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
             if (r - l != oldR - oldL) sizeGridCells(container);
         });

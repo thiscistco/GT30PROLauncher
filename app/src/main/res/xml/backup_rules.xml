@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <!-- Personal calendar events stay on this device, even when Android backup is enabled. -->
-    <exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" />
+    <!-- Personal calendar and timetable data stay on this device, even when Android backup is enabled. -->
+    <exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" />
 </full-backup-content>
