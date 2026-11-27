@@ -598,11 +598,19 @@
   #clockPage .clock-tabs button img { width:3.81mm; height:3.81mm; }
   #clockPage .clock-action { border-radius:2.5mm; }
   .clock-alarm-header { display:flex; align-items:center; justify-content:space-between; gap:2mm; }
-  #clockPage .clock-alarm-add { width:7.62mm; height:7.62mm; padding:2.54mm; display:grid; place-items:center; }
+  #clockPage .clock-alarm-add { min-height:7.62mm; width:7.62mm; height:7.62mm; padding:2.54mm; display:grid; place-items:center; }
   #clockPage .clock-alarm-add .calendar-action-icon { width:2.54mm; height:2.54mm; }
   .alarm-time-options { display:flex; align-items:center; gap:.64mm; }
-  #clockPage .alarm-time-options > input { flex:1; width:0; min-width:0; height:7.62mm; box-sizing:border-box; }
-  #clockPage .alarm-option { position:relative; box-sizing:border-box; flex:0 0 7.62mm; width:7.62mm; height:7.62mm; display:grid; place-items:center; padding:1.905mm; margin:0; background:var(--app-control); border:1px solid var(--app-border); border-radius:2.5mm; color:var(--app-text); cursor:pointer; }
+  .alarm-time-title { flex:1; }
+  .alarm-wheels { position:relative; display:flex; justify-content:center; align-items:center; margin:1.27mm 0; }
+  .alarm-wheels::before { content:""; position:absolute; z-index:0; left:0; right:0; height:7.62mm; border-radius:2.5mm; border:1px solid var(--app-border); background:var(--app-control); pointer-events:none; }
+  .alarm-wheel { position:relative; z-index:1; width:12.7mm; display:flex; flex-direction:column; align-items:stretch; touch-action:pan-x; }
+  .alarm-wheel button { height:7.62mm; border:0; background:transparent; color:var(--app-muted); opacity:.6; font:700 3.5mm 'Doto', monospace; cursor:pointer; }
+  .alarm-wheel .wheel-value { display:grid; place-items:center; height:7.62mm; font:800 4mm 'Doto', monospace; color:var(--app-text); }
+  .alarm-wheel:focus-visible { outline:2px solid var(--app-text); outline-offset:1px; }
+  .wheel-separator { position:relative; z-index:1; font:800 4mm 'Doto', monospace; color:var(--app-text); }
+
+  #clockPage .alarm-option { min-height:7.62mm; position:relative; box-sizing:border-box; flex:0 0 7.62mm; width:7.62mm; height:7.62mm; display:grid; place-items:center; padding:1.905mm; margin:0; background:var(--app-control); border:1px solid var(--app-border); border-radius:2.5mm; color:var(--app-text); cursor:pointer; }
   #clockPage .alarm-option input, #clockPage .alarm-days input { position:absolute; opacity:0; width:1px; height:1px; padding:0; margin:0; }
   #clockPage .alarm-vibrate:has(input:checked) { background:var(--app-selected); color:var(--app-selected-text); }
   #clockPage .alarm-option:focus-within, #clockPage .alarm-days label:focus-within { outline:2px solid var(--app-text); outline-offset:1px; }
@@ -615,8 +623,20 @@
   .alarm-editor-actions { display:flex; gap:1.27mm; }
   .alarm-editor-actions button { flex:1; }
   #previewSound { width:100%; margin-top:1mm; }
-  .alarm-card-head { display:flex; align-items:center; gap:1.27mm; }
-  .alarm-card-time { flex:1; font-size:4.3mm; }
+  #clockPage .alarm-card { display:flex; align-items:center; gap:.64mm; padding:1.27mm; }
+  .alarm-card-details { flex:1; min-width:0; }
+  #clockPage .alarm-card-time { display:block; border:0; padding:0; background:transparent; text-align:left; color:var(--app-text); font:800 4.3mm 'Doto', monospace; cursor:pointer; }
+  .alarm-card-meta { display:flex; align-items:center; gap:.64mm; }
+  .alarm-card-meta .calendar-action-icon { width:2.54mm; height:2.54mm; flex:none; }
+  .alarm-card-switch { position:relative; display:inline-flex; align-items:center; flex:0 0 8mm; height:7.62mm; cursor:pointer; }
+  .alarm-card-switch input { position:absolute; width:1px; height:1px; opacity:0; }
+  .alarm-switch-track { width:8mm; height:4mm; border-radius:3mm; background:var(--app-border); position:relative; }
+  .alarm-switch-track::after { content:""; position:absolute; top:.4mm; left:.4mm; width:3.2mm; height:3.2mm; border-radius:50%; background:var(--app-card); transition:transform .15s; }
+  .alarm-card-switch input:checked + .alarm-switch-track { background:var(--app-selected); }
+  .alarm-card-switch input:checked + .alarm-switch-track::after { transform:translateX(4mm); }
+  .alarm-card-switch input:focus-visible + .alarm-switch-track { outline:2px solid var(--app-text); outline-offset:2px; }
+  #clockPage .alarm-delete { min-height:7.62mm; flex:0 0 7.62mm; width:7.62mm; height:7.62mm; padding:1.905mm; display:grid; place-items:center; }
+  .alarm-delete-icon { mask-image:url('assets/alarm-delete.svg?v=1'); -webkit-mask-image:url('assets/alarm-delete.svg?v=1'); }
   .clock-alarm-countdown { margin:.8mm 0; font-size:2.2mm; color:var(--app-muted); }
   #clockPage .clock-entry, #clockPage .alarm-form, #clockPage input, #clockPage select { border-radius:3mm; }
   #clockPage .clock-display { background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; padding:2mm; }
@@ -776,11 +796,16 @@
                   <div class="clock-alarm-header"><h3>ALARM</h3><button class="clock-action clock-alarm-add" id="previewAddAlarm" type="button" aria-label="Tambah alarm" title="Tambah alarm"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
                   <div class="alarm-form" id="previewAlarmForm" hidden>
                     <div class="alarm-time-options">
-                      <input id="previewAlarmTime" type="time" value="07:00" aria-label="Waktu alarm">
+                      <span class="alarm-time-title">Waktu</span><input id="previewAlarmTime" type="hidden" value="07:00">
                       <button class="clock-action alarm-option" id="previewSoundButton" type="button" aria-label="Nada alarm" title="Nada alarm" aria-expanded="false" aria-controls="previewSound"><span class="calendar-action-icon alarm-sound-icon" aria-hidden="true"></span></button>
                       <label class="alarm-option alarm-vibrate" title="Getar"><input id="previewVibrate" type="checkbox" aria-label="Getar" checked><span class="calendar-action-icon alarm-vibrate-icon" aria-hidden="true"></span></label>
                     </div>
                     <select id="previewSound" aria-label="Nada alarm" hidden><option>Nada alarm</option><option>Hening</option></select>
+                    <div class="alarm-wheels" aria-label="Pemilih waktu alarm">
+                      <div class="alarm-wheel" id="alarmHourWheel" role="spinbutton" tabindex="0" aria-label="Jam" aria-valuemin="0" aria-valuemax="23"><button type="button" class="wheel-prev" aria-label="Jam sebelumnya"></button><span class="wheel-value" aria-hidden="true"></span><button type="button" class="wheel-next" aria-label="Jam berikutnya"></button></div>
+                      <span class="wheel-separator" aria-hidden="true">:</span>
+                      <div class="alarm-wheel" id="alarmMinuteWheel" role="spinbutton" tabindex="0" aria-label="Menit" aria-valuemin="0" aria-valuemax="59"><button type="button" class="wheel-prev" aria-label="Menit sebelumnya"></button><span class="wheel-value" aria-hidden="true"></span><button type="button" class="wheel-next" aria-label="Menit berikutnya"></button></div>
+                    </div>
                     <div class="alarm-days" id="previewAlarmDays" role="group" aria-label="Hari pengulangan">
                       <label><input type="checkbox" value="1"><span>Sen</span></label><label><input type="checkbox" value="2"><span>Sel</span></label><label><input type="checkbox" value="3"><span>Rab</span></label><label><input type="checkbox" value="4"><span>Kam</span></label><label><input type="checkbox" value="5"><span>Jum</span></label><label><input type="checkbox" value="6"><span>Sab</span></label><label><input type="checkbox" value="0"><span>Min</span></label>
                     </div>
@@ -1097,7 +1122,44 @@
     }
     function tickHud() { updateHud(); setTimeout(tickHud, 1000 - (Date.now() % 1000) + 10); }
     tickHud();
-    byId('previewAddAlarm').addEventListener('click', function () { byId('previewAlarmForm').hidden = !byId('previewAlarmForm').hidden; });
+    var editingAlarm = null;
+    function refreshWheels() {
+      var parts=byId('previewAlarmTime').value.split(':');
+      [['alarmHourWheel',Number(parts[0]),24],['alarmMinuteWheel',Number(parts[1]),60]].forEach(function (entry) {
+        var wheel=byId(entry[0]), value=entry[1], max=entry[2], two=function (n) { return String(n).padStart(2,'0'); };
+        wheel.querySelector('.wheel-prev').textContent=two((value+max-1)%max);
+        wheel.querySelector('.wheel-value').textContent=two(value);
+        wheel.querySelector('.wheel-next').textContent=two((value+1)%max);
+        wheel.setAttribute('aria-valuenow',String(value)); wheel.setAttribute('aria-valuetext',two(value));
+      });
+    }
+    function moveWheel(isHour, delta) {
+      var parts=byId('previewAlarmTime').value.split(':').map(Number), index=isHour ? 0 : 1, max=isHour ? 24 : 60;
+      parts[index]=(parts[index]+delta+max)%max;
+      byId('previewAlarmTime').value=parts.map(function(n){return String(n).padStart(2,'0');}).join(':'); refreshWheels();
+    }
+    [['alarmHourWheel',true],['alarmMinuteWheel',false]].forEach(function (entry) {
+      var wheel=byId(entry[0]), startY=null, moved=false;
+      wheel.querySelector('.wheel-prev').addEventListener('click',function(){ if (!moved) moveWheel(entry[1],-1); moved=false; });
+      wheel.querySelector('.wheel-next').addEventListener('click',function(){ if (!moved) moveWheel(entry[1],1); moved=false; });
+      wheel.addEventListener('keydown',function(e){ if (e.key==='ArrowUp'||e.key==='ArrowDown') { e.preventDefault(); moveWheel(entry[1],e.key==='ArrowUp'?1:-1); } });
+      wheel.addEventListener('wheel',function(e){ e.preventDefault(); moveWheel(entry[1],e.deltaY>0?1:-1); },{passive:false});
+      wheel.addEventListener('pointerdown',function(e){ startY=e.clientY; moved=false; });
+      wheel.addEventListener('pointerup',function(e){ if(startY!==null && Math.abs(startY-e.clientY)>15){moved=true;moveWheel(entry[1],startY>e.clientY?1:-1);} startY=null; });
+      wheel.addEventListener('pointercancel',function(){startY=null;moved=false;});
+    });
+    function openAlarmEditor(alarm) {
+      editingAlarm=alarm || null;
+      byId('previewAlarmTime').value=alarm ? alarm.time : '07:00';
+      byId('previewVibrate').checked=alarm ? alarm.vibrate : true;
+      byId('previewSound').value=alarm ? alarm.sound : 'Nada alarm';
+      byId('previewSound').hidden=true; byId('previewSoundButton').setAttribute('aria-expanded','false');
+      byId('previewSoundButton').setAttribute('aria-label','Nada alarm: '+byId('previewSound').value);
+      byId('previewAlarmDays').querySelectorAll('input').forEach(function(input){input.checked=!!alarm && alarm.days.indexOf(Number(input.value))!==-1;});
+      byId('previewAlarmForm').hidden=false; refreshWheels();
+    }
+    refreshWheels();
+    byId('previewAddAlarm').addEventListener('click', function () { if (!byId('previewAlarmForm').hidden && !editingAlarm) byId('previewAlarmForm').hidden=true; else openAlarmEditor(null); });
     byId('previewCancelAlarm').addEventListener('click', function () { byId('previewAlarmForm').hidden = true; });
     byId('previewSoundButton').addEventListener('click', function () { var select=byId('previewSound'); select.hidden=!select.hidden; this.setAttribute('aria-expanded', String(!select.hidden)); if (!select.hidden) select.focus(); });
     byId('previewSound').addEventListener('change', function () { var button=byId('previewSoundButton'); button.setAttribute('aria-label','Nada alarm: '+this.value); button.title='Nada alarm: '+this.value; this.hidden=true; button.setAttribute('aria-expanded','false'); button.focus(); });
@@ -1122,15 +1184,16 @@
           if (!alarm.days.length) { alarm.enabled=false; if (alarm.checkbox) alarm.checkbox.checked=false; }
           else alarm.next=nextPreviewAlarm(alarm,now);
         }
-        if (alarm.countdown) alarm.countdown.textContent = alarm.enabled ? previewCountdown(alarm.next,now) : 'Tidak aktif';
+        if (alarm.countdown) alarm.countdown.textContent = alarm.enabled ? previewCountdown(alarm.next,now) : '—';
       });
     }
     byId('previewSaveAlarm').addEventListener('click', function () {
       var time = byId('previewAlarmTime').value;
       if (!time) return;
       var days = Array.from(byId('previewAlarmDays').querySelectorAll('input:checked')).map(function (x) { return Number(x.value); });
-      var alarm = { time: time, days: days, vibrate: byId('previewVibrate').checked, sound:byId('previewSound').value, enabled:true };
-      alarm.next=nextPreviewAlarm(alarm,Date.now()); alarms.push(alarm);
+      var alarm = editingAlarm || {enabled:true};
+      alarm.time=time; alarm.days=days; alarm.vibrate=byId('previewVibrate').checked; alarm.sound=byId('previewSound').value;
+      alarm.next=nextPreviewAlarm(alarm,Date.now()); if (!editingAlarm) alarms.push(alarm); editingAlarm=null;
       byId('previewAlarmForm').hidden = true;
       renderAlarms();
     });
@@ -1138,19 +1201,21 @@
       var list = byId('previewAlarms'); list.textContent = '';
       if (!alarms.length) { list.textContent = 'Belum ada alarm. Tambahkan pengingat pertama.'; return; }
       alarms.forEach(function (alarm, i) {
-        var card = document.createElement('div'); card.className = 'clock-entry';
-        var head = document.createElement('div'); head.className='alarm-card-head';
-        var time = document.createElement('span'); time.className='alarm-card-time'; time.textContent=alarm.time; head.appendChild(time);
+        var card = document.createElement('div'); card.className = 'clock-entry alarm-card';
+        var details=document.createElement('div'); details.className='alarm-card-details';
+        var time = document.createElement('button'); time.type='button'; time.className='alarm-card-time'; time.textContent=alarm.time; time.setAttribute('aria-label','Ubah alarm '+alarm.time); time.addEventListener('click',function(){openAlarmEditor(alarm);}); details.appendChild(time);
+        var countdown = document.createElement('div'); countdown.className = 'clock-alarm-countdown'; details.appendChild(countdown); alarm.countdown=countdown;
+        var meta=document.createElement('div'); meta.className='alarm-card-meta';
+        var text = document.createElement('span'); text.textContent = alarm.days.length ? alarm.days.map(function (d) { return ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d]; }).join(' · ') : 'Sekali'; meta.appendChild(text);
         [['alarm-sound-icon','Nada alarm: '+alarm.sound,alarm.sound !== 'Hening'],['alarm-vibrate-icon',alarm.vibrate ? 'Getar aktif' : 'Getar tidak aktif',alarm.vibrate]].forEach(function (option) {
-          var icon=document.createElement('span'); icon.className='calendar-action-icon '+option[0]; icon.setAttribute('role','img'); icon.setAttribute('aria-label',option[1]); icon.title=option[1]; if (!option[2]) icon.style.opacity='.4'; head.appendChild(icon);
-        }); card.appendChild(head);
-        var text = document.createElement('div'); text.textContent = alarm.days.length ? alarm.days.map(function (d) { return ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d]; }).join(' · ') : 'Sekali'; card.appendChild(text);
-        var countdown = document.createElement('div'); countdown.className = 'clock-alarm-countdown'; card.appendChild(countdown); alarm.countdown=countdown;
-        var toggle = document.createElement('label'), checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.checked=alarm.enabled;
+          var icon=document.createElement('span'); icon.className='calendar-action-icon '+option[0]; icon.setAttribute('role','img'); icon.setAttribute('aria-label',option[1]); icon.title=option[1]; if (!option[2]) icon.style.opacity='.4'; meta.appendChild(icon);
+        }); details.appendChild(meta); card.appendChild(details);
+        var toggle = document.createElement('label'), checkbox=document.createElement('input'), track=document.createElement('span'); toggle.className='alarm-card-switch'; checkbox.type='checkbox'; checkbox.setAttribute('role','switch'); checkbox.setAttribute('aria-label','Alarm '+alarm.time); checkbox.checked=alarm.enabled; track.className='alarm-switch-track'; track.setAttribute('aria-hidden','true');
         alarm.checkbox=checkbox; checkbox.addEventListener('change', function () { alarm.enabled=checkbox.checked; if (alarm.enabled) alarm.next=nextPreviewAlarm(alarm,Date.now()); updatePreviewCountdowns(); });
-        toggle.appendChild(checkbox); toggle.appendChild(document.createTextNode(' Aktif')); card.appendChild(toggle);
-        var remove = document.createElement('button'); remove.className = 'clock-action'; remove.textContent = 'Hapus';
-        remove.addEventListener('click', function () { alarms.splice(i, 1); renderAlarms(); }); card.appendChild(remove); list.appendChild(card);
+        toggle.appendChild(checkbox); toggle.appendChild(track); card.appendChild(toggle);
+        var remove = document.createElement('button'); remove.type='button'; remove.className = 'clock-action alarm-delete'; remove.setAttribute('aria-label','Hapus alarm '+alarm.time); remove.title='Hapus alarm '+alarm.time;
+        var icon=document.createElement('span'); icon.className='calendar-action-icon alarm-delete-icon'; icon.setAttribute('aria-hidden','true'); remove.appendChild(icon);
+        remove.addEventListener('click', function () { if (editingAlarm===alarm) { editingAlarm=null; byId('previewAlarmForm').hidden=true; } alarms.splice(i, 1); renderAlarms(); }); card.appendChild(remove); list.appendChild(card);
       });
       updatePreviewCountdowns();
     }

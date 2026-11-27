@@ -17,7 +17,9 @@ jam analog di bagian atas bingkai squircle. Angka jam putih berlatar gelap,
 dan ikon Alarm, Jam Dunia, Timer, dan Stopwatch rata tengah di bawah lingkaran.
 Fitur terbuka sebagai panel pada halaman yang sama; daftar alarm menampilkan
 hitung mundur menuju alarm berikutnya. Editor alarm menyediakan pilihan hari
-Senin–Minggu dalam satu baris, serta ikon nada dan getar di samping waktu.
+Senin–Minggu dalam satu baris, pemilih waktu roda 24 jam, serta ikon nada dan
+getar. Ketuk waktu pada daftar untuk mengubah alarm; slider dan ikon tempat
+sampah berada di kanan.
 Ketuk lagi ikon aktif atau gunakan kembali untuk menuju HUD.
 
 ## Desain aplikasi bawaan

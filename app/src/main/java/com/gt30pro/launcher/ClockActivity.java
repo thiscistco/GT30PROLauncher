@@ -2,7 +2,6 @@ package com.gt30pro.launcher;
 
 import android.Manifest;
 import android.app.NotificationManager;
-import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
@@ -20,6 +19,7 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.text.InputType;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -27,6 +27,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -213,18 +214,24 @@ public class ClockActivity extends SwipeBackActivity {
         if (all.length() == 0) content.addView(text("Belum ada alarm. Tambahkan pengingat pertama.", 13, MUTED));
         for (int i = 0; i < all.length(); i++) {
             JSONObject a = all.optJSONObject(i); if (a == null) continue;
-            LinearLayout box = new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL); box.setPadding(dp(14),dp(12),dp(14),dp(12)); box.setBackground(bg(ui.card));
-            LinearLayout alarmHead=new LinearLayout(this); alarmHead.setGravity(Gravity.CENTER_VERTICAL);
+            LinearLayout box = new LinearLayout(this); box.setGravity(Gravity.CENTER_VERTICAL); box.setPadding(dp(12),dp(8),dp(8),dp(8)); box.setBackground(bg(ui.card));
+            LinearLayout details=new LinearLayout(this); details.setOrientation(LinearLayout.VERTICAL);
             TextView label = text(String.format(Locale.US, "%02d:%02d", a.optInt("hour"), a.optInt("minute")), 27, AMBER);
-            alarmHead.addView(label,new LinearLayout.LayoutParams(0,-2,1));
+            label.setContentDescription("Ubah alarm " + label.getText()); label.setOnClickListener(v -> editAlarm(a)); details.addView(label);
+            TextView countdown=text("",13,MUTED); details.addView(countdown);
+            LinearLayout metadata=new LinearLayout(this); metadata.setGravity(Gravity.CENTER_VERTICAL);
+            metadata.addView(text(dayLabel(a.optInt("days")), 12, MUTED));
             String alarmSound=a.optString("sound",Settings.System.DEFAULT_ALARM_ALERT_URI.toString());
-            ImageView soundIcon=new ImageView(this); soundIcon.setImageResource(R.drawable.ic_alarm_sound); soundIcon.setColorFilter(ui.ink); soundIcon.setAlpha(alarmSound.isEmpty() ? .4f : 1f); soundIcon.setContentDescription("Nada alarm: " + soundName(alarmSound));
-            alarmHead.addView(soundIcon,new LinearLayout.LayoutParams(dp(20),dp(20)));
-            ImageView vibrationIcon=new ImageView(this); vibrationIcon.setImageResource(R.drawable.ic_alarm_vibrate); vibrationIcon.setColorFilter(ui.ink); vibrationIcon.setAlpha(a.optBoolean("vibrate",true) ? 1f : .4f); vibrationIcon.setContentDescription(a.optBoolean("vibrate",true) ? "Getar aktif" : "Getar tidak aktif");
-            LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(20),dp(20)); iconParams.leftMargin=dp(8); alarmHead.addView(vibrationIcon,iconParams); box.addView(alarmHead);
-            box.addView(text(dayLabel(a.optInt("days")), 12, MUTED));
-            TextView countdown=text("",13,MUTED); box.addView(countdown);
-            Switch enabled = new Switch(this); enabled.setText("Aktif"); styleSwitch(enabled); enabled.setChecked(a.optBoolean("enabled"));
+            ImageView soundIcon=new ImageView(this); soundIcon.setImageResource(R.drawable.ic_alarm_sound); soundIcon.setColorFilter(ui.muted); soundIcon.setAlpha(alarmSound.isEmpty() ? .4f : 1f); soundIcon.setContentDescription("Nada alarm: " + soundName(alarmSound));
+            LinearLayout.LayoutParams soundInfoParams=new LinearLayout.LayoutParams(dp(16),dp(16)); soundInfoParams.leftMargin=dp(8); metadata.addView(soundIcon,soundInfoParams);
+            ImageView vibrationIcon=new ImageView(this); vibrationIcon.setImageResource(R.drawable.ic_alarm_vibrate); vibrationIcon.setColorFilter(ui.muted); vibrationIcon.setAlpha(a.optBoolean("vibrate",true) ? 1f : .4f); vibrationIcon.setContentDescription(a.optBoolean("vibrate",true) ? "Getar aktif" : "Getar tidak aktif");
+            LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(16),dp(16)); iconParams.leftMargin=dp(4); metadata.addView(vibrationIcon,iconParams); details.addView(metadata);
+            box.addView(details,new LinearLayout.LayoutParams(0,-2,1));
+            Switch enabled = new Switch(this); styleSwitch(enabled);
+            int[][] switchStates={new int[]{android.R.attr.state_checked},new int[]{}};
+            enabled.setThumbTintList(new ColorStateList(switchStates,new int[]{ui.selectedText,ui.dark ? ui.card : ui.ink}));
+            enabled.setTrackTintList(new ColorStateList(switchStates,new int[]{ui.selected,ui.border}));
+            enabled.setContentDescription("Alarm " + label.getText()); enabled.setChecked(a.optBoolean("enabled"));
             AlarmRow alarmRow=new AlarmRow(a.optInt("id"),countdown,enabled); alarmRows.add(alarmRow);
             enabled.setOnCheckedChangeListener((v, checked) -> {
                 if (alarmRow.updating) return;
@@ -239,11 +246,10 @@ public class ClockActivity extends SwipeBackActivity {
                 } catch (JSONException ignored) { }
                 lastAlarmSecond=-1; updateAlarmCountdowns();
             }); box.addView(enabled);
-            LinearLayout actions = new LinearLayout(this); actions.setOrientation(LinearLayout.HORIZONTAL);
-            actions.addView(button("Ubah", () -> editAlarm(a)), new LinearLayout.LayoutParams(0,-2,1));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0,-2,1); p.leftMargin=dp(8);
-            actions.addView(button("Hapus", () -> ui.dialog(this).setMessage("Hapus alarm ini?").setPositiveButton("Hapus", (d,w) -> { ClockAlarms.remove(this, a.optInt("id")); ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000 + a.optInt("id")); showTab(0); }).setNegativeButton("Batal",null).show()), p);
-            box.addView(actions); content.addView(box); addSpace(content,10);
+            ImageButton remove=alarmOption(R.drawable.ic_alarm_delete,"Hapus alarm " + label.getText(),() ->
+                ui.dialog(this).setMessage("Hapus alarm ini?").setPositiveButton("Hapus", (d,w) -> { ClockAlarms.remove(this, a.optInt("id")); ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000 + a.optInt("id")); showTab(0); }).setNegativeButton("Batal",null).show());
+            LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(48),dp(48)); deleteParams.leftMargin=dp(4); box.addView(remove,deleteParams);
+            content.addView(box); addSpace(content,10);
         }
     }
     private void updateAlarmCountdowns() {
@@ -256,7 +262,7 @@ public class ClockActivity extends SwipeBackActivity {
             long snooze=ClockAlarms.prefs(this).getLong("snooze_"+row.id,0);
             long when=enabled ? ClockAlarms.nextTime(a,now) : 0;
             if (snooze>now && (when==0 || snooze<when)) when=snooze;
-            row.countdown.setText(when==0 ? "Tidak aktif" : (!ClockAlarms.canSchedule(this) ? "Izin alarm diperlukan" : ClockTime.countdown(when,now)));
+            row.countdown.setText(when==0 ? "—" : (!ClockAlarms.canSchedule(this) ? "Izin alarm diperlukan" : ClockTime.countdown(when,now)));
         }
     }
     private ImageButton alarmOption(int icon, String description, Runnable action) {
@@ -270,6 +276,18 @@ public class ClockActivity extends SwipeBackActivity {
         soundButton.setContentDescription(description); soundButton.setTooltipText(description);
         soundButton.setAlpha(editingSound.isEmpty() ? .55f : 1f);
     }
+    private NumberPicker alarmWheel(int maximum, int value, String description) {
+        NumberPicker picker=new NumberPicker(this); picker.setMinValue(0); picker.setMaxValue(maximum); picker.setWrapSelectorWheel(true);
+        picker.setFormatter(n -> String.format(Locale.US,"%02d",n)); picker.setValue(value);
+        picker.setContentDescription(description); picker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        if (Build.VERSION.SDK_INT >= 29) picker.setTextColor(ui.ink);
+        picker.setOnTouchListener((v,event) -> {
+            if (event.getActionMasked()==MotionEvent.ACTION_DOWN) v.getParent().requestDisallowInterceptTouchEvent(true);
+            else if (event.getActionMasked()==MotionEvent.ACTION_UP || event.getActionMasked()==MotionEvent.ACTION_CANCEL) v.getParent().requestDisallowInterceptTouchEvent(false);
+            return false;
+        });
+        return picker;
+    }
     private void editAlarm(JSONObject existing) {
         if (alarmEditor==null) return;
         final int[] hour = {existing == null ? 7 : existing.optInt("hour",7)};
@@ -279,16 +297,22 @@ public class ClockActivity extends SwipeBackActivity {
         editingSound = existing == null ? Settings.System.DEFAULT_ALARM_ALERT_URI.toString() : existing.optString("sound", Settings.System.DEFAULT_ALARM_ALERT_URI.toString());
         alarmEditor.removeAllViews(); alarmEditor.setPadding(dp(12),dp(12),dp(12),dp(12)); alarmEditor.setBackground(bg(ui.event)); alarmEditor.setVisibility(View.VISIBLE);
         LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL);
-        TextView time = button("", () -> {});
-        Runnable updateTime = () -> time.setText(String.format(Locale.US, "%02d:%02d", hour[0], minute[0])); updateTime.run();
-        time.setOnClickListener(v -> new TimePickerDialog(this, ui.dark ? android.R.style.Theme_Material_Dialog_Alert : android.R.style.Theme_Material_Light_Dialog_Alert, (picker,h,m) -> { hour[0]=h; minute[0]=m; updateTime.run(); }, hour[0],minute[0],true).show());
-        row.addView(time,new LinearLayout.LayoutParams(0,dp(48),1));
+        TextView timeLabel=text("Waktu",13,AMBER); row.addView(timeLabel,new LinearLayout.LayoutParams(0,dp(48),1));
         soundButton=alarmOption(R.drawable.ic_alarm_sound,"Nada alarm",() -> pickSound());
         LinearLayout.LayoutParams soundParams=new LinearLayout.LayoutParams(dp(48),dp(48)); soundParams.leftMargin=dp(4); row.addView(soundButton,soundParams); updateSoundDescription();
         ImageButton vibration=alarmOption(R.drawable.ic_alarm_vibrate,"Getar",() -> {});
         Runnable updateVibrate=() -> { vibration.setSelected(vibrate[0]); vibration.setBackground(bg(vibrate[0] ? ui.selected : ui.control)); vibration.setColorFilter(vibrate[0] ? ui.selectedText : ui.ink); vibration.setContentDescription("Getar " + (vibrate[0] ? "aktif" : "tidak aktif")); vibration.setTooltipText("Getar " + (vibrate[0] ? "aktif" : "tidak aktif")); };
         vibration.setOnClickListener(v -> { vibrate[0]=!vibrate[0]; updateVibrate.run(); }); updateVibrate.run();
         LinearLayout.LayoutParams vibParams=new LinearLayout.LayoutParams(dp(48),dp(48)); vibParams.leftMargin=dp(4); row.addView(vibration,vibParams); alarmEditor.addView(row); addSpace(alarmEditor,8);
+        FrameLayout wheelFrame=new FrameLayout(this);
+        View selectionBand=new View(this); selectionBand.setBackground(bg(ui.control));
+        wheelFrame.addView(selectionBand,new FrameLayout.LayoutParams(-1,dp(48),Gravity.CENTER));
+        LinearLayout wheels=new LinearLayout(this); wheels.setGravity(Gravity.CENTER);
+        NumberPicker hours=alarmWheel(23,hour[0],"Jam"), minutes=alarmWheel(59,minute[0],"Menit");
+        wheels.addView(hours,new LinearLayout.LayoutParams(dp(80),dp(144)));
+        TextView separator=text(":",24,AMBER); separator.setGravity(Gravity.CENTER); wheels.addView(separator,new LinearLayout.LayoutParams(dp(24),dp(48)));
+        wheels.addView(minutes,new LinearLayout.LayoutParams(dp(80),dp(144)));
+        wheelFrame.addView(wheels,new FrameLayout.LayoutParams(-1,dp(144),Gravity.CENTER)); alarmEditor.addView(wheelFrame); addSpace(alarmEditor,8);
         HorizontalScrollView daysScroll=new HorizontalScrollView(this); daysScroll.setHorizontalScrollBarEnabled(false);
         LinearLayout dayRow=new LinearLayout(this); dayRow.setOrientation(LinearLayout.HORIZONTAL); dayRow.setGravity(Gravity.CENTER);
         final int[] order={1,2,3,4,5,6,0};
@@ -303,15 +327,16 @@ public class ClockActivity extends SwipeBackActivity {
         actions.addView(button("Batal",() -> { alarmEditor.setVisibility(View.GONE); soundButton=null; }),new LinearLayout.LayoutParams(0,dp(48),1));
         LinearLayout.LayoutParams saveParams=new LinearLayout.LayoutParams(0,dp(48),1); saveParams.leftMargin=dp(8);
         actions.addView(button("Simpan",() -> {
-            if (!ensureExact()) return;
+            boolean enabled=existing == null || existing.optBoolean("enabled",false);
+            if (enabled && !ensureExact()) return;
             try {
                 JSONObject a = existing == null ? new JSONObject() : existing;
                 if (existing == null) a.put("id", ClockAlarms.nextId(this));
                 ClockAlarms.cancel(this,a.optInt("id"));
                 ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1000000 + a.optInt("id"));
-                a.put("hour",hour[0]); a.put("minute",minute[0]); a.put("days",days[0]); a.put("sound",editingSound); a.put("vibrate",vibrate[0]); a.put("enabled",true);
+                a.put("hour",hours.getValue()); a.put("minute",minutes.getValue()); a.put("days",days[0]); a.put("sound",editingSound); a.put("vibrate",vibrate[0]); a.put("enabled",enabled);
                 ClockAlarms.put(this,a);
-                if (!ClockAlarms.schedule(this,a)) Toast.makeText(this,"Alarm belum terjadwal. Periksa izin alarm.",Toast.LENGTH_LONG).show();
+                if (enabled && !ClockAlarms.schedule(this,a)) Toast.makeText(this,"Alarm belum terjadwal. Periksa izin alarm.",Toast.LENGTH_LONG).show();
                 showTab(0);
             } catch (JSONException ignored) { }
         }),saveParams); alarmEditor.addView(actions);

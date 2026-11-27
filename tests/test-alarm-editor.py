@@ -22,6 +22,17 @@ assert 'setContentDescription("Getar "' in java and 'updateSoundDescription()' i
 assert 'aria-label="Nada alarm"' in html and 'aria-label="Getar"' in html
 assert 'alarmEditor.setVisibility(View.VISIBLE)' in java and 'a.put("days",days[0])' in java
 assert 'a.put("vibrate",vibrate[0])' in java and 'a.put("sound",editingSound)' in java
+assert 'new TimePickerDialog' not in java
+assert 'alarmWheel(23,hour[0],"Jam")' in java and 'alarmWheel(59,minute[0],"Menit")' in java
+assert 'a.put("hour",hours.getValue())' in java and 'a.put("minute",minutes.getValue())' in java
+assert 'picker.setWrapSelectorWheel(true)' in java and 'requestDisallowInterceptTouchEvent(true)' in java
+assert 'R.drawable.ic_alarm_delete' in java and '"Hapus alarm " + label.getText()' in java
+assert 'enabled.setText("Aktif")' not in java and 'enabled.setContentDescription("Alarm "' in java
+assert java.index('details.addView(countdown)') < java.index('metadata.addView(text(dayLabel')
+assert 'if (enabled && !ensureExact()) return;' in java and 'a.put("enabled",enabled)' in java
+assert 'alarmHourWheel' in html and 'alarmMinuteWheel' in html and 'role="spinbutton"' in html
+assert 'alarm-card-switch' in html and 'alarm-delete-icon' in html
+assert "details.appendChild(countdown)" in html and html.index("details.appendChild(countdown)") < html.index("meta.appendChild(text)")
 spec=importlib.util.spec_from_file_location('icons',root/'tools/generate_alarm_option_icons.py')
 module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
 for path, content in module.generate(): assert path.read_text()==content, f'stale icon: {path}'
