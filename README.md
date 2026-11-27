@@ -208,3 +208,6 @@ Suhu homescreen diturunkan 8 px dan label informasi dinaikkan 25 px (berdasarkan
 
 ### Penyesuaian v0.1.214
 Titik pembatas dinaikkan 0,5 px (berdasarkan skala preview). Titik muncul satu per satu dan tetap terlihat; setelah titik kelima memudar, semuanya menghilang dan siklus berulang. Nama perangkat di preview adalah contoh GT30Pro; pada Android nama tetap berasal dari perangkat.
+
+### Penyesuaian v0.1.215
+Label informasi homescreen diturunkan 10 px berdasarkan skala preview; posisi dan ukuran elemen lainnya tetap.
