@@ -31,6 +31,12 @@ final class CalendarDates {
         return target;
     }
 
+    static boolean inAgenda(LocalDate date, LocalDate selected, LocalDate today, boolean expanded) {
+        if (expanded) return date.equals(today);
+        LocalDate start = weekStart(selected);
+        return !date.isBefore(start) && !date.isAfter(start.plusDays(6));
+    }
+
     static boolean validTime(String time) {
         if (time == null) return false;
         String value = time.trim();

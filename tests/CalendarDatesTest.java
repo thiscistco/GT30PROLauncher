@@ -22,6 +22,12 @@ public class CalendarDatesTest {
         check(CalendarDates.shiftWeek(LocalDate.of(1900,1,3), -1).equals(LocalDate.of(1900,1,1)), "week lower clamp");
         check(CalendarDates.shiftWeek(LocalDate.of(2100,12,29), 1).equals(LocalDate.of(2100,12,31)), "week upper clamp");
         check(!CalendarDates.inRange(LocalDate.of(2101,1,1)), "out-of-range date hidden");
+        LocalDate selected = LocalDate.of(2027,1,1), today = LocalDate.of(2028,5,1);
+        check(CalendarDates.inAgenda(LocalDate.of(2026,12,28), selected, today, false), "week starts across year");
+        check(CalendarDates.inAgenda(LocalDate.of(2027,1,3), selected, today, false), "week ends Sunday");
+        check(!CalendarDates.inAgenda(LocalDate.of(2027,1,4), selected, today, false), "next week excluded");
+        check(CalendarDates.inAgenda(today, selected, today, true), "month uses actual today even outside viewed month");
+        check(!CalendarDates.inAgenda(selected, selected, today, true), "month does not use selected date");
         check(CalendarDates.validTime("") && CalendarDates.validTime("00:00") && CalendarDates.validTime("23:59"), "valid optional time");
         check(!CalendarDates.validTime("24:00") && !CalendarDates.validTime("12:60") && !CalendarDates.validTime("9:30"), "invalid time");
         check(CalendarDates.validTitle(" Acara ") && !CalendarDates.validTitle("   ") && !CalendarDates.validTitle(null), "title validation");

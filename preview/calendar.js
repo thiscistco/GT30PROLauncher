@@ -47,6 +47,13 @@
     return e && typeof e.id === 'string' && e.id.length > 0 && validDate(e.date) &&
       validTitle(e.title) && typeof e.time === 'string' && validTime(e.time);
   }
+  // Untimed events follow timed events on the same date; stable order for ties.
+  function agendaEvents(records, selected, actualToday, expanded) {
+    var days = expanded ? [dateKey(actualToday)] : weekDays(selected).filter(Boolean).map(dateKey);
+    return records.filter(function (event) { return days.indexOf(event.date) !== -1; }).slice().sort(function (a, b) {
+      return a.date.localeCompare(b.date) || (a.time || '99:99').localeCompare(b.time || '99:99');
+    });
+  }
   function holidaysFor(key) { return holidayData && holidayData.entries && holidayData.entries[key] || []; }
   function holidayText(entry) {
     var kind = entry.type === 'libur' ? 'Libur nasional' : entry.type === 'cuti' ? 'Cuti bersama' : 'Peringatan (bukan libur nasional)';
@@ -119,7 +126,9 @@
     function discardForm() { form.hidden = true; form.reset(); error.hidden = true; }
     function render() {
       var selectedKey = dateKey(selected), todayKey = dateKey(today());
-      byId('calendarMonth').textContent = months[selected.month-1] + ' ' + selected.year;
+      byId('calendarMonth').textContent = months[selected.month-1];
+      byId('calendarYear').textContent = String(selected.year);
+      byId('calendarYear').setAttribute('aria-label', 'Tahun ' + selected.year);
       byId('calendarMonth').setAttribute('aria-label', 'Pilih bulan. ' + months[selected.month-1] + ' ' + selected.year);
       byId('calendarSelected').textContent = label(selected);
       var dayLabel = byId('calendarDayLabel'); if (dayLabel) dayLabel.textContent = selectedKey === todayKey ? 'HARI INI' : 'TANGGAL DIPILIH';
@@ -188,13 +197,16 @@
         grid.appendChild(button);
       });
       var list = byId('calendarEvents'); list.replaceChildren();
-      var forDay = records.filter(function (e) { return e.date === selectedKey; });
+      var forDay = agendaEvents(records, selected, today(), expanded);
+      byId('calendarAgendaHeading').textContent = expanded ? 'ACARA HARI INI' : 'ACARA MINGGU TERPILIH';
       if (!forDay.length) {
-        var emptyText = doc.createElement('p'); emptyText.className = 'clock-muted'; emptyText.textContent = 'Belum ada acara pada tanggal ini.'; list.appendChild(emptyText);
+        var emptyText = doc.createElement('p'); emptyText.className = 'clock-muted'; emptyText.textContent = expanded ? 'Belum ada acara hari ini.' : 'Belum ada acara minggu ini.'; list.appendChild(emptyText);
       }
       forDay.forEach(function (event) {
         var row = doc.createElement('div'); row.className = 'clock-entry calendar-event';
-        var name = doc.createElement('span'); name.textContent = (event.time ? event.time + ' · ' : '') + event.title;
+        var name = doc.createElement('span');
+        var when = Number(event.date.slice(8)) + ' ' + months[Number(event.date.slice(5,7))-1].slice(0,3) + ' ' + event.date.slice(0,4);
+        name.textContent = when + (event.time ? ' · ' + event.time : '') + '\n' + event.title;
         var remove = doc.createElement('button'); remove.type = 'button'; remove.className = 'clock-action'; remove.textContent = 'Hapus';
         remove.setAttribute('aria-label', 'Hapus acara ' + event.title);
         remove.addEventListener('click', function () {
@@ -251,8 +263,10 @@
       records.push({id:id, date:dateKey(selected), title:title, time:time});
       persist(); form.reset(); form.hidden = true; error.hidden = true; render();
     });
+    var lastToday = dateKey(today());
+    win.setInterval(function () { var current = dateKey(today()); if (current !== lastToday) { lastToday = current; render(); } }, 60000);
     render();
   }
   return {daysInMonth:daysInMonth, leadingDays:leadingDays, shiftMonth:shiftMonth, dateKey:dateKey,
-    validTime:validTime, validTitle:validTitle, validDate:validDate, holidaysFor:holidaysFor, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
+    validTime:validTime, validTitle:validTitle, validDate:validDate, agendaEvents:agendaEvents, holidaysFor:holidaysFor, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
 });

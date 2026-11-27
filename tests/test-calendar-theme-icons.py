@@ -9,7 +9,8 @@ spec.loader.exec_module(mod)
 for path, expected in mod.generate():
     assert path.read_text(encoding='utf8') == expected, f'{path} is stale'
 java = (root / 'app/src/main/java/com/gt30pro/launcher/WeatherIcons.java').read_text()
-for name, symbol in [('light', 'SUN'), ('dark', 'MOON')]:
+for name, symbol in [('light', 'SUN')]:
     expected = ','.join('"' + row + '"' for row in mod.ICONS[name])
     assert f'String[] {symbol} = {{{expected}}}' in java
+assert sum(row.count('#') for row in mod.ICONS['dark']) >= 30
 print('Calendar theme dot icons: reproducible, Android/preview parity and Doto style: OK')

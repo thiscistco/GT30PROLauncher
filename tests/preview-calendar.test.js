@@ -25,11 +25,11 @@ class Element {
 const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
 function createUI(openMonth=true){
  const ids = {};
- for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel','calendarExpand']) ids[id]=new Element();
+ for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel','calendarExpand','calendarYear','calendarAgendaHeading']) ids[id]=new Element();
  ids.calendarThemeMenu.hidden=true; ids.calendarMonthMenu.hidden=true; ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
  const media={matches:true,addEventListener(type,fn){this.change=fn;}};
- const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer,matchMedia:()=>media,setTimeout};
+ const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer,matchMedia:()=>media,setTimeout,setInterval:()=>0};
  calendar.mount(win); if(openMonth) ids.calendarExpand.fire('click'); ids._win=win; ids._media=media; return ids;
 }
 let ui=createUI();
@@ -43,7 +43,7 @@ const selected=ui.calendarSelected.textContent;
 ui.calendarAdd.fire('click'); assert.equal(ui.calendarForm.hidden,false);
 ui.calendarTitle.value=' <img src=x> '; ui.calendarTime.value='09:30'; ui.calendarForm.fire('submit');
 assert.equal(ui.calendarForm.hidden,true); assert.equal(ui.calendarEvents.children.length,1);
-assert.equal(ui.calendarEvents.children[0].children[0].textContent,'09:30 · <img src=x>');
+assert.match(ui.calendarEvents.children[0].children[0].textContent,/09:30\n<img src=x>/);
 assert.equal(JSON.parse(storage.get(key))[0].title,'<img src=x>');
 ui=createUI(); assert.equal(ui.calendarSelected.textContent,selected); assert.equal(ui.calendarEvents.children.length,1);
 confirmAnswer=false; ui.calendarEvents.children[0].children[1].fire('click'); assert.equal(JSON.parse(storage.get(key)).length,1);
@@ -55,7 +55,7 @@ assert.equal(storage.get(key),'not valid json','corrupt saved data must not be o
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=9"/);
+assert.match(html,/src="calendar\.js\?v=10"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
@@ -91,7 +91,7 @@ events.calendarGrid.children.find(e=>e.textContent==='17').fire('click');
 events.calendarAdd.fire('click'); events.calendarTitle.value='Acara'; events.calendarForm.fire('submit');
 let eventHoliday=events.calendarGrid.children.find(e=>e.textContent==='17');
 assert(eventHoliday.classes.has('marker-holiday')); assert(eventHoliday.classes.has('marker-event')); assert.match(eventHoliday.attrs['aria-label'],/ada acara/);
-events.calendarEvents.children[0].children[1].fire('click');
+events.calendarExpand.fire('click'); events.calendarEvents.children[0].children[1].fire('click');
 assert(events.calendarGrid.children.find(e=>e.textContent==='17').classes.has('marker-holiday'));
 console.log('Calendar preview: date rules, holidays, local persistence, deletion, safe text and navigation: OK');
 
@@ -149,3 +149,30 @@ assert.match(html,/id="calendarAdd"[^>]*aria-label="Tambah acara"/);
 assert.match(html,/id="calendarBack"[^>]*aria-label="Kembali"/);
 assert.match(html,/marker-holiday\.marker-observance\.marker-event::before/); assert.match(html,/calendar-day, \.calendar-day\.today, \.calendar-day\.selected \{[^}]*border:0/);
 console.log('Calendar week/month, squircle outlines and icon controls: OK');
+
+const a=[{id:'late',date:'2026-12-31',time:'14:00'}, {id:'untimed',date:'2026-12-31',time:''}, {id:'early',date:'2026-12-31',time:'08:00'}, {id:'next',date:'2027-01-02',time:'09:00'}, {id:'outside',date:'2027-01-04',time:'08:00'}, {id:'today',date:'2028-05-01',time:'10:00'}];
+const selectedYear={year:2027,month:1,day:1}, otherToday={year:2028,month:5,day:1};
+assert.deepEqual(calendar.agendaEvents(a,selectedYear,otherToday,false).map(x=>x.id),['early','late','untimed','next']);
+assert.deepEqual(calendar.agendaEvents(a,selectedYear,otherToday,true).map(x=>x.id),['today']);
+assert.equal(a[0].id,'late','agenda sorting must not mutate storage');
+assert.equal(calendar.agendaEvents(a.filter(e=>e.id!=='early'),selectedYear,otherToday,false).length,3);
+assert.match(html,/id="calendarBack"[\s\S]*?id="calendarYear"[\s\S]*?id="calendarTheme"/);
+assert.match(html,/summary aria-label="Info kalender"/);
+assert.match(html,/calendar-weekday \{[^}]*font-weight:900/);
+console.log('Calendar agenda range, sorting, year and accessibility: OK');
+// Exercise rendered agenda and delete outside the currently selected day.
+storage.clear();
+const realToday=new Date(), todayParts={year:realToday.getFullYear(),month:realToday.getMonth()+1,day:realToday.getDate()};
+const visibleWeek=calendar.weekDays(todayParts).filter(Boolean);
+const other=visibleWeek.find(d=>calendar.dateKey(d)!==calendar.dateKey(todayParts));
+const savedEvents=[{id:'today-ui',date:calendar.dateKey(todayParts),title:'Hari ini',time:'10:00'}, {id:'other-ui',date:calendar.dateKey(other),title:'Hari lain',time:'09:00'}];
+storage.set(key,JSON.stringify(savedEvents)); let agendaUi=createUI(false);
+assert.equal(agendaUi.calendarEvents.children.length,2); assert.equal(agendaUi.calendarAgendaHeading.textContent,'ACARA MINGGU TERPILIH');
+let otherRow=agendaUi.calendarEvents.children.find(row=>row.children[0].textContent.includes('Hari lain'));
+assert(otherRow.children[0].textContent.includes(String(other.day))); otherRow.children[1].fire('click');
+assert.equal(JSON.parse(storage.get(key)).length,1); assert.equal(agendaUi.calendarEvents.children.length,1);
+agendaUi.calendarExpand.fire('click'); agendaUi.calendarNext.fire('click');
+assert.equal(agendaUi.calendarEvents.children.length,1); assert.match(agendaUi.calendarEvents.children[0].children[0].textContent,/Hari ini/);
+assert.equal(agendaUi.calendarAgendaHeading.textContent,'ACARA HARI INI');
+assert(!agendaUi.calendarMonth.textContent.includes(agendaUi.calendarYear.textContent));
+console.log('Calendar rendered agenda, cross-day deletion and actual today outside viewed month: OK');
