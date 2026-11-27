@@ -300,6 +300,9 @@
   .super-icon-button { width: 100%; height: 12mm; display: grid; place-items: center;
     border: 0; border-radius: 3mm; background: transparent; color: #fff; cursor: pointer; }
   .super-icon-button img { display: block; width: 8mm; height: 8mm; }
+  #openTimetableModule { height:14.3mm; display:flex; flex-direction:column; justify-content:center; gap:.4mm; }
+  #openTimetableModule img { width:6.7mm; height:6.7mm; }
+  #openTimetableModule span { padding:.2mm .5mm; border:1px solid var(--app-border); border-radius:2mm; background:var(--app-control); color:var(--app-text); font:800 1.43mm/1.15 'Doto',monospace; }
   .super-icon-button:focus-visible { outline: 1px solid #fff; outline-offset: -1px; }
   .clock-led { cursor: pointer; }
   .clock-led::before {
@@ -839,7 +842,7 @@
                   <button class="super-icon-button" id="openClockModule" type="button" aria-label="Jam"><img src="assets/module-clock.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="super-icon-button" id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets/module-calendar.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg></button>
-                  <button class="super-icon-button" id="openTimetableModule" type="button" aria-label="Time Table"><img src="assets/module-timetable.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button class="super-icon-button" id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"><img src="assets/module-timetable.svg?v=1" alt="" aria-hidden="true"><span aria-hidden="true">Jadwal<br>Mengajar</span></button>
                 </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
@@ -973,8 +976,8 @@
                   <p class="weather-status">Sumber: Open-Meteo · waktu sesuai lokasi perkiraan</p>
                 </div>
               </section>
-              <section class="timetable-page" id="timetablePage" aria-label="Time Table" hidden>
-                <div class="app-top"><button class="app-back" id="timetableBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Time Table</span><div class="app-theme"><button class="app-theme-button" id="timetableTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="timetableThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="timetableThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="timetableThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="timetableThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="timetableThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="timetableThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
+              <section class="timetable-page" id="timetablePage" aria-label="Jadwal Mengajar" hidden>
+                <div class="app-top"><button class="app-back" id="timetableBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Jadwal Mengajar</span><div class="app-theme"><button class="app-theme-button" id="timetableTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="timetableThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="timetableThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="timetableThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="timetableThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="timetableThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="timetableThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <div class="tt-title"><h2>JADWAL MENGAJAR</h2><button type="button" id="ttAdd" class="tt-icon" aria-label="Tambah jam" title="Tambah jam"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button></div>
                 <p class="tt-hint">Ketuk jam untuk mengubah atau menghapus baris. Ketuk sel untuk mengisi jadwal. Geser tabel ke samping.</p>
                 <p id="ttStorage" class="tt-hint" role="status"></p>

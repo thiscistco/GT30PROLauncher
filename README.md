@@ -160,9 +160,9 @@ Izin dapat dicabut melalui setelan Android. Preview browser juga meminta izin
 setelah ikon diketuk, dan memerlukan HTTPS, geolocation dan akses Open-Meteo;
 nilai awal `--°` bukan simulasi suhu nyata. Sebelum data diterima, gambar awan dan matahari adalah ikon umum, bukan kondisi cuaca aktual.
 
-## Time Table mengajar
+## Jadwal Mengajar
 
-Buka Time Table dari ikon grid Super App. Tabel memiliki kolom Senin–Jumat;
+Buka Jadwal Mengajar dari ikon berlabel di grid Super App. Tabel memiliki kolom Senin–Jumat;
 ketuk **+** untuk menambahkan baris jam mulai dan selesai (format 24 jam).
 Ketuk jam untuk mengubah atau menghapus baris; menghapus baris juga menghapus
 semua jadwal di dalamnya. Jam harus berakhir pada hari yang sama dan tidak boleh

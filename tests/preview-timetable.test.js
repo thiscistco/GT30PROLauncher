@@ -5,7 +5,7 @@ assert(!api.validRange('07:30','08:30',rows,-1));assert(api.validRange('08:00','
 assert.deepEqual(api.sorted(rows),[b,a]);assert.strictEqual(api.sorted(rows)[1].cells[0].subject,'Matematika');assert.strictEqual(rows[0],a);
 const html=fs.readFileSync('preview/index.html','utf8'), java=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/TimeTableActivity.java','utf8');
 for(const d of ['Senin','Selasa','Rabu','Kamis','Jumat']){assert(html.includes('>'+d+'</th>'));assert(java.includes('"'+d+'"'));}
-assert.match(java,/extends SwipeBackActivity/);assert.match(java,/ui\.header\(this,font,"Time Table"\)/);assert.match(java,/new TimePickerDialog/);assert.match(java,/validRange\(times\[0\],times\[1\],rows,index\)/);assert.match(java,/confirmDelete\(index\)/);assert.match(java,/getSharedPreferences\("timetable"/);
+assert.match(java,/extends SwipeBackActivity/);assert.match(java,/ui\.header\(this,font,"Jadwal Mengajar"\)/);assert.match(java,/new TimePickerDialog/);assert.match(java,/validRange\(times\[0\],times\[1\],rows,index\)/);assert.match(java,/confirmDelete\(index\)/);assert.match(java,/getSharedPreferences\("timetable"/);
 assert.match(fs.readFileSync('app/src/main/AndroidManifest.xml','utf8'),/android:name="\.TimeTableActivity" android:exported="false"/);
 for(const file of ['backup_rules.xml','data_extraction_rules.xml']) assert.match(fs.readFileSync('app/src/main/res/xml/'+file,'utf8'),/path="timetable\.xml"/);
 console.log('Time Table preview: days, validation, ordering, local data and native integration: OK');

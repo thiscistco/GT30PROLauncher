@@ -38,7 +38,7 @@ public class TimeTableActivity extends SwipeBackActivity {
         rows=TimeTableData.sorted(rows);
         page=new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL); page.setBackgroundColor(ui.canvas);
         page.setOnApplyWindowInsetsListener((v,insets)->{v.setPadding(dp(16),dp(12)+insets.getSystemWindowInsetTop(),dp(16),dp(12)+insets.getSystemWindowInsetBottom());return insets;});
-        setContentView(page); page.addView(ui.header(this,font,"Time Table"));
+        setContentView(page); page.addView(ui.header(this,font,"Jadwal Mengajar"));
         LinearLayout title=new LinearLayout(this); title.setGravity(Gravity.CENTER_VERTICAL);
         TextView heading=text("JADWAL MENGAJAR",16,ui.ink); title.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
         ImageButton add=new ImageButton(this); add.setImageResource(R.drawable.ic_calendar_add); add.setColorFilter(ui.ink); add.setScaleType(ImageView.ScaleType.FIT_CENTER); add.setPadding(dp(14),dp(14),dp(14),dp(14)); add.setBackground(ui.surface(this,ui.control)); add.setContentDescription("Tambah jam"); add.setTooltipText("Tambah jam"); add.setOnClickListener(v->editTime(-1));
