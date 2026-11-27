@@ -136,8 +136,8 @@ tema gelap `#0A0C0F` dengan aksen oranye `#F7A23B` (nuansa Dark Flare).
 
 ## Cuaca berbasis lokasi
 
-Ketuk ikon cuaca di homescreen untuk mengaktifkan cuaca. Ikon cuaca di grid
-Super App membuka halaman prakiraan: cuaca dan suhu saat ini, prakiraan 24 jam
+Ketuk ikon cuaca di homescreen atau di grid Super App untuk membuka halaman
+prakiraan: cuaca dan suhu saat ini, prakiraan 24 jam
 dan 7 hari, peluang hujan, suhu terasa, kelembapan, angin, tekanan udara, serta
 matahari terbit dan terbenam. Halaman berlatar langit; ketuk ikon perbarui di kanan
 judul CUACA untuk meminta izin atau menyegarkan data. Radar, kualitas udara dan notifikasi

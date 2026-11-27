@@ -17,7 +17,7 @@ class Element {
 }
 const ids = ['chargeToggle','batteryLed','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
   'superPage','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
-  'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','drawerPage','drawerBack','pathDraw'];
+  'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.weatherPage.hidden = true; elements.superPage.hidden = true;
 elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
@@ -67,6 +67,15 @@ assert.strictEqual(elements.superPage.hidden, true, 'home date does not require 
 elements.calendarBack.fire('click'); assert.strictEqual(elements.calendarPage.hidden, true);
 elements.homeDate.fire('keydown', {key:'Enter',preventDefault(){}}); assert.strictEqual(elements.calendarPage.hidden,false);
 swipe(440,100,360,100); assert.strictEqual(elements.calendarPage.hidden,true,'calendar swipe back to home');
+// Home weather opens the same page without Super App and returns to its origin.
+elements.tabHome.fire('click'); let focused=false;
+elements.homeWeather.focus=()=>{ focused=true; };
+elements.homeWeather.fire('click');
+assert.strictEqual(elements.weatherPage.hidden,false,'home weather opens forecast');
+assert.strictEqual(elements.superPage.hidden,true,'home weather does not open Super App');
+elements.weatherBack.fire('click'); assert.strictEqual(elements.weatherPage.hidden,true); assert(focused,'weather back restores home focus');
+elements.homeWeather.fire('click'); swipe(440,100,360,100); assert.strictEqual(elements.weatherPage.hidden,true,'weather swipe back to home');
+elements.homeWeather.fire('click'); swipe(200,950,200,500); assert.strictEqual(elements.weatherPage.hidden,true,'weather bottom swipe returns home');
 // Home swipe opens the preview drawer without requiring fling speed.
 elements.tabHome.fire('click');
 swipe(200, 950, 210, 500);

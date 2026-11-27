@@ -42,8 +42,8 @@
       }); });
       var label = button.querySelector('.weather-temp');
       if (label) label.textContent = temp == null ? '--°' : temp+'°';
-      button.setAttribute('aria-label','Cuaca: '+description(code,day)+', '+(temp == null ? 'suhu belum tersedia' : temp+' derajat Celsius')+'. '+(button === buttons[1] ? 'Ketuk untuk membuka Cuaca' : status));
-      button.title = button === buttons[1] ? 'Buka Cuaca' : status;
+      button.setAttribute('aria-label','Cuaca: '+description(code,day)+', '+(temp == null ? 'suhu belum tersedia' : temp+' derajat Celsius')+'. '+'Ketuk untuk membuka Cuaca');
+      button.title = 'Buka Cuaca';
     });
     if (global.updateWeatherPage) global.updateWeatherPage(last && last.forecast && code >= 0 && Date.now()-last.time < 2*60*60*1000 ? last.forecast : null, status, locationLabel);
   }
@@ -84,7 +84,6 @@
     if (!active && !global.confirm('Lokasi perkiraan akan dikirim ke Open-Meteo untuk mengambil cuaca. Lanjutkan?')) return;
     active = true; refresh(true);
   }
-  buttons[0].addEventListener('click',requestFromUser);
   global.weatherPageOnOpen = function () { if (active && !loading && (!last || Date.now()-last.time >= 30*60*1000)) refresh(false); };
   var refreshButton = document.getElementById('weatherRefresh');
   if (refreshButton) refreshButton.addEventListener('click',requestFromUser);

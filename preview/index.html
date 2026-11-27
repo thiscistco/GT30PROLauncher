@@ -795,7 +795,7 @@
                 <span id="homeDateNumber">--</span>
                 <span id="homeDateMonth">---</span>
               </div>
-              <button class="weather-widget home-weather" id="homeWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk mengaktifkan cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg><span class="weather-temp">--°</span></button>
+              <button class="weather-widget home-weather" id="homeWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg><span class="weather-temp">--°</span></button>
               <div class="battery-led" id="batteryLed" role="img" aria-label="Baterai 85 persen">85<svg class="battery-bolt" viewBox="0 0 5 7" preserveAspectRatio="none" aria-hidden="true">
                 <circle cx="2.5" cy="0.5" r="0.32"/><circle cx="3.5" cy="0.5" r="0.32"/>
                 <circle cx="1.5" cy="1.5" r="0.32"/><circle cx="2.5" cy="1.5" r="0.32"/>
@@ -815,7 +815,7 @@
                 <div class="super-grid" aria-label="Aplikasi bawaan">
                   <button class="super-icon-button" id="openClockModule" type="button" aria-label="Jam"><img src="assets/module-clock.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="super-icon-button" id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets/module-calendar.svg?v=1" alt="" aria-hidden="true"></button>
-                  <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk mengaktifkan cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg></button>
+                  <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg></button>
                 </div>
               </section>
               <section class="clock-page" id="clockPage" aria-label="Jam di Super App" hidden>
@@ -967,7 +967,7 @@
 
     </div>
 
-    <p class="animation-status">Cuaca: ketuk ikon untuk mengizinkan lokasi dan memperbarui suhu. Data lokasi perkiraan dikirim ke Open-Meteo.</p>
+    <p class="animation-status">Cuaca: ketuk ikon homescreen untuk membuka Cuaca, lalu gunakan ikon perbarui untuk mengizinkan lokasi dan memperbarui suhu. Data lokasi perkiraan dikirim ke Open-Meteo.</p>
     <button class="weather-refresh" id="weatherRefresh" type="button">Aktifkan / perbarui cuaca</button>
     <label class="charging-toggle"><input type="checkbox" id="amberToggle" checked> Animasi jalur tembaga</label>
     <div class="animation-status" id="amberStatus" role="status">Memuat animasi…</div>
@@ -1029,7 +1029,8 @@
     var calendarPage = document.getElementById('calendarPage');
     var weatherPage = document.getElementById('weatherPage');
     var weatherBack = document.getElementById('weatherBack');
-    var weatherOrigin = document.getElementById('superWeather');
+    var superWeather = document.getElementById('superWeather');
+    var homeWeather = document.getElementById('homeWeather'), weatherOrigin = superWeather;
     var calendarBack = document.getElementById('calendarBack');
     var calendarOrigin = document.getElementById('openCalendarModule');
     var homeDate = document.getElementById('homeDate'), calendarReturn = calendarOrigin;
@@ -1059,7 +1060,9 @@
     calendarOrigin.addEventListener('click', function () { openCalendar(calendarOrigin); });
     homeDate.addEventListener('click', function () { openCalendar(homeDate); });
     homeDate.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCalendar(homeDate); } });
-    weatherOrigin.addEventListener('click', function () { weatherPage.hidden = false; weatherBack.focus(); if (window.weatherPageOnOpen) window.weatherPageOnOpen(); });
+    function openWeather(origin) { weatherOrigin = origin; weatherPage.hidden = false; weatherBack.focus(); if (window.weatherPageOnOpen) window.weatherPageOnOpen(); }
+    superWeather.addEventListener('click', function () { openWeather(superWeather); });
+    homeWeather.addEventListener('click', function () { openWeather(homeWeather); });
     clockLed.addEventListener('click', function () { openClock(clockLed); });
     clockLed.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(clockLed); }
@@ -1345,7 +1348,7 @@
 </script>
 <script src="home-date.js?v=2"></script>
 <script src="weather-page.js?v=2"></script>
-<script src="weather.js?v=5"></script>
+<script src="weather.js?v=6"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
 <script src="calendar.js?v=16"></script>

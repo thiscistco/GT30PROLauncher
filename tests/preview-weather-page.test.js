@@ -15,6 +15,8 @@ const activity=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/WeatherAc
 assert.match(activity,/extends SwipeBackActivity/);assert.match(activity,/supportsBottomSwipe/);assert.match(activity,/weather\.requestFromUser\(\)/);assert.match(activity,/Math\.min\(start\+24,times\.length\(\)\)/);assert.match(activity,/Math\.min\(days\.length\(\),7\)/);
 assert.match(fs.readFileSync('app/src/main/AndroidManifest.xml','utf8'),/android:name="\.WeatherActivity"\s+android:exported="false"/);
 assert.match(fs.readFileSync('app/src/main/java/com/gt30pro/launcher/SuperAppActivity.java','utf8'),/new Intent\(this, WeatherActivity\.class\)/);
+const main=fs.readFileSync('app/src/main/java/com/gt30pro/launcher/MainActivity.java','utf8');
+assert.match(main,/weather = new WeatherController\(this, weatherBox\);[\s\S]*?weatherBox\.setOpensDetails\(true\);[\s\S]*?weatherBox\.setOnClickListener\(v -> startActivity\(new Intent\(this, WeatherActivity\.class\)\)\)/);
 console.log('Weather page: hourly selection, 7-day UI, permissions and Android navigation: OK');
 assert(html.includes('id="weatherLocation"'));
 assert.match(html, /weather-header[\s\S]*?<h2>CUACA<\/h2><button class="weather-refresh-icon"/);

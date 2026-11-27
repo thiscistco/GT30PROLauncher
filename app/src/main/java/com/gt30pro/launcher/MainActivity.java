@@ -177,6 +177,9 @@ public class MainActivity extends BottomSwipeActivity {
         weatherBox.setElevation(4f * getResources().getDisplayMetrics().density);
         homeRoot.addView(weatherBox, new FrameLayout.LayoutParams(1, 1, Gravity.TOP | Gravity.LEFT));
         weather = new WeatherController(this, weatherBox);
+        weatherBox.setOpensDetails(true);
+        weatherBox.setContentDescription("Buka Cuaca");
+        weatherBox.setOnClickListener(v -> startActivity(new Intent(this, WeatherActivity.class)));
         homeRoot.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
             if (r - l != oldR - oldL || b - t != oldB - oldT) updateWeatherLayout(homeRoot, weatherBox);
         });
