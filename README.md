@@ -36,8 +36,18 @@ homescreen dengan wallpaper kustom, laci aplikasi, dan pusat **Super App**.
   informasi tambahan tersedia lewat ikon **Info kalender**.
   Data libur terkurasi dari GitHub diperiksa setiap kali kalender dibuka (permintaan
   bersamaan digabung); jika offline atau terbatas, data terakhir/bawaan dipakai.
-  Sumber diperbarui manual, bukan verifikasi otomatis pemerintah. Acara pribadi
-  tersimpan lokal tanpa sinkronisasi, cadangan atau pengingat.
+  Sumber diperbarui manual, bukan verifikasi otomatis pemerintah. Acara disimpan
+  secara lokal tanpa sinkronisasi atau cadangan; form mencakup jenis, tanggal dan
+  waktu mulai/selesai (maksimum 366 hari), pengulangan dan pengingat perangkat.
+  Pengulangan khusus adalah setiap 1–999 hari, minggu, bulan atau tahun; tanggal
+  yang tidak ada pada bulan/tahun berikutnya memakai hari terakhir bulan tersebut,
+  dan kembali ke tanggal semula jika ada. Penghapusan menghapus seluruh rangkaian.
+  Pengingat Android mendukung saat mulai, 10 menit, 1 jam, atau 1 hari sebelumnya;
+  memerlukan izin notifikasi, dan dapat terlambat tanpa izin alarm tepat waktu.
+  Pengingat dilewatkan jika waktunya sudah lewat dan dijadwalkan kembali setelah
+  restart atau perubahan waktu/zona. Android dapat membatasi pengingat, misalnya
+  setelah aplikasi dihentikan paksa. Preview browser tidak mengirim notifikasi;
+  email tidak didukung. Acara lama tetap dapat ditampilkan dan dihapus.
 - **Launcher penuh** — muncul di pemilih Home (tombol Home membuka launcher ini).
 
 ## Struktur proyek

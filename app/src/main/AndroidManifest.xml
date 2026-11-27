@@ -57,6 +57,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />
 
+        <receiver android:name=".CalendarReminderReceiver" android:exported="false" />
         <receiver android:name=".ClockAlertReceiver" android:exported="false" />
         <receiver android:name=".ClockRestoreReceiver" android:exported="false">
             <intent-filter>

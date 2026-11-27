@@ -43,17 +43,62 @@
     var y = Number(value.slice(0,4)), m = Number(value.slice(5,7)), d = Number(value.slice(8,10));
     return y >= 1900 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= daysInMonth(y,m);
   }
+  function validRange(date, time, endDate, endTime) {
+    if (!validDate(date) || !validDate(endDate) || !validTime(time) || !time || !validTime(endTime) || !endTime) return false;
+    return date + 'T' + time < endDate + 'T' + endTime && dayNumber(endDate)-dayNumber(date) <= 366;
+  }
+  function dayNumber(key) { return Math.floor(Date.UTC(+key.slice(0,4),+key.slice(5,7)-1,+key.slice(8,10))/86400000); }
+  function fromKey(key) { return {year:+key.slice(0,4),month:+key.slice(5,7),day:+key.slice(8,10)}; }
+  function nextOccurrence(startKey, fromKeyValue, unit, interval) {
+    if (fromKeyValue < startKey) fromKeyValue = startKey;
+    if (unit === 'none') return fromKeyValue === startKey ? startKey : null;
+    if (!Number.isInteger(interval) || interval < 1 || interval > 999) return null;
+    var start=fromKey(startKey), from=fromKey(fromKeyValue), delta;
+    if (unit === 'day') delta=dayNumber(fromKeyValue)-dayNumber(startKey);
+    else if (unit === 'week') delta=Math.floor((dayNumber(fromKeyValue)-dayNumber(startKey))/7);
+    else if (unit === 'month') delta=(from.year-start.year)*12+from.month-start.month;
+    else if (unit === 'year') delta=from.year-start.year;
+    else return null;
+    var n=Math.max(0,Math.floor(delta/interval));
+    for (var i=0;i<2;i++,n++) {
+      var shift=n*interval, result;
+      if (unit === 'day' || unit === 'week') {
+        var d=asDate(start); d.setDate(d.getDate()+shift*(unit === 'week'?7:1)); result=fromDate(d);
+      } else {
+        var index=start.year*12+start.month-1+shift*(unit === 'year'?12:1);
+        var year=Math.floor(index/12), month=index%12+1;
+        result={year:year,month:month,day:Math.min(start.day,daysInMonth(year,month))};
+      }
+      if (result.year>2100) return null;
+      var key=dateKey(result); if (key>=fromKeyValue) return key;
+    }
+    return null;
+  }
+  function addDays(key, days) { var d=asDate(fromKey(key)); d.setDate(d.getDate()+days); return dateKey(fromDate(d)); }
   function validEvent(e) {
-    return e && typeof e.id === 'string' && e.id.length > 0 && validDate(e.date) &&
-      validTitle(e.title) && typeof e.time === 'string' && validTime(e.time);
+    if (!e || typeof e.id !== 'string' || !e.id.length || !validDate(e.date) || !validTitle(e.title) || typeof e.time !== 'string' || !validTime(e.time)) return false;
+    if (!('endDate' in e)) return true; // v1 legacy record, including untimed events
+    return validRange(e.date,e.time,e.endDate,e.endTime) && ['Pribadi','Pekerjaan','Keluarga','Lainnya'].includes(e.type) &&
+      ['none','day','week','month','year'].includes(e.repeat) && Number.isInteger(e.interval) && e.interval >= 1 && e.interval <= 999 && [-1,0,10,60,1440].includes(e.reminder);
   }
-  // Untimed events follow timed events on the same date; stable order for ties.
-  function agendaEvents(records, selected, actualToday, expanded) {
-    var days = expanded ? [dateKey(actualToday)] : weekDays(selected).filter(Boolean).map(dateKey);
-    return records.filter(function (event) { return days.indexOf(event.date) !== -1; }).slice().sort(function (a, b) {
-      return a.date.localeCompare(b.date) || (a.time || '99:99').localeCompare(b.time || '99:99');
+  function occurrences(records, first, last) {
+    var found=[];
+    records.forEach(function (e) {
+      var duration=e.endDate ? dayNumber(e.endDate)-dayNumber(e.date) : 0;
+      var activeDays=duration > 0 && e.endTime === '00:00' ? duration-1 : duration;
+      var current=nextOccurrence(e.date,addDays(first,-activeDays),e.repeat || 'none',e.interval || 1);
+      while (current && current <= last) {
+        if (addDays(current,activeDays) >= first) found.push({event:e,date:current,endDate:addDays(current,duration)});
+        current=nextOccurrence(e.date,addDays(current,1),e.repeat || 'none',e.interval || 1);
+      }
     });
+    return found.sort(function (a,b) { return a.date.localeCompare(b.date) || (a.event.time||'99:99').localeCompare(b.event.time||'99:99'); });
   }
+  function agendaOccurrences(records, selected, actualToday, expanded) {
+    var days=expanded ? [actualToday] : weekDays(selected).filter(Boolean);
+    return occurrences(records,dateKey(days[0]),dateKey(days[days.length-1]));
+  }
+  function agendaEvents(records, selected, actualToday, expanded) { return agendaOccurrences(records, selected, actualToday, expanded).map(function (o) { return o.event; }); }
   function holidaysFor(key) { return holidayData && holidayData.entries && holidayData.entries[key] || []; }
   function holidayText(entry) {
     var kind = entry.type === 'libur' ? 'Libur nasional' : entry.type === 'cuti' ? 'Cuti bersama' : 'Peringatan (bukan libur nasional)';
@@ -105,7 +150,7 @@
     });
     if (media) { if (media.addEventListener) media.addEventListener('change', applyTheme); else if (media.addListener) media.addListener(applyTheme); }
     applyTheme();
-    var defaultNote = 'Acara disimpan di browser ini; tidak disinkronkan atau diberi pengingat. Menghapus data browser menghapus acara.';
+    var defaultNote = 'Acara disimpan di browser ini tanpa sinkronisasi. Preview tidak mengirim pengingat; notifikasi tersedia pada aplikasi Android. Menghapus data browser menghapus acara.';
     function showStorageNote() {
       note.textContent = writable ? defaultNote : 'Penyimpanan kalender tidak tersedia atau data tidak dapat dibaca; perubahan hanya sementara dan data lama tidak ditimpa.';
     }
@@ -179,7 +224,7 @@
       } else slots = weekDays(selected);
       slots.forEach(function (date, index) {
         if (!date) { var spacer=doc.createElement('span'); spacer.setAttribute('aria-hidden','true'); grid.appendChild(spacer); return; }
-        var keyForDay = dateKey(date), has = records.some(function (e) { return e.date === keyForDay; });
+        var keyForDay = dateKey(date), has = occurrences(records,keyForDay,keyForDay).length > 0;
         var dayHolidays = holidaysFor(keyForDay), isHoliday = dayHolidays.some(function (entry) { return entry.type === 'libur'; });
         var isObservance = dayHolidays.some(function (entry) { return entry.type === 'peringatan'; });
         var button = doc.createElement('button'); button.type = 'button'; button.className = 'calendar-day';
@@ -197,20 +242,28 @@
         grid.appendChild(button);
       });
       var list = byId('calendarEvents'); list.replaceChildren();
-      var forDay = agendaEvents(records, selected, today(), expanded);
+      var forDay = agendaOccurrences(records, selected, today(), expanded);
       byId('calendarAgendaHeading').textContent = expanded ? 'ACARA HARI INI' : 'ACARA MINGGU TERPILIH';
       if (!forDay.length) {
         var emptyText = doc.createElement('p'); emptyText.className = 'clock-muted'; emptyText.textContent = expanded ? 'Belum ada acara hari ini.' : 'Belum ada acara minggu ini.'; list.appendChild(emptyText);
       }
-      forDay.forEach(function (event) {
+      forDay.forEach(function (occurrence) {
+        var event=occurrence.event;
         var row = doc.createElement('div'); row.className = 'clock-entry calendar-event';
         var name = doc.createElement('span');
-        var when = Number(event.date.slice(8)) + ' ' + months[Number(event.date.slice(5,7))-1].slice(0,3) + ' ' + event.date.slice(0,4);
-        name.textContent = when + (event.time ? ' · ' + event.time : '') + '\n' + event.title;
+        var d=occurrence.date, end=occurrence.endDate;
+        var when = Number(d.slice(8)) + ' ' + months[Number(d.slice(5,7))-1].slice(0,3) + ' ' + d.slice(0,4) + (event.time ? ' · ' + event.time : '');
+        if (event.endDate) when += ' – ' + Number(end.slice(8)) + ' ' + months[Number(end.slice(5,7))-1].slice(0,3) + ' ' + end.slice(0,4) + ' · ' + event.endTime;
+        var details='';
+        if (event.endDate) {
+          if (event.repeat !== 'none') details='\nSetiap ' + event.interval + ' ' + {day:'hari',week:'minggu',month:'bulan',year:'tahun'}[event.repeat];
+          if (event.reminder >= 0) details += (details ? ' · ' : '\n') + ({0:'Saat mulai',10:'10 menit sebelum',60:'1 jam sebelum',1440:'1 hari sebelum'})[event.reminder];
+        }
+        name.textContent = when + '\n' + event.title + (event.type ? ' · ' + event.type : '') + details;
         var remove = doc.createElement('button'); remove.type = 'button'; remove.className = 'clock-action'; remove.textContent = 'Hapus';
         remove.setAttribute('aria-label', 'Hapus acara ' + event.title);
         remove.addEventListener('click', function () {
-          if (!win.confirm('Hapus acara "' + event.title + '"?')) return;
+          if (!win.confirm('Hapus acara "' + event.title + '"? Semua pengulangan juga akan dihapus.')) return;
           records = records.filter(function (item) { return item.id !== event.id; }); persist(); render();
         });
         row.appendChild(name); row.appendChild(remove); list.appendChild(row);
@@ -251,16 +304,26 @@
     grid.addEventListener('pointercancel', function () { gesture = null; });
     grid.addEventListener('click', function (e) { if (suppressClick) { e.preventDefault(); e.stopPropagation(); suppressClick = false; } }, true);
     byId('calendarToday').addEventListener('click', function () { selected = today(); discardForm(); render(); });
-    byId('calendarAdd').addEventListener('click', function () { form.hidden = !form.hidden; error.hidden = true; if (!form.hidden) byId('calendarTitle').focus(); });
+    byId('calendarAdd').addEventListener('click', function () {
+      form.hidden = !form.hidden; error.hidden = true;
+      if (!form.hidden) { byId('calendarStartDate').value=dateKey(selected); byId('calendarEndDate').value=dateKey(selected); byId('calendarTime').value='09:00'; byId('calendarEndTime').value='10:00'; byId('calendarRepeat').value='none'; byId('calendarInterval').value='1'; byId('calendarCustomRepeat').hidden=true; byId('calendarTitle').focus(); }
+    });
+    byId('calendarRepeat').addEventListener('change', function () { byId('calendarCustomRepeat').hidden=this.value !== 'custom'; });
     byId('calendarCancel').addEventListener('click', function () { form.hidden = true; error.hidden = true; });
     form.addEventListener('submit', function (event) {
       event.preventDefault();
       var title = byId('calendarTitle').value.trim(), time = byId('calendarTime').value.trim();
-      if (!validTitle(title) || !validTime(time)) { error.textContent = 'Isi nama acara dan gunakan waktu HH:mm yang valid.'; error.hidden = false; return; }
+      var start=byId('calendarStartDate').value, end=byId('calendarEndDate').value, endTime=byId('calendarEndTime').value;
+      var choice=byId('calendarRepeat').value, interval=choice==='custom' ? Number(byId('calendarInterval').value) : 1;
+      var repeat=choice==='custom' ? byId('calendarUnit').value : choice;
+      var type=byId('calendarType').value, reminder=Number(byId('calendarReminder').value);
+      if (!validTitle(title) || !validRange(start,time,end,endTime) || !['none','day','week','month','year'].includes(repeat) || !Number.isInteger(interval) || interval<1 || interval>999 || !['Pribadi','Pekerjaan','Keluarga','Lainnya'].includes(type) || ![-1,0,10,60,1440].includes(reminder)) {
+        error.textContent = 'Isi nama, waktu mulai dan selesai yang valid (maksimum 366 hari), dan interval pengulangan 1–999.'; error.hidden = false; return;
+      }
       var id;
       do { id = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2); }
       while (records.some(function (item) { return item.id === id; }));
-      records.push({id:id, date:dateKey(selected), title:title, time:time});
+      records.push({id:id, date:start, title:title, time:time, endDate:end, endTime:endTime, type:type, repeat:repeat, interval:interval, reminder:reminder});
       persist(); form.reset(); form.hidden = true; error.hidden = true; render();
     });
     var lastToday = dateKey(today());
@@ -268,5 +331,5 @@
     render();
   }
   return {daysInMonth:daysInMonth, leadingDays:leadingDays, shiftMonth:shiftMonth, dateKey:dateKey,
-    validTime:validTime, validTitle:validTitle, validDate:validDate, agendaEvents:agendaEvents, holidaysFor:holidaysFor, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
+    validTime:validTime, validTitle:validTitle, validDate:validDate, validRange:validRange, nextOccurrence:nextOccurrence, occurrences:occurrences, agendaEvents:agendaEvents, holidaysFor:holidaysFor, shiftWeek:shiftWeek, weekDays:weekDays, swipeDirection:swipeDirection, mount:mount};
 });

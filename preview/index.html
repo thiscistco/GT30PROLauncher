@@ -404,7 +404,7 @@
   .calendar-page .calendar-holiday-detail { color: #8c5000; }
   .calendar-page .calendar-holiday-detail.holiday { color: #b3263b; }
   .calendar-page .alarm-form, .calendar-page .clock-entry { background: #e5ecf2; border: 0; border-radius: 3mm; }
-  .calendar-page .alarm-form input { color: #304355; background: #fff; border-color: #a9bbc9; }
+  .calendar-page .alarm-form input, .calendar-page .alarm-form select { color: #304355; background: #fff; border-color: #a9bbc9; }
   .calendar-page .calendar-event button { background: #fff; }
   .calendar-page { --cal-bg:#f4f7fa; --cal-card:#fff; --cal-text:#142a3a; --cal-muted:#405465; --cal-control:#e3eaf0; --cal-day:#dce5ed; --cal-select:#304355; --cal-selected-text:#fff; --cal-weekend:#b3263b; --cal-selected-weekend:#ff9ea8; --cal-border:#cbd6df; --cal-event:#e5ecf2; --cal-observe:#9b5700; background:var(--cal-bg); color:var(--cal-text); }
   .calendar-page[data-theme="dark"] { color-scheme:dark; --cal-bg:#101820; --cal-card:#19252f; --cal-text:#f5f8fa; --cal-muted:#c7d3dd; --cal-control:#2a3b49; --cal-day:#344957; --cal-select:#dce8f0; --cal-selected-text:#172a38; --cal-weekend:#ff9faa; --cal-selected-weekend:#a6152b; --cal-border:#516776; --cal-event:#263743; --cal-observe:#ffc077; }
@@ -443,7 +443,7 @@
   .calendar-page .calendar-holiday-detail { color:var(--cal-observe); }
   .calendar-page .calendar-holiday-detail.holiday { color:var(--cal-weekend); }
   .calendar-page .alarm-form, .calendar-page .clock-entry { background:var(--cal-event); color:var(--cal-text); }
-  .calendar-page .alarm-form input { color:var(--cal-text); background:var(--cal-card); border-color:var(--cal-border); }
+  .calendar-page .alarm-form input, .calendar-page .alarm-form select { color:var(--cal-text); background:var(--cal-card); border-color:var(--cal-border); }
   .calendar-page .calendar-event button { background:var(--cal-card); }
   .calendar-info { margin-top:4mm; color:var(--cal-muted); font-size:2.6mm; }
   .calendar-info summary { cursor:pointer; display:grid; place-items:center; width:7.62mm; height:7.62mm; min-height:7.62mm; border-radius:2mm; color:var(--cal-text); list-style:none; }
@@ -709,7 +709,15 @@
                   <div id="calendarHolidayDetails" aria-live="polite"></div>
                   <form class="alarm-form" id="calendarForm" hidden>
                     <label>Nama acara <input id="calendarTitle" type="text" maxlength="80" required></label>
-                    <label>Waktu (opsional) <input id="calendarTime" type="time"></label>
+                    <label>Jenis acara <select id="calendarType"><option>Pribadi</option><option>Pekerjaan</option><option>Keluarga</option><option>Lainnya</option></select></label>
+                    <label>Mulai tanggal <input id="calendarStartDate" type="date" min="1900-01-01" max="2100-12-31" required></label>
+                    <label>Mulai waktu <input id="calendarTime" type="time" required></label>
+                    <label>Selesai tanggal <input id="calendarEndDate" type="date" min="1900-01-01" max="2100-12-31" required></label>
+                    <label>Selesai waktu <input id="calendarEndTime" type="time" required></label>
+                    <label>Pengulangan <select id="calendarRepeat"><option value="none">Tidak berulang</option><option value="day">Setiap hari</option><option value="week">Setiap minggu</option><option value="month">Setiap bulan</option><option value="year">Setiap tahun</option><option value="custom">Khusus</option></select></label>
+                    <div id="calendarCustomRepeat" hidden><label>Setiap <input id="calendarInterval" type="number" min="1" max="999" value="1"> <select id="calendarUnit"><option value="day">hari</option><option value="week">minggu</option><option value="month">bulan</option><option value="year">tahun</option></select></label></div>
+                    <label>Pengingat perangkat <select id="calendarReminder"><option value="-1">Tidak ada</option><option value="0">Saat dimulai</option><option value="10">10 menit sebelumnya</option><option value="60">1 jam sebelumnya</option><option value="1440">1 hari sebelumnya</option></select></label>
+                    <p class="clock-muted">Preview hanya menyimpan pilihan; notifikasi latar belakang tersedia pada aplikasi Android. Menghapus acara berulang menghapus seluruh rangkaian.</p>
                     <p class="clock-muted" id="calendarError" role="alert" hidden></p>
                     <div class="clock-row"><button class="clock-action" id="calendarCancel" type="button">Batal</button><button class="clock-action" type="submit">Simpan</button></div>
                   </form>
@@ -722,7 +730,7 @@
                     <div id="calendarMonthHolidays"></div>
                     <p class="clock-muted" id="calendarHolidayStatus" role="status"></p>
                     <button class="clock-action" id="calendarRefresh" type="button">Perbarui data libur</button>
-                    <p class="clock-muted" id="calendarStorageNote">Acara disimpan di browser ini; tidak disinkronkan atau diberi pengingat. Menghapus data browser menghapus acara.</p>
+                    <p class="clock-muted" id="calendarStorageNote">Acara disimpan di browser tanpa sinkronisasi. Preview tidak mengirim pengingat; notifikasi tersedia pada aplikasi Android. Menghapus data browser menghapus acara.</p>
                   </details>
                 </div>
               </section>
@@ -1012,7 +1020,7 @@
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=10"></script>
+<script src="calendar.js?v=11"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.
