@@ -16,9 +16,10 @@ for value in range(101):
     width = len(str(value)) * advance
     left = right_edge - width
     assert left >= 0 and abs(left + width - right_edge) < 1e-9
-# Right-edge pivot keeps the 1.5x right edge when shrinking to 1.35x.
+# Right-edge pivot keeps the right edge through consecutive 10% reductions.
 old_edge = box_width * 1.5 / 2 - .75 * advance
 new_edge = box_width / 2
 assert abs(old_edge - new_edge) < 1e-9
 assert abs(1.35 / 1.5 - .9) < 1e-9
+assert abs(1.215 / 1.35 - .9) < 1e-9
 print('Battery right alignment: all Doto digits and percentages 0–100 fit: OK')

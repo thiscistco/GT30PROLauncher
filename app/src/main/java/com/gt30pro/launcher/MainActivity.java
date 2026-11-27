@@ -119,8 +119,8 @@ public class MainActivity extends BottomSwipeActivity {
         batteryLed.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         batteryLed.setTextColor(0xFFAABAC5);
         batteryLed.setAlpha(1f);
-        batteryLed.setScaleX(1.35f);
-        batteryLed.setScaleY(1.35f);
+        batteryLed.setScaleX(1.215f);
+        batteryLed.setScaleY(1.215f);
         batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CAABAC5);
         batteryLed.setLetterSpacing(0.06f);
         batteryLed.setFontVariationSettings("'wght' 700");
@@ -274,7 +274,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxHeight = Math.max(1, Math.round(HomeClockView.HEIGHT_MM * pixelsPerMm));
         // Keep the content (not its glow padding) anchored to the preview position.
         float left = width * .357f - .5f * cssPixel - boxWidth / 2f
-                + 650f * wallpaperScale(root);
+                + 700f * wallpaperScale(root);
         float bottom = height * .06f + .55f * cssPixel;
         float top = height - bottom - boxHeight + HomeClockView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) clockBox.getLayoutParams();

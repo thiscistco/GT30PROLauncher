@@ -12,7 +12,7 @@ assert.match(css, /opacity:\s*1/);
 assert.match(css, /width:\s*calc\(3ch \+ 0\.6mm\)/);
 const valueCss = html.match(/\.battery-value\s*\{([^}]*)\}/)[1];
 assert.match(valueCss, /text-align:right/); assert.match(valueCss, /white-space:nowrap/);
-assert.match(valueCss, /transform-origin:right center/); assert.match(valueCss, /scale\(1\.35\)/);
+assert.match(valueCss, /transform-origin:right center/); assert.match(valueCss, /scale\(1\.215\)/);
 assert.match(java, /batteryBox\.setPivotX\(batteryBox\.getWidth\(\)\)/);
 assert.match(java, /batteryLed\.setGravity\(Gravity\.RIGHT \| Gravity\.CENTER_VERTICAL\)/);
 assert.match(java, /batteryLed\.setSingleLine\(true\)/);
@@ -20,7 +20,7 @@ assert.match(java, /Math\.ceil\(3f \* batteryDigitAdvance\)/);
 // A fixed three-digit box has the same right edge for 9, 85, or 100.
 for (const count of [1,2,3]) { const rightEdge=30; const start=rightEdge-count*10; assert.equal(start+count*10, rightEdge); }
 // Scaling at the right edge preserves its position while shrinking 10%.
-assert.equal(1.35, 1.5 * .9);
+assert(Math.abs(1.215 - 1.35 * .9) < 1e-9);
 assert.match(html, /id="batteryLed" role="img" aria-label="Baterai 85 persen"><span class="battery-value">85<\/span><svg class="battery-bolt"/);
 assert.match(java, /int percent = level \* 100 \/ scale/);
 assert.match(java, /batteryLed\.setText\(String\.valueOf\(percent\)\)/);

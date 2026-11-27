@@ -13,7 +13,7 @@
   function updateShift() {
     var scale=Math.max(screen.clientWidth / 1224, screen.clientHeight / 2720);
     screen.style.setProperty('--clock-shift', (2130 * scale) + 'px');
-    screen.style.setProperty('--clock-right', (650 * scale) + 'px');
+    screen.style.setProperty('--clock-right', (700 * scale) + 'px');
     screen.style.setProperty('--battery-shift', (1470 * scale) + 'px');
     screen.style.setProperty('--battery-right', (495 * scale) + 'px');
   }
