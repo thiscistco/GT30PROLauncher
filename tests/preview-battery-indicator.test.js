@@ -9,6 +9,16 @@ assert.match(css, /left:\s*calc\(50%\s*\+\s*1px\)/);
 assert.match(css, /bottom:\s*calc\(1\.2%\s*-\s*1px\)/);
 assert.match(css, /color:\s*#aabac5/);
 assert.match(css, /opacity:\s*1/);
+assert.match(css, /width:\s*calc\(3ch \+ 0\.6mm\)/);
+const valueCss = html.match(/\.battery-value\s*\{([^}]*)\}/)[1];
+assert.match(valueCss, /text-align:right/); assert.match(valueCss, /white-space:nowrap/);
+assert.match(java, /batteryLed\.setGravity\(Gravity\.RIGHT \| Gravity\.CENTER_VERTICAL\)/);
+assert.match(java, /batteryLed\.setSingleLine\(true\)/);
+assert.match(java, /Math\.ceil\(3f \* batteryDigitAdvance\)/);
+// A fixed three-digit box has the same right edge for 9, 85, or 100.
+for (const count of [1,2,3]) { const rightEdge=30; const start=rightEdge-count*10; assert.equal(start+count*10, rightEdge); }
+// Shifting by .75 glyph cancels the extra half-glyph at 1.5x scale.
+assert.equal(3*1.5/2 - .75, 2*1.5/2);
 assert.match(html, /id="batteryLed" role="img" aria-label="Baterai 85 persen"><span class="battery-value">85<\/span><svg class="battery-bolt"/);
 assert.match(java, /int percent = level \* 100 \/ scale/);
 assert.match(java, /batteryLed\.setText\(String\.valueOf\(percent\)\)/);
@@ -17,7 +27,7 @@ assert.match(java, /batteryLed\.setText\("85"\)/);
 const offset = java.match(/private void updateBatteryOffset\([\s\S]*?\n    }/)[0];
 assert.match(offset, /pixelsPerMm = root\.getWidth\(\) \/ 70\.9f/);
 assert.match(offset, /cssPixel = pixelsPerMm \* 25\.4f \/ 96f/);
-assert.match(offset, /batteryBox\.setTranslationX\(cssPixel \+ 485f \* wallpaperScale\(root\)\)/);
+assert.match(offset, /batteryBox\.setTranslationX\(cssPixel \+ 495f \* wallpaperScale\(root\) - \.75f \* digitAdvance\)/);
 assert.match(offset, /batteryBox\.setTranslationY\(cssPixel - 1470f \* wallpaperScale\(root\)\)/);
 assert.match(offset, /float left = root\.getWidth\(\) \/ 2f \+ cssPixel - boltWidth \/ 2f/);
 assert.match(offset, /float top = batteryBox\.getBottom\(\) - 2\.75f \* cssPixel - 2f \* pixelsPerMm/);

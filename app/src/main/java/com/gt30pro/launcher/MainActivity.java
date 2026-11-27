@@ -124,11 +124,17 @@ public class MainActivity extends BottomSwipeActivity {
         batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CAABAC5);
         batteryLed.setLetterSpacing(0.06f);
         batteryLed.setFontVariationSettings("'wght' 700");
+        batteryLed.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        batteryLed.setSingleLine(true);
         batteryLed.setText("85");
         batteryLed.setContentDescription("Baterai 85 persen");
+        // Three digits fit without changing the right edge as the percentage changes.
+        float batteryDigitAdvance = batteryLed.getPaint().measureText("0")
+                + batteryLed.getLetterSpacing() * batteryLed.getTextSize();
+        int batteryWidth = (int) Math.ceil(3f * batteryDigitAdvance)
+                + batteryLed.getPaddingLeft() + batteryLed.getPaddingRight();
         FrameLayout.LayoutParams ledParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
+                batteryWidth, FrameLayout.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         ledParams.bottomMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.012f);
         FrameLayout homeRoot = findViewById(R.id.root);
@@ -240,7 +246,10 @@ public class MainActivity extends BottomSwipeActivity {
         if (root.getWidth() <= 0) return;
         float pixelsPerMm = root.getWidth() / 70.9f;
         float cssPixel = pixelsPerMm * 25.4f / 96f;
-        batteryBox.setTranslationX(cssPixel + 485f * wallpaperScale(root));
+        // Preserve the former two-digit right edge after reserving a third digit.
+        float digitAdvance = batteryBox.getPaint().measureText("0")
+                + batteryBox.getLetterSpacing() * batteryBox.getTextSize();
+        batteryBox.setTranslationX(cssPixel + 495f * wallpaperScale(root) - .75f * digitAdvance);
         batteryBox.setTranslationY(cssPixel - 1470f * wallpaperScale(root));
         if (batteryBolt == null || batteryBox.getBottom() <= 0) return;
         int boltWidth = Math.max(1, Math.round(BatteryBoltView.WIDTH_MM * pixelsPerMm));
@@ -266,7 +275,7 @@ public class MainActivity extends BottomSwipeActivity {
         int boxHeight = Math.max(1, Math.round(HomeClockView.HEIGHT_MM * pixelsPerMm));
         // Keep the content (not its glow padding) anchored to the preview position.
         float left = width * .357f - .5f * cssPixel - boxWidth / 2f
-                + 550f * wallpaperScale(root);
+                + 600f * wallpaperScale(root);
         float bottom = height * .06f + .55f * cssPixel;
         float top = height - bottom - boxHeight + HomeClockView.GLOW_PAD_MM * pixelsPerMm;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) clockBox.getLayoutParams();
@@ -275,7 +284,7 @@ public class MainActivity extends BottomSwipeActivity {
         params.leftMargin = Math.round(left);
         params.topMargin = Math.round(top);
         clockBox.setTranslationX(left - params.leftMargin);
-        clockBox.setTranslationY(top - params.topMargin - 2120f * wallpaperScale(root));
+        clockBox.setTranslationY(top - params.topMargin - 2130f * wallpaperScale(root));
         clockBox.setScale(pixelsPerMm);
         clockBox.setLayoutParams(params);
         clockBox.post(() -> {
