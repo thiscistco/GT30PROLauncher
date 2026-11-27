@@ -56,6 +56,7 @@ public class MainActivity extends BottomSwipeActivity {
     private CircuitGlowView amberGlow;
     private ImageView screenGlass;
     private Boolean glassDark;
+    private boolean homeResumed;
     private ValueAnimator amberAnim;
     private double amberPhase, amberDurationMs;
     private long amberLastFrame, amberNextMemorySample;
@@ -321,12 +322,17 @@ public class MainActivity extends BottomSwipeActivity {
         if (screenGlass == null) return;
         boolean dark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                 == Configuration.UI_MODE_NIGHT_YES;
-        if (glassDark != null && glassDark.booleanValue() == dark) return;
-        Bitmap bitmap = Wallpapers.loadScreenGlass(this, dark);
-        if (bitmap != null) {
-            screenGlass.setImageBitmap(bitmap);
-            glassDark = dark;
+        if (glassDark == null || glassDark.booleanValue() != dark) {
+            Bitmap bitmap = Wallpapers.loadScreenGlass(this, dark);
+            if (bitmap != null) {
+                screenGlass.setImageBitmap(bitmap);
+                glassDark = dark;
+            }
         }
+        if (clockLed != null) clockLed.setLightGlass(!dark);
+        if (dateLed != null) dateLed.setLightGlass(!dark);
+        if (weatherLed != null) weatherLed.setLightGlass(!dark);
+        if (homeResumed) updateChargeAnim();
     }
 
     @Override public void onConfigurationChanged(Configuration newConfig) {
@@ -337,6 +343,7 @@ public class MainActivity extends BottomSwipeActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        homeResumed = true;
         updateScreenGlass();
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         registerReceiver(powerSaveReceiver, new IntentFilter(android.os.PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
@@ -370,6 +377,7 @@ public class MainActivity extends BottomSwipeActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        homeResumed = false;
         unregisterReceiver(batteryReceiver);
         unregisterReceiver(powerSaveReceiver);
         stopAmberGlow();
@@ -465,13 +473,15 @@ public class MainActivity extends BottomSwipeActivity {
 
     /** Pulse only the battery indicator and its dotted bolt while connected to power. */
     private void updateChargeAnim() {
+        boolean light = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                != Configuration.UI_MODE_NIGHT_YES;
         if (charging) {
             if (batteryLed != null) {
-                batteryLed.setTextColor(0xFFFF9D2F);
-                batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFF6919);
+                batteryLed.setTextColor(light ? 0xFF993800 : 0xFFFF9D2F);
+                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44893000 : 0x8CFF6919);
             }
             if (batteryBolt != null) {
-                batteryBolt.setColor(0xFFFF9D2F);
+                batteryBolt.setColor(light ? 0xFF993800 : 0xFFFF9D2F);
                 batteryBolt.setVisibility(View.VISIBLE);
             }
             if (chargeAnim == null) {
@@ -493,12 +503,12 @@ public class MainActivity extends BottomSwipeActivity {
                 chargeAnim = null;
             }
             if (batteryLed != null) {
-                batteryLed.setTextColor(0xFFFFFFFF);
-                batteryLed.setShadowLayer(8f, 0f, 0f, 0x8CFFFFFF);
+                batteryLed.setTextColor(light ? 0xFF263840 : 0xFFFFFFFF);
+                batteryLed.setShadowLayer(8f, 0f, 0f, light ? 0x44263840 : 0x8CFFFFFF);
                 batteryLed.setAlpha(.6f);
             }
             if (batteryBolt != null) {
-                batteryBolt.setColor(0xFFFFFFFF);
+                batteryBolt.setColor(light ? 0xFF263840 : 0xFFFFFFFF);
                 batteryBolt.setAlpha(.6f);
                 batteryBolt.setVisibility(View.INVISIBLE);
             }

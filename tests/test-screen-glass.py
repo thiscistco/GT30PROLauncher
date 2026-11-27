@@ -20,8 +20,9 @@ for dark, suffix in [(False, ''), (True, '_dark')]:
     for a,b in zip(actual.split(),expected.split()):
         assert ImageChops.difference(a,b).getbbox() is None, 'Glass asset does not match generator'
     alpha = actual.getchannel('A')
-    assert alpha.getextrema()[0] > 0 and alpha.getextrema()[1] <= 128, 'The glass must never be opaque'
-    assert alpha.crop((200,300,1024,2300)).getextrema()[1] <= 75, 'Screen interior should remain translucent'
+    assert alpha.getextrema() == (191, 191), 'Glass must be 25% transparent (75% opaque)'
+    for channel in actual.split()[:3]:
+        assert channel.getextrema() == ((0, 0) if dark else (255, 255)), 'Glass must be pure black or white'
     brightness.append(ImageStat.Stat(Image.alpha_composite(wall,actual).convert('L')).mean[0])
 assert brightness[0] - brightness[1] > 15, 'Dark and light must be visibly different'
 ns='{http://schemas.android.com/apk/res/android}'
@@ -36,8 +37,13 @@ assert 'Configuration.UI_MODE_NIGHT_MASK' in main and 'Configuration.UI_MODE_NIG
 assert 'Wallpapers.loadScreenGlass(this, dark)' in main
 assert main.index('updateScreenGlass();') < main.index('homeRoot.addView(clockBox')
 assert 'onConfigurationChanged(Configuration newConfig)' in main and 'super.onConfigurationChanged(newConfig);\n        updateScreenGlass();' in main
-assert 'super.onResume();\n        updateScreenGlass();' in main
-assert 'glassDark.booleanValue() == dark' in main
+assert 'super.onResume();\n        homeResumed = true;\n        updateScreenGlass();' in main
+assert 'homeResumed = false;' in main and 'if (homeResumed) updateChargeAnim();' in main
+assert 'glassDark.booleanValue() != dark' in main
+assert 'clockLed.setLightGlass(!dark)' in main and 'dateLed.setLightGlass(!dark)' in main
+assert 'weatherLed.setLightGlass(!dark)' in main and 'updateChargeAnim();' in main
+for name in ('batteryLed', 'batteryBolt', 'clockBox', 'dateBox', 'weatherBox'):
+    assert main.index('homeRoot.addView('+name) > main.index('updateScreenGlass();')
 manifest=ET.parse(root/'app/src/main/AndroidManifest.xml').getroot()
 activity=next(a for a in manifest.find('application').findall('activity') if a.get(ns+'name')=='.MainActivity')
 assert 'uiMode' in activity.get(ns+'configChanges')
@@ -49,6 +55,9 @@ assert 'pointer-events:none' in html.split('.home-screen-glass {',1)[1].split('}
 assert '.home-screen-glass.dark { display:none; }' in html
 media=html.split('@media (prefers-color-scheme: dark)',1)[1].split('  }',1)[0]
 assert '.home-screen-glass.light { display:none; }' in media and '.home-screen-glass.dark { display:block; }' in media
-for name in ['home-screen-glass.png?v=2','home-screen-glass-dark.png?v=1']:
+for name in ['home-screen-glass.png?v=3','home-screen-glass-dark.png?v=2']:
     assert f'src="assets/{name}" alt="" aria-hidden="true" draggable="false"' in html
+assert '@media (prefers-color-scheme: light)' in html
+for selector in ('.clock-led > span:not(.clock-sep)', '.date-led #homeDateWeekday', '.home-weather', '.battery-led'):
+    assert selector in html.split('@media (prefers-color-scheme: light)',1)[1].split('\n  }',1)[0]
 print('Screen glass: light/dark artwork, system changes, preview parity and touch-through: OK')

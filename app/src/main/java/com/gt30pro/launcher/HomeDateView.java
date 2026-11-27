@@ -23,6 +23,8 @@ final class HomeDateView extends View {
     static final float CONTENT_HEIGHT_MM = TEXT_MM * (1f + 2f * LABEL_SCALE) + 2f * CSS_PX_MM;
     static final float HEIGHT_MM = CONTENT_HEIGHT_MM + 2f * GLOW_PAD_MM;
     private static final int[] AMBER = {0xFFFF6919, 0xFFFF9D2F, 0xFFFFCD6A, 0xFFFF9D2F, 0xFFFF6919};
+    private static final int[] AMBER_LIGHT = {0xFF893000, 0xFFA33C00, 0xFFB64B00, 0xFFA33C00, 0xFF893000};
+    private boolean lightGlass;
     private static final float[] STOPS = {0f, .24f, .5f, .76f, 1f};
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
     private float pxPerMm = -1f;
@@ -44,6 +46,9 @@ final class HomeDateView extends View {
         text.setShadowLayer(.4f * pxPerMm, 0f, 0f, 0xA6FF6919);
         invalidate();
     }
+    void setLightGlass(boolean light) {
+        if (lightGlass != light) { lightGlass = light; invalidate(); }
+    }
     void setDate(LocalDate value) {
         if (!value.equals(date)) {
             date = value;
@@ -54,13 +59,14 @@ final class HomeDateView extends View {
     private void drawLine(Canvas canvas, String value, float top, float sizeFactor, boolean gunmetal) {
         float line = TEXT_MM * sizeFactor * pxPerMm, gap = .2f * SIZE_SCALE * sizeFactor * pxPerMm;
         text.setTextSize(2f * SIZE_SCALE * sizeFactor * pxPerMm);
-        text.setColor(gunmetal ? 0xFF82929A : 0xFFFFCD6A);
-        text.setShadowLayer(.4f * pxPerMm, 0f, 0f, gunmetal ? 0xD9141B1F : 0xA6FF6919);
+        text.setColor(lightGlass ? (gunmetal ? 0xFF283B45 : 0xFFB64B00)
+                : (gunmetal ? 0xFF82929A : 0xFFFFCD6A));
+        text.setShadowLayer(.4f * pxPerMm, 0f, 0f, lightGlass ? 0x33283B45 : (gunmetal ? 0xD9141B1F : 0xA6FF6919));
         Paint.FontMetrics metrics = text.getFontMetrics();
         float baseline = top + (line - (metrics.descent - metrics.ascent)) / 2f - metrics.ascent;
         float width = text.measureText(value) + Math.max(0, value.length() - 1) * gap;
         float x = (getWidth() - width) / 2f;
-        text.setShader(gunmetal ? null : new LinearGradient(0, top, 0, top + line, AMBER, STOPS, Shader.TileMode.CLAMP));
+        text.setShader(gunmetal ? null : new LinearGradient(0, top, 0, top + line, lightGlass ? AMBER_LIGHT : AMBER, STOPS, Shader.TileMode.CLAMP));
         for (int i = 0; i < value.length(); i++) {
             canvas.drawText(value, i, i + 1, x, baseline, text);
             x += text.measureText(value, i, i + 1) + gap;

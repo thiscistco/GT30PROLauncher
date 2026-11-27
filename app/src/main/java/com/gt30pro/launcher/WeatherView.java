@@ -13,7 +13,7 @@ final class WeatherView extends View {
     private int code = -1;
     private boolean day = true;
     private String temperature = "--°";
-    private final int color;
+    private int color;
     private final boolean home;
     private boolean opensDetails;
     private float homeCssPixel;
@@ -27,6 +27,9 @@ final class WeatherView extends View {
         setClickable(true);
         setFocusable(true);
         setWeather(-1, true, null, "Ketuk untuk mengaktifkan cuaca");
+    }
+    void setLightGlass(boolean light) {
+        if (home) { color = light ? 0xFF993800 : 0xFFFF9D2F; invalidate(); }
     }
     void setOpensDetails(boolean value) { opensDetails = value; }
     // Use the root's physical CSS-pixel scale so the 5px gap adjustment matches preview.
@@ -50,7 +53,7 @@ final class WeatherView extends View {
         float x0 = (getWidth() - 13f*s) / 2f;
         float y0 = (getHeight() - (home ? 22f : 13f)*s) / 2f;
         paint.setColor(color); paint.setStyle(Paint.Style.FILL);
-        paint.setShadowLayer(.65f*s, 0, 0, color == Color.WHITE ? 0 : 0x99FF6919);
+        paint.setShadowLayer(.65f*s, 0, 0, color == Color.WHITE ? 0 : (color == 0xFF993800 ? 0x44893000 : 0x99FF6919));
         String[] rows = WeatherIcons.forCode(code, day);
         for (int y = 0; y < 13; y++) for (int x = 0; x < 13; x++) {
             if (rows[y].charAt(x) == '#') canvas.drawCircle(x0+(x+.5f)*s, y0+(y+.5f)*s, .36f*s, paint);
