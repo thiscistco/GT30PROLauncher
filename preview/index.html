@@ -172,13 +172,13 @@
   }
   /* Informational home label; preview uses sample data, never reads device battery. */
   .battery-info { position:absolute; z-index:6; left:8%; width:84%; bottom:14%; box-sizing:border-box;
-    padding:1.5mm 2.2mm; border:1px solid #8f6c3d; border-radius:1.8mm; background:rgba(16,22,27,.93); color:#f1f2e9; pointer-events:none; }
+    padding:1.5mm 2.2mm; border:0; background:transparent; color:#f1f2e9; pointer-events:none; }
   .battery-info-title { color:#ffcd6a; font:800 2mm/1.15 'Doto',monospace; letter-spacing:.08em; }
   .battery-info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:2mm; }
-  .battery-info-cell { min-width:0; padding-top:.5mm; font:400 2.2mm/1.15 sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .battery-info-name { display:block; color:#adc0c8; font:700 1.65mm/1.15 sans-serif; overflow:hidden; text-overflow:ellipsis; }
+  .battery-info-cell { min-width:0; padding-top:.5mm; font:700 2.2mm/1.15 'Doto',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .battery-info-name { display:block; color:#adc0c8; font:700 1.65mm/1.15 'Doto',monospace; overflow:hidden; text-overflow:ellipsis; }
   @media (prefers-color-scheme:light) {
-    .battery-info { background:rgba(245,242,233,.91); border-color:#89724f; color:#17242b; }
+    .battery-info { color:#17242b; }
     .battery-info-title { color:#6a4000; } .battery-info-name { color:#48535b; }
   }
   .battery-led {

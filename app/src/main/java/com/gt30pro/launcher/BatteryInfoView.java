@@ -3,7 +3,6 @@ package com.gt30pro.launcher;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.text.TextUtils;
@@ -18,8 +17,9 @@ final class BatteryInfoView extends LinearLayout {
             "ARUS SAAT INI","ARUS RATA-RATA","MUATAN TERSISA","ENERGI TERSISA","SIKLUS","TEKNOLOGI","BATERAI TERDETEKSI","BATERAI RENDAH","PERKIRAAN PENUH"};
     BatteryInfoView(Context c) {
         super(c); setOrientation(VERTICAL); setPadding(dp(12),dp(8),dp(12),dp(8));
-        setClickable(false); setFocusable(false);
-        title=new TextView(c); title.setText("INFO BATERAI"); title.setTextSize(11); title.setTypeface(Typeface.createFromAsset(c.getAssets(),"fonts/Doto.ttf"),Typeface.BOLD);
+        setClickable(false); setFocusable(false); setBackground(null);
+        Typeface doto=Typeface.createFromAsset(c.getAssets(),"fonts/Doto.ttf");
+        title=new TextView(c); title.setText("INFO BATERAI"); title.setTextSize(11); title.setTypeface(doto); title.setFontVariationSettings("'wght' 800");
         title.setLetterSpacing(.08f); addView(title);
         for(int row=0;row<8;row++) {
             LinearLayout line=new LinearLayout(c); line.setOrientation(HORIZONTAL);
@@ -27,9 +27,9 @@ final class BatteryInfoView extends LinearLayout {
                 int index=row*2+col; if(index>=LABELS.length) break;
                 LinearLayout cell=new LinearLayout(c); cell.setOrientation(VERTICAL);
                 cell.setPadding(0,dp(3),col==0?dp(6):0,0);
-                TextView name=new TextView(c); name.setText(LABELS[index]); name.setTextSize(9); name.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
+                TextView name=new TextView(c); name.setText(LABELS[index]); name.setTextSize(9); name.setTypeface(doto); name.setFontVariationSettings("'wght' 700");
                 name.setSingleLine(true); name.setEllipsize(TextUtils.TruncateAt.END);
-                TextView value=new TextView(c); value.setText(BatteryInfoFormat.UNKNOWN); value.setTextSize(12); value.setSingleLine(true); value.setEllipsize(TextUtils.TruncateAt.END);
+                TextView value=new TextView(c); value.setText(BatteryInfoFormat.UNKNOWN); value.setTextSize(12); value.setTypeface(doto); value.setFontVariationSettings("'wght' 700"); value.setSingleLine(true); value.setEllipsize(TextUtils.TruncateAt.END);
                 names[index]=name; values[index]=value; cell.addView(name); cell.addView(value); line.addView(cell,new LayoutParams(0,LayoutParams.WRAP_CONTENT,1));
             }
             addView(line,new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
@@ -38,7 +38,6 @@ final class BatteryInfoView extends LinearLayout {
     }
     private int dp(float value) { return Math.round(value*getResources().getDisplayMetrics().density); }
     void setLightGlass(boolean light) {
-        GradientDrawable bg=new GradientDrawable(); bg.setColor(light?0xE8F5F2E9:0xEC10161B); bg.setCornerRadius(dp(10)); bg.setStroke(dp(1),light?0xFF89724F:0xFF8F6C3D); setBackground(bg);
         title.setTextColor(light?0xFF6A4000:0xFFFFCD6A);
         for(int i=0;i<names.length;i++) { names[i].setTextColor(light?0xFF48535B:0xFFADC0C8); values[i].setTextColor(light?0xFF17242B:0xFFF1F2E9); }
     }
