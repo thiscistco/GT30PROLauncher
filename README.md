@@ -48,8 +48,8 @@ aplikasi bawaan baru tersedia di `docs/app-ui.md`.
   tidak menghalangi sentuhan atau mengubah wallpaper asli. Preview menyediakan
   percobaan ikon dan label di balik kaca. Dalam preview, jam dan angka baterai
   juga digeser ke atas 1.120 piksel gambar wallpaper serta diperbesar 20%;
-  ikon pengisian diperbesar 50% lagi dari percobaan sebelumnya tanpa memindahkan
-  pusatnya. Indikator lebih kontras, tetapi kaca tetap mengurangi kecerahannya.
+  ikon pengisian diperbesar 50% lagi dari percobaan sebelumnya dan dinaikkan
+  sedikit agar tidak terpotong. Indikator lebih kontras, tetapi kaca tetap mengurangi kecerahannya.
   Percobaan ini belum mengubah
   perilaku aplikasi Android.
 - **Akses via gesture** — swipe ke atas = laci aplikasi; double-tap = Super App;
