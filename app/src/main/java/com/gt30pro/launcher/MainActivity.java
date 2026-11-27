@@ -64,6 +64,7 @@ public class MainActivity extends BottomSwipeActivity {
     private ValueAnimator dateAnim;
     private CircuitGlowView amberGlow;
     private ImageView screenGlass;
+    private GlassParallaxController glassParallax;
     private android.widget.ImageButton voiceButton;
     private Boolean glassDark;
     private boolean homeResumed;
@@ -73,7 +74,7 @@ public class MainActivity extends BottomSwipeActivity {
     private static final long MEMORY_SAMPLE_INTERVAL_MS = 3000;
     private boolean charging = false;
     private final BroadcastReceiver powerSaveReceiver = new BroadcastReceiver() {
-        @Override public void onReceive(Context context, Intent intent) { updateAmberGlow(); }
+        @Override public void onReceive(Context context, Intent intent) { updateAmberGlow(); updateGlassParallax(); }
     };
 
     private final Handler clockHandler = new Handler(Looper.getMainLooper());
@@ -128,6 +129,10 @@ public class MainActivity extends BottomSwipeActivity {
         screenGlass = findViewById(R.id.screen_glass);
         // Higher Z than every home indicator, without intercepting taps.
         screenGlass.setElevation(8f * getResources().getDisplayMetrics().density);
+        GlassParallaxView reflection=new GlassParallaxView(this);
+        reflection.setElevation(9f * getResources().getDisplayMetrics().density);
+        micRoot.addView(reflection,new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.MATCH_PARENT));
+        glassParallax=new GlassParallaxController(this,reflection);
         updateScreenGlass();
 
         // Angka baterai Doto; posisi ikon pengisian dihitung terpisah.
@@ -412,6 +417,8 @@ public class MainActivity extends BottomSwipeActivity {
     @Override public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         updateScreenGlass();
+        if(glassParallax!=null) glassParallax.recenter();
+        updateGlassParallax();
     }
 
     @Override
@@ -422,6 +429,7 @@ public class MainActivity extends BottomSwipeActivity {
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         registerReceiver(powerSaveReceiver, new IntentFilter(android.os.PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
         updateAmberGlow();
+        updateGlassParallax();
         if (weather != null) weather.resume();
         if (clockLed != null) {
             clockLed.setVisibility(View.VISIBLE);
@@ -457,6 +465,7 @@ public class MainActivity extends BottomSwipeActivity {
         unregisterReceiver(batteryReceiver);
         unregisterReceiver(powerSaveReceiver);
         stopAmberGlow();
+        if (glassParallax != null) glassParallax.stop();
         if (weather != null) weather.pause();
         stopDateAnimation();
         clockHandler.removeCallbacks(clockTick);
@@ -492,6 +501,16 @@ public class MainActivity extends BottomSwipeActivity {
             dateAnim = null;
         }
         if (dateLed != null) dateLed.setAlpha(.85f);
+    }
+
+    private boolean isGlassParallaxEnabled() {
+        return getSharedPreferences("launcher_effects", MODE_PRIVATE).getBoolean("glass_parallax", true);
+    }
+    private void updateGlassParallax() {
+        if(glassParallax==null) return;
+        android.os.PowerManager power=(android.os.PowerManager)getSystemService(POWER_SERVICE);
+        if(!homeResumed || !isGlassParallaxEnabled() || !ValueAnimator.areAnimatorsEnabled() || (power!=null && power.isPowerSaveMode())) glassParallax.stop();
+        else glassParallax.start();
     }
 
     private boolean isAmberGlowEnabled() {
@@ -624,6 +643,7 @@ public class MainActivity extends BottomSwipeActivity {
                 getString(R.string.menu_settings),
                 getString(isAmberGlowEnabled() ? R.string.menu_amber_off : R.string.menu_amber_on),
                 getString(R.string.menu_weather),
+                getString(isGlassParallaxEnabled() ? R.string.menu_glass_parallax_off : R.string.menu_glass_parallax_on),
         };
         new AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
@@ -644,6 +664,10 @@ public class MainActivity extends BottomSwipeActivity {
                         updateAmberGlow();
                     } else if (which == 4 && weather != null) {
                         weather.requestFromUser();
+                    } else if (which == 5) {
+                        getSharedPreferences("launcher_effects", MODE_PRIVATE).edit()
+                                .putBoolean("glass_parallax", !isGlassParallaxEnabled()).apply();
+                        updateGlassParallax();
                     }
                 })
                 .show();

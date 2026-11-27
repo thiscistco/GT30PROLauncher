@@ -143,6 +143,14 @@
   /* Preview experiment only: keep app pages above the glass and home controls tappable. */
   .screen.glass-over-home .home-screen-glass { z-index:7; }
   .screen.glass-over-home .punch-hole { z-index:8; }
+  /* Only the reflection moves; glass artwork and all home controls stay fixed. */
+  .glass-parallax { position:absolute; inset:0; z-index:1; overflow:hidden; pointer-events:none; }
+  .glass-parallax[hidden] { display:none; }
+  .screen.glass-over-home .glass-parallax { z-index:7; }
+  .glass-parallax::before { content:""; position:absolute; inset:-20%;
+    background:linear-gradient(130deg,transparent 34%,rgba(255,255,255,.06) 44%,rgba(255,255,255,.14) 49%,rgba(255,255,255,.025) 54%,transparent 65%);
+    transform:translate(var(--glass-x,0px),var(--glass-y,0px)); transition:transform .14s ease-out; }
+  @media (prefers-reduced-motion:reduce) { .glass-parallax { display:none; } }
   .home-screen-glass.dark { display:none; }
   @media (prefers-color-scheme: dark) {
     .home-screen-glass.light { display:none; }
@@ -861,6 +869,7 @@
               <canvas class="amber-glow" id="amberGlow" aria-hidden="true"></canvas>
               <img class="home-screen-glass light" src="assets/home-screen-glass.png?v=5" alt="" aria-hidden="true" draggable="false">
               <img class="home-screen-glass dark" src="assets/home-screen-glass-dark.png?v=4" alt="" aria-hidden="true" draggable="false">
+              <div class="glass-parallax" id="glassParallax" aria-hidden="true"></div>
               <canvas class="path-draw" id="pathDraw" aria-label="Area menggambar jalur animasi" hidden></canvas>
               <button class="home-voice" id="homeVoice" type="button" aria-label="Ikon perintah suara. Ketuk untuk info preview" aria-describedby="voicePreviewStatus" title="Perintah suara: info preview"><span class="home-voice-icon" aria-hidden="true"><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span><span class="home-voice-bar"></span></span></button>
               <div class="clock-led" id="clockLed" role="button" tabindex="0" aria-label="Buka Jam di Super App">
@@ -1078,6 +1087,12 @@
       <label for="ramSimulation">Simulasi penggunaan RAM: <output id="ramValue" for="ramSimulation">50% · 6,0 detik per arah</output></label>
       <input type="range" id="ramSimulation" min="0" max="100" step="1" value="50">
       <span>Preview memakai simulasi, bukan RAM perangkat. RAM lebih tinggi = cahaya lebih cepat.</span>
+    </div>
+    <label class="charging-toggle"><input type="checkbox" id="glassParallaxToggle" checked> Efek kaca 3D (preview)</label>
+    <div class="ram-simulation">
+      <label for="glassTiltX">Kemiringan kaca kiri–kanan (simulasi)</label><input type="range" id="glassTiltX" min="-100" max="100" value="0">
+      <label for="glassTiltY">Kemiringan kaca atas–bawah (simulasi)</label><input type="range" id="glassTiltY" min="-100" max="100" value="0">
+      <span>Gerakkan kursor di atas layar atau gunakan slider. Preview tidak membaca sensor perangkat.</span>
     </div>
     <label class="charging-toggle"><input type="checkbox" id="chargeToggle" checked> Simulasi pengisian daya</label>
     <p class="animation-status">Informasi baterai di preview adalah simulasi, bukan data baterai perangkat.</p>
@@ -1461,6 +1476,7 @@
   })();
 </script>
 <script src="glass-preview.js?v=17"></script>
+<script src="glass-parallax.js?v=1"></script>
 <script src="voice-preview.js?v=2"></script>
 <script src="home-date.js?v=2"></script>
 <script src="weather-page.js?v=2"></script>

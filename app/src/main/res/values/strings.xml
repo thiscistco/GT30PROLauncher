@@ -22,4 +22,6 @@
     <string name="menu_weather">Aktifkan / perbarui cuaca</string>
     <string name="menu_amber_off">Matikan animasi sirkuit</string>
     <string name="menu_amber_on">Nyalakan animasi sirkuit</string>
+    <string name="menu_glass_parallax_off">Matikan efek kaca 3D</string>
+    <string name="menu_glass_parallax_on">Nyalakan efek kaca 3D</string>
 </resources>
