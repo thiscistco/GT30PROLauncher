@@ -202,3 +202,6 @@ Informasi baterai dan perangkat tampil langsung di homescreen; properti yang tid
 
 ### Penyesuaian v0.1.212
 Menit homescreen bergeser 1 px ke kanan, panel informasi turun 50 px, dan tombol suara mengambang di aplikasi bergeser 10 px ke kiri dan ke atas (berdasarkan skala preview). Ikon daftar modul Super App kembali tanpa latar kaca; kontrol di dalam aplikasi tetap bergaya kaca.
+
+### Penyesuaian v0.1.213
+Suhu homescreen diturunkan 8 px dan label informasi dinaikkan 25 px (berdasarkan skala preview). Titik pemisah dipusatkan di antara jam dan menit dan memudar hilang-muncul berurutan; animasi berhenti jika animasi sistem dinonaktifkan. Tombol kembali dan tema tidak lagi bergaya kaca.

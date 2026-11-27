@@ -13,7 +13,7 @@ assert.match(clock, /font-variation-settings:\s*'wght'\s*800/);
 assert.match(clock, /letter-spacing:\s*0\.2mm/);
 assert.match(clock, /padding-bottom:\s*1px/);
 assert.match(sep, /height:\s*0\.22mm/);
-assert.match(sep, /margin:\s*calc\(0\.461mm - 1px\) 0 0\.45mm 0/);
+assert.match(sep, /margin:\s*calc\(0\.4555mm - 0\.9385965px\) 0 calc\(0\.4555mm - 0\.0614035px\) 0/);
 const digits = html.match(/\.clock-led > span:not\(\.clock-sep\),\s*\.date-led > span\s*\{([^}]*)\}/)[1];
 // Both home overlays retain an amber gradient tuned to the home palette.
 assert.match(digits, /#ffcd6a 0%, #ffcd6a 24%, #ffcd6a 50%, #ffcd6a 76%, #ffcd6a 100%/);
@@ -22,6 +22,8 @@ assert.match(sep, /color:#adc3ca/);
 assert.match(html, /\.clock-sep \{ color:#425860; \}/);
 assert.match(html, /<span class="clock-sep" aria-hidden="true">(?:<i><\/i>){5}<\/span>/);
 assert.match(html, /animation:clockDotPulse 5s linear infinite/);
+assert.match(html, /@keyframes clockDotPulse \{ 0%,20%,100% \{ opacity:1; \} 10% \{ opacity:0;/);
+assert.match(view,/dots\.setAlpha\(Math\.round\(255f \* pulse\)\)/);
 for (let i=2; i<=5; i++) assert(html.includes(`.clock-sep i:nth-child(${i}) { animation-delay:${i-1}s; }`));
 assert.match(html, /prefers-reduced-motion:reduce[^}]*\.clock-sep i \{ animation:none; opacity:1/);
 assert.match(html, /#clockMin \{ transform: translate\(0px, -0\.877193px\)/);
@@ -58,7 +60,7 @@ assert.match(java,/clockLed\.stopSeparator\(\)/);
 assert.match(view,/dots\.setColor\(lightGlass \? 0xFF425860 : 0xFFADC3CA\)/);
 assert.match(view,/canvas\.translate\(0f, -cssPx \/ HOME_SCALE\)/);
 assert.match(view, /drawDigits\(canvas, hour/);
-assert.match(view, /drawDigits\(canvas, minute, dotTop \+ \.22f \* pxPerMm \+ \.45f \* pxPerMm, line\)/);
+assert.match(view, /drawDigits\(canvas, minute, minuteTop, line\)/);
 // Explicit view bounds include glow padding, while the content remains anchored
 // to the preview's 35.7% center and 6% + 0.55 CSS px bottom position.
 for (const [w,h] of [[269,596],[1224,2720],[720,1600]]) {
@@ -70,10 +72,15 @@ for (const [w,h] of [[269,596],[1224,2720],[720,1600]]) {
   assert(Math.abs(top - previousTop - css) < 1e-9, 'entire clock moved down 1 CSS px');
   assert(Math.abs(left + boxWidth/2 - (w*.357 - 1.5*css)) < 1e-9);
   assert(Math.abs((h-(top+boxHeight-.4*mm)) - (h*.06 + .55*css)) < 1e-9);
-  // The clock box keeps its former height; only the minute line moves up.
-  const dotTop = top + .4*mm + 2.3*mm + .461*mm - css;
-  const oldMinuteTop = dotTop + .22*mm + .45*mm + .5*css;
-  const minuteTop = dotTop + .22*mm + .45*mm;
-  assert(Math.abs((oldMinuteTop-minuteTop) - .5*css) < 1e-9);
+  // Equal gaps around the dot glyphs; both digit rows remain at their original coordinates.
+  const hourBottom = .4*mm + 2.3*mm;
+  const oldDotTop=hourBottom+.461*mm-css;
+  const minuteTop=oldDotTop+.22*mm+.45*mm-css/1.14;
+  const dotTop=(hourBottom+minuteTop)/2-.14*mm;
+  assert(Math.abs((dotTop-hourBottom)-(minuteTop-(dotTop+.28*mm)))<1e-9);
+  const topMargin=.4555*mm-.9385965*css;
+  const bottomMargin=.4555*mm-.0614035*css-css/1.14;
+  assert(Math.abs(topMargin-bottomMargin)<1e-6*css);
+  assert(Math.abs((topMargin+bottomMargin)-(.461*mm-css+.45*mm-css/1.14))<1e-6*css);
 }
 console.log('Explicit Android clock rendering and preview-relative placement: OK');

@@ -33,6 +33,11 @@ for activity in ('ClockActivity','CalendarActivity','WeatherActivity','TimeTable
     assert 'iconGlass(' in (java/(activity+'.java')).read_text(), activity
 assert 'iconGlass(' not in (java/'SuperAppActivity.java').read_text()
 assert 'button.setBackgroundColor(Color.TRANSPARENT)' in (java/'SuperAppActivity.java').read_text()
+assert 'button.setBackgroundColor(Color.TRANSPARENT)' in ui
+assert 'option.setBackground(surface(a,active?selected:control))' in ui
+calendar=(java/'CalendarActivity.java').read_text()
+assert 'theme.setBackgroundColor(Color.TRANSPARENT)' in calendar
+assert 'button.setBackground(bg(selected ? selectionColor : controlColor))' in calendar
 assert 'positionTabIndicator(true)' in clock and 'ValueAnimator.areAnimatorsEnabled()' in clock
 assert 'data-selected="alarm"' in html and 'prefers-reduced-motion:reduce' in html
 assert 'id="appVoiceFab"' in html and '.calendar-page:not([hidden])' in html

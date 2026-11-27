@@ -250,7 +250,7 @@ public class CalendarActivity extends SwipeBackActivity {
         ImageButton button = new ImageButton(this); button.setImageResource(themeIcon(value));
         button.setColorFilter(selected ? selectedText : ink); button.setScaleType(ImageView.ScaleType.FIT_CENTER);
         button.setPadding(dp(12),dp(12),dp(12),dp(12));
-        button.setBackground(new AppUi(this).iconGlass(this,selected));
+        button.setBackground(bg(selected ? selectionColor : controlColor));
         String label = "dark".equals(value) ? "Gelap" : "light".equals(value) ? "Terang" : "Ikuti perangkat";
         button.setContentDescription("Tema " + label + (selected ? ", dipilih" : ""));
         button.setTooltipText("Tema " + label);
@@ -457,7 +457,7 @@ public class CalendarActivity extends SwipeBackActivity {
         year.setContentDescription("Kalender, tahun " + selected.getYear()); top.addView(year);
         top.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
         ImageButton theme = themeButton(themeChoice, false);
-        theme.setBackground(new AppUi(this).iconGlass(this,false));
+        theme.setBackgroundColor(Color.TRANSPARENT);
         theme.setContentDescription("Tema: " + themeLabel() + ". Pilih tema aplikasi");
         theme.setTooltipText("Pilih tema aplikasi");
         theme.setOnClickListener(this::chooseTheme);

@@ -74,7 +74,7 @@ final class AppUi {
     private ImageButton icon(Activity a, int resource, String description) {
         ImageButton button = new ImageButton(a); button.setImageResource(resource); button.setColorFilter(ink);
         button.setScaleType(ImageView.ScaleType.FIT_CENTER); button.setPadding(dp(a,12),dp(a,12),dp(a,12),dp(a,12));
-        button.setBackground(iconGlass(a,false)); button.setContentDescription(description); button.setTooltipText(description); return button;
+        button.setBackgroundColor(Color.TRANSPARENT); button.setContentDescription(description); button.setTooltipText(description); return button;
     }
     /** Same dot-matrix arrow and 48 dp touch target as Calendar. */
     ImageButton backButton(Activity a) {
@@ -96,7 +96,7 @@ final class AppUi {
             for (String value : new String[]{"system","light","dark"}) {
                 boolean active=value.equals(choice); String name="system".equals(value)?"Ikuti perangkat":"light".equals(value)?"Terang":"Gelap";
                 ImageButton option=icon(a,themeIcon(value),"Tema " + name + (active ? ", dipilih" : ""));
-                option.setColorFilter(active?selectedText:ink); option.setBackground(iconGlass(a,active)); option.setSelected(active);
+                option.setColorFilter(active?selectedText:ink); option.setBackground(surface(a,active?selected:control)); option.setSelected(active);
                 LinearLayout.LayoutParams size=new LinearLayout.LayoutParams(dp(a,48),dp(a,48)); size.setMargins(dp(a,2),0,dp(a,2),0); choices.addView(option,size);
                 option.setOnClickListener(w -> { popup.dismiss(); if (!value.equals(choice)) { a.getSharedPreferences("calendar_appearance",Context.MODE_PRIVATE).edit().putString("theme",value).apply(); a.recreate(); } });
             }

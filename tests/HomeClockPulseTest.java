@@ -1,16 +1,20 @@
 package com.gt30pro.launcher;
 
 public class HomeClockPulseTest {
+    private static void near(float actual,float expected) {
+        if (Math.abs(actual-expected)>.00001f) throw new AssertionError("expected "+expected+" got "+actual);
+    }
     public static void main(String[] args) {
         for (int dot=0;dot<5;dot++) {
             for (int i=0;i<5;i++) {
-                float pulse=HomeClockPulse.intensity(dot+.5f,i);
-                if (Math.abs(pulse-(i==dot ? 1f : 0f))>.00001f) throw new AssertionError("wrong dot at "+dot+" "+i);
-                if (Math.abs(HomeClockPulse.intensity(dot+5.5f,i)-pulse)>.00001f) throw new AssertionError("loop");
+                near(HomeClockPulse.intensity(dot+.5f,i),i==dot ? 0f : 1f);
+                near(HomeClockPulse.intensity(dot+5.5f,i),HomeClockPulse.intensity(dot+.5f,i));
             }
-            if (HomeClockPulse.intensity(-1f,dot)!=1f) throw new AssertionError("reduced motion");
-            if (HomeClockPulse.intensity(dot+.1f,dot)>=HomeClockPulse.intensity(dot+.5f,dot)) throw new AssertionError("pulse");
+            near(HomeClockPulse.intensity(-1f,dot),1f);
+            near(HomeClockPulse.intensity(dot,dot),1f);
+            near(HomeClockPulse.intensity(dot+.25f,dot),.5f);
+            near(HomeClockPulse.intensity(dot+.75f,dot),.5f);
         }
-        System.out.println("Five-dot sequential heartbeat, loop and reduced motion: OK");
+        System.out.println("Five-dot sequential fade out/in, loop and reduced motion: OK");
     }
 }

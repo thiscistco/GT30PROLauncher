@@ -20,12 +20,12 @@ assert.match(weatherCss,/bottom:\s*calc\(6%\s*\+\s*460px\)/);
 assert.match(weatherCss,/transform:\s*translateX\(-50%\)\s+scale\(0\.9\)/);
 assert.match(main,/weatherBox\.setScaleX\(\.9f\)/);
 assert.match(main,/weatherBox\.setScaleY\(\.9f\)/);
-assert.match(html,/\.home-weather\s+\.weather-temp\s*\{\s*top:\s*calc\(68%\s*-\s*18\.333333px\)/);
+assert.match(html,/\.home-weather\s+\.weather-temp\s*\{\s*top:\s*calc\(68%\s*-\s*9\.444444px\)/);
 assert.match(weatherLayout,/width \* \.49f - 2f \* cssPixel - w \/ 2f/);
 assert.match(weatherLayout,/height - \(height \* \.06f \+ 460f \* cssPixel\) - h/);
 assert.match(weatherLayout,/box\.setHomeCssPixel\(cssPixel\)/);
-assert.match(weatherView,/canvas\.drawText\(temperature, getWidth\(\)\/2f, y0\+20\.8f\*s - \(5f \+ 12f \/ \.9f\)\*homeCssPixel, paint\)/);
-assert(Math.abs((18.333333-7.222222)*.9-10)<1e-6);
+assert.match(weatherView,/canvas\.drawText\(temperature, getWidth\(\)\/2f, y0\+20\.8f\*s - \(5f \+ 4f \/ \.9f\)\*homeCssPixel, paint\)/);
+assert(Math.abs((18.333333-9.444444)*.9-8)<1e-6);
 for (const [w,h] of [[269,596],[720,1600],[1080,2400],[1224,2720]]) {
  const mm=w/70.9, css=mm*25.4/96, dateCenter=w*.49+115*css, center=w*.49-2*css;
  const dateScale=.855*(2.64+10*25.4/96)/2;

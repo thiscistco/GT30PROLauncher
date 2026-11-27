@@ -97,10 +97,12 @@ final class HomeClockView extends View {
         float line = 2.3f * pxPerMm;
         float top = GLOW_PAD_MM * pxPerMm;
         drawDigits(canvas, hour, top, line);
-        // CSS: 0.461 mm - 1 px above and 0.45 mm below.
         float cssPx = pxPerMm * 25.4f / 96f;
-        float dotTop = top + line + .461f * pxPerMm - cssPx;
+        // Preserve both digit rows and place the actual dot glyphs midway between them.
+        float originalDotTop = top + line + .461f * pxPerMm - cssPx;
+        float minuteTop = originalDotTop + .22f * pxPerMm + .45f * pxPerMm;
         float r = .14f * pxPerMm;
+        float dotTop = (top + line + minuteTop - cssPx / HOME_SCALE) / 2f - r;
         float total = 2.8f * pxPerMm - .76f * cssPx;
         float center = getWidth() / 2f - .63f * cssPx;
         float start = center - total / 2f + total / 10f;
@@ -110,14 +112,14 @@ final class HomeClockView extends View {
             float x = start + i * total / 5f;
             float y = dotTop + r;
             float pulse = HomeClockPulse.intensity(separatorPhase, i);
-            dots.setAlpha(Math.round(190f + 65f * pulse));
+            dots.setAlpha(Math.round(255f * pulse));
             canvas.drawCircle(x, y, r, dots);
         }
         dots.setAlpha(255);
         // Only the minute retains its one-CSS-pixel upward offset; horizontal offset is now zero.
         canvas.save();
         canvas.translate(0f, -cssPx / HOME_SCALE);
-        drawDigits(canvas, minute, dotTop + .22f * pxPerMm + .45f * pxPerMm, line);
+        drawDigits(canvas, minute, minuteTop, line);
         canvas.restore();
     }
 }

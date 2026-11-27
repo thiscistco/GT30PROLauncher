@@ -8,7 +8,7 @@ assert.match(html,/Informasi baterai dan perangkat di preview adalah simulasi/);
 assert.match(html,/\.battery-info-spacer \{ height:2\.3mm; \}/);
 assert.match(view,/spacer\.setVisibility\(View\.INVISIBLE\)/);
 assert.match(html,/Informasi baterai, data simulasi preview/);
-assert.match(html,/\.battery-info \{[^}]*z-index:6;[^}]*bottom:calc\(14% \+ 47px\)/);
+assert.match(html,/\.battery-info \{[^}]*z-index:6;[^}]*bottom:calc\(14% \+ 72px\)/);
 assert.match(html,/\.battery-info \{[^}]*pointer-events:none/);
 assert.match(html,/\.battery-info-cell:nth-child\(even\) \{ transform:translateX\(-25px\); \}/);
 assert.match(view,/for\(int i=1;i<cells\.length;i\+=2\) cells\[i\]\.setTranslationX\(-25f\*cssPixel\)/);
@@ -24,11 +24,11 @@ assert.match(layout,/25\.4f\/96f/);
 assert.match(layout,/batteryInfo\.setColumnOffset\(cssPixel\)/);
 assert.match(layout,/batteryInfo\.setTranslationX\(-5f\*cssPixel\)/);
 assert.match(html,/\.battery-info \{[^}]*left:calc\(8% - 5px\)/);
-assert.match(layout,/root\.getHeight\(\)\*\.14f\+47f\*cssPixel/);
+assert.match(layout,/root\.getHeight\(\)\*\.14f\+72f\*cssPixel/);
 for (const width of [269,405,1224]) {
  const cssPixel=width/70.9*25.4/96, height=width*2720/1224;
- const oldBottom=height*.14+97*cssPixel, newBottom=height*.14+47*cssPixel;
- assert(Math.abs((newBottom-oldBottom)/cssPixel+50)<1e-9);
+ const oldBottom=height*.14+47*cssPixel, newBottom=height*.14+72*cssPixel;
+ assert(Math.abs((newBottom-oldBottom)/cssPixel-25)<1e-9);
  assert(Math.abs((-5*cssPixel - (-10*cssPixel))/cssPixel-5)<1e-9);
  assert(Math.abs((-25*cssPixel - (-30*cssPixel))/cssPixel-5)<1e-9);
 }
