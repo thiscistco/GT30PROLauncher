@@ -21,6 +21,34 @@ final class TimeTableData {
         }
         return true;
     }
+    private static final String[][] DEFAULTS = {
+        {"07:00","08:00",""}, {"08:00","08:40",""}, {"08:40","09:15",""}, {"09:15","09:45",""},
+        {"09:45","10:30","Istirahat"}, {"10:30","11:10",""}, {"11:10","11:50",""}, {"11:50","12:50","ISHOMA"},
+        {"12:50","13:30",""}, {"13:30","14:10",""}, {"14:10","14:50",""}, {"14:50","15:30",""}
+    };
+    static final class SeedResult {
+        final JSONArray rows; final int skipped;
+        SeedResult(JSONArray rows, int skipped) { this.rows=rows; this.skipped=skipped; }
+    }
+    // Insert missing non-conflicting rows once; never replace existing time slots or cells.
+    static SeedResult seed(JSONArray saved) throws org.json.JSONException {
+        JSONArray result=new JSONArray(saved.toString()); int skipped=0;
+        for(String[] preset:DEFAULTS) {
+            JSONObject exact=null;
+            for(int i=0;i<result.length();i++) { JSONObject item=result.optJSONObject(i); if(item!=null && preset[0].equals(item.optString("start")) && preset[1].equals(item.optString("end"))) { exact=item; break; } }
+            if(exact!=null) {
+                // Add a break label only to a truly empty row; preserve existing entries and labels.
+                JSONArray cells=exact.optJSONArray("cells"); boolean hasEntry=false;
+                if(cells!=null) for(int c=0;c<cells.length();c++) { JSONObject cell=cells.optJSONObject(c); if(cell!=null && (!cell.optString("subject","").trim().isEmpty() || !cell.optString("class","").trim().isEmpty())) { hasEntry=true; break; } }
+                if(!preset[2].isEmpty() && !hasEntry && exact.optString("label","").isEmpty()) exact.put("label",preset[2]);
+                continue;
+            }
+            if(!validRange(preset[0],preset[1],result,-1)) { skipped++; continue; }
+            JSONObject row=new JSONObject().put("start",preset[0]).put("end",preset[1]).put("cells",new JSONArray());
+            if(!preset[2].isEmpty()) row.put("label",preset[2]); result.put(row);
+        }
+        return new SeedResult(sorted(result),skipped);
+    }
     static JSONArray sorted(JSONArray rows) {
         java.util.ArrayList<JSONObject> list=new java.util.ArrayList<>();
         for (int i=0;i<rows.length();i++) { JSONObject row=rows.optJSONObject(i); if(row!=null) list.add(row); }

@@ -6,6 +6,7 @@
 })(typeof window!=='undefined'?window:null,function(){
   'use strict';
   var days=['Senin','Selasa','Rabu','Kamis','Jumat'];
+  var defaults=[['07:00','08:00',''],['08:00','08:40',''],['08:40','09:15',''],['09:15','09:45',''],['09:45','10:30','Istirahat'],['10:30','11:10',''],['11:10','11:50',''],['11:50','12:50','ISHOMA'],['12:50','13:30',''],['13:30','14:10',''],['14:10','14:50',''],['14:50','15:30','']];
   function minutes(s) {
     if(typeof s!=='string' || !/^\d{2}:\d{2}$/.test(s)) return -1;
     var h=+s.slice(0,2),m=+s.slice(3); return h<24 && m<60?h*60+m:-1;
@@ -15,12 +16,33 @@
     return !rows.some(function(row,i){var x=minutes(row.start),y=minutes(row.end);return i!==edit && x>=0 && y>x && a<y && x<b;});
   }
   function sorted(rows) { return rows.slice().sort(function(a,b){return a.start.localeCompare(b.start);}); }
+  function seed(saved) {
+    var rows=JSON.parse(JSON.stringify(saved)), skipped=0;
+    defaults.forEach(function(preset){
+      var existing=rows.find(function(row){return row.start===preset[0] && row.end===preset[1];});
+      if(existing) {
+        var hasEntry=Array.isArray(existing.cells) && existing.cells.some(function(cell){return cell && (String(cell.subject||'').trim() || String(cell.class||'').trim());});
+        if(preset[2] && !hasEntry && !existing.label)existing.label=preset[2];
+        return;
+      }
+      if(!validRange(preset[0],preset[1],rows,-1)){skipped++;return;}
+      var row={start:preset[0],end:preset[1],cells:[]};if(preset[2])row.label=preset[2];rows.push(row);
+    });
+    return {rows:sorted(rows),skipped:skipped};
+  }
   function mount(win) {
     var doc=win.document, byId=function(id){return doc.getElementById(id);};
     if(!byId('timetablePage')) return;
     var key='gt30-timetable-v1', rows=[], writable=true, editor=byId('ttEditor'), form=byId('ttForm');
     var mode='', index=-1, day=-1, returnFocus=null;
-    try { var saved=JSON.parse(win.localStorage.getItem(key)||'[]'); if(Array.isArray(saved)) rows=sorted(saved.filter(function(row){return row && minutes(row.start)>=0 && minutes(row.end)>minutes(row.start);})); }
+    try {
+      var saved=JSON.parse(win.localStorage.getItem(key)||'[]'); if(!Array.isArray(saved)) throw Error('invalid data');
+      rows=sorted(saved.filter(function(row){return row && minutes(row.start)>=0 && minutes(row.end)>minutes(row.start);}));
+      if(!win.localStorage.getItem(key+'-default-v2')) {
+        var seeded=seed(rows); win.localStorage.setItem(key,JSON.stringify(seeded.rows)); win.localStorage.setItem(key+'-default-v2','1'); rows=seeded.rows;
+        if(seeded.skipped)byId('ttStorage').textContent='Sebagian baris bawaan bertabrakan dengan jadwal lama dan tidak ditambahkan. Jadwal lama tetap tersimpan.';
+      }
+    }
     catch(e){ writable=false; byId('ttStorage').textContent='Penyimpanan tidak tersedia. Perubahan tidak dapat disimpan.'; }
     function save(next) {
       if(!writable) { byId('ttError').textContent='Penyimpanan tidak tersedia. Perubahan tidak disimpan.'; return false; }
@@ -28,10 +50,12 @@
       catch(e){byId('ttError').textContent='Penyimpanan tidak tersedia. Perubahan tidak disimpan.';return false;}
     }
     function render() {
-      var body=byId('ttRows'); body.textContent=''; byId('ttEmpty').hidden=rows.length>0;
+      var body=byId('ttRows'); body.textContent=''; byId('ttEmpty').hidden=rows.length>0; byId('ttScroll').style.setProperty('--tt-min-height',(6+Math.max(1,rows.length)*6.35)+'mm');
       rows.forEach(function(row,i){
-        var tr=doc.createElement('tr'), th=doc.createElement('th'), time=doc.createElement('button'); th.scope='row'; time.type='button';time.className='tt-time';time.textContent=row.start+'\n–\n'+row.end;time.setAttribute('aria-label','Ubah jam '+row.start+' sampai '+row.end); time.addEventListener('click',function(){openTime(i,time);});th.appendChild(time);tr.appendChild(th);
-        days.forEach(function(name,d){
+        var tr=doc.createElement('tr'), th=doc.createElement('th'), time=doc.createElement('button'); th.scope='row'; time.type='button';time.className='tt-time';time.textContent=row.start+'\n'+row.end;time.setAttribute('aria-label','Ubah jam '+row.start+' sampai '+row.end); time.addEventListener('click',function(){openTime(i,time);});th.appendChild(time);tr.appendChild(th);
+        if(row.label) {
+          var td=doc.createElement('td'), label=doc.createElement('button');td.colSpan=5;label.type='button';label.className='tt-break';label.textContent=row.label;label.setAttribute('aria-label',row.label+', '+row.start+' sampai '+row.end+'. Ubah jam dan label');label.addEventListener('click',function(){openTime(i,label);});td.appendChild(label);tr.appendChild(td);
+        } else days.forEach(function(name,d){
           var cell=row.cells && row.cells[d] || {}, subject=typeof cell.subject==='string'?cell.subject:'', classroom=typeof cell.class==='string'?cell.class:'';
           var value=[subject,classroom].filter(Boolean).join('\n'), td=doc.createElement('td'), button=doc.createElement('button'); button.type='button';button.className=value?'tt-filled':'';button.textContent=value||'+';button.setAttribute('aria-label',name+', '+row.start+' sampai '+row.end+', '+(value||'kosong')+'. Ubah jadwal');button.addEventListener('click',function(){openCell(i,d,button);});td.appendChild(button);tr.appendChild(td);
         });body.appendChild(tr);
@@ -42,7 +66,7 @@
       var time=kind==='time';byId('ttTimeFields').hidden=!time;byId('ttCellFields').hidden=time;byId('ttStart').required=time;byId('ttEnd').required=time;byId('ttDelete').hidden=!time||i<0;
     }
     function openTime(i,origin) {
-      begin('time',i,-1,origin);byId('ttEditorTitle').textContent=i<0?'Tambah jam':'Ubah jam';byId('ttStart').value=i<0?'07:00':rows[i].start;byId('ttEnd').value=i<0?'08:00':rows[i].end;byId('ttStart').focus();
+      begin('time',i,-1,origin);byId('ttEditorTitle').textContent=i<0?'Tambah jam':'Ubah jam';byId('ttStart').value=i<0?'07:00':rows[i].start;byId('ttEnd').value=i<0?'08:00':rows[i].end;byId('ttLabel').value=i<0?'':rows[i].label||'';byId('ttStart').focus();
     }
     function openCell(i,d,origin) {
       begin('cell',i,d,origin);var cell=rows[i].cells && rows[i].cells[d] || {};
@@ -56,7 +80,7 @@
       if(mode==='time') {
         var start=byId('ttStart').value,end=byId('ttEnd').value;
         if(!validRange(start,end,rows,index)){byId('ttError').textContent='Jam selesai harus setelah mulai dan tidak boleh bertabrakan dengan baris lain.';return;}
-        if(index<0) next.push({start:start,end:end,cells:[]});else {next[index].start=start;next[index].end=end;} next=sorted(next);
+        if(index<0) next.push({start:start,end:end,cells:[],label:byId('ttLabel').value.trim()});else {next[index].start=start;next[index].end=end;next[index].label=byId('ttLabel').value.trim();} next=sorted(next);
       } else {
         if(!next[index])return; if(!Array.isArray(next[index].cells))next[index].cells=[];
         next[index].cells[day]={subject:byId('ttSubject').value.trim(),class:byId('ttClass').value.trim()};
@@ -65,5 +89,5 @@
     });
     win.timetableCloseEditor=close;win.timetableOnOpen=render;render();
   }
-  return {minutes:minutes,validRange:validRange,sorted:sorted,mount:mount};
+  return {minutes:minutes,validRange:validRange,sorted:sorted,seed:seed,mount:mount};
 });
