@@ -406,8 +406,8 @@
   .calendar-page .alarm-form, .calendar-page .clock-entry { background: #e5ecf2; border: 0; border-radius: 3mm; }
   .calendar-page .alarm-form input, .calendar-page .alarm-form select { color: #304355; background: #fff; border-color: #a9bbc9; }
   .calendar-page .calendar-event button { background: #fff; }
-  .calendar-page { --cal-bg:#f4f7fa; --cal-card:#fff; --cal-text:#142a3a; --cal-muted:#405465; --cal-control:#e3eaf0; --cal-day:#dce5ed; --cal-select:#304355; --cal-selected-text:#fff; --cal-weekend:#b3263b; --cal-selected-weekend:#ff9ea8; --cal-border:#cbd6df; --cal-event:#e5ecf2; --cal-observe:#9b5700; background:var(--cal-bg); color:var(--cal-text); }
-  .calendar-page[data-theme="dark"] { color-scheme:dark; --cal-bg:#101820; --cal-card:#19252f; --cal-text:#f5f8fa; --cal-muted:#c7d3dd; --cal-control:#2a3b49; --cal-day:#344957; --cal-select:#dce8f0; --cal-selected-text:#172a38; --cal-weekend:#ff9faa; --cal-selected-weekend:#a6152b; --cal-border:#516776; --cal-event:#263743; --cal-observe:#ffc077; }
+  .calendar-page { --cal-bg:#f4f7fa; --cal-card:#fff; --cal-text:#142a3a; --cal-muted:#405465; --cal-control:#e3eaf0; --cal-day:#dce5ed; --cal-select:#304355; --cal-selected-text:#fff; --cal-weekend:#b3263b; --cal-selected-weekend:#ff9ea8; --cal-border:#cbd6df; --cal-event:#e5ecf2; --cal-observe:#9b5700; --cal-agenda-holiday:#85132a; --cal-agenda-observe:#743b00; background:var(--cal-bg); color:var(--cal-text); }
+  .calendar-page[data-theme="dark"] { color-scheme:dark; --cal-bg:#101820; --cal-card:#19252f; --cal-text:#f5f8fa; --cal-muted:#c7d3dd; --cal-control:#2a3b49; --cal-day:#344957; --cal-select:#dce8f0; --cal-selected-text:#172a38; --cal-weekend:#ff9faa; --cal-selected-weekend:#a6152b; --cal-border:#516776; --cal-event:#263743; --cal-observe:#ffc077; --cal-agenda-holiday:#ffb0b9; --cal-agenda-observe:#ffc98d; }
   .calendar-top { display:flex; align-items:center; justify-content:space-between; gap:2mm; margin-bottom:2mm; }
   .calendar-heading { margin-right:auto; color:var(--cal-text); font:800 3.6mm 'Doto', monospace; font-variation-settings:'wght' 800; white-space:nowrap; }
   .calendar-page { font-weight:800; font-variation-settings:'wght' 800; }
@@ -427,8 +427,8 @@
   .calendar-card { background:var(--cal-card); }
   .calendar-page .clock-action { color:var(--cal-text); background:var(--cal-control); border-color:var(--cal-border); }
   .calendar-nav { justify-content:flex-start; }
-  .calendar-nav .calendar-month { flex:0 1 auto; text-align:left; padding:0 3mm; border-radius:2.5mm; box-sizing:border-box; height:7.62mm; min-height:7.62mm; }
-  .calendar-nav #calendarToday { margin-right:auto; }
+  .calendar-nav .calendar-month { flex:0 1 auto; display:flex; align-items:center; gap:2mm; margin-right:auto; text-align:left; padding:0 3mm; border-radius:2.5mm; box-sizing:border-box; height:7.62mm; min-height:7.62mm; }
+  .calendar-month .calendar-today-icon { flex:none; }
   .calendar-month-menu { display:flex; gap:1mm; margin:1mm 0 2mm; }
   .calendar-month-menu[hidden] { display:none; }
   .calendar-month-menu .clock-action { white-space:normal; font-size:2.3mm; flex:1; }
@@ -454,8 +454,8 @@
   .calendar-entry-kind, .calendar-entry-name { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .calendar-entry-kind { color:var(--cal-muted); font-size:2.4mm; }
   .calendar-entry-name { color:var(--cal-text); font-size:3.4mm; font-weight:900; font-variation-settings:'wght' 900; }
-  .calendar-holiday-entry .calendar-entry-kind { color:var(--cal-observe); }
-  .calendar-holiday-entry.holiday .calendar-entry-kind { color:var(--cal-weekend); }
+  .calendar-holiday-entry .calendar-entry-kind { color:var(--cal-agenda-observe); font-size:2.6mm; font-weight:900; font-variation-settings:'wght' 900; }
+  .calendar-holiday-entry.holiday .calendar-entry-kind { color:var(--cal-agenda-holiday); }
   .calendar-page .calendar-event button.calendar-entry-main { background:transparent; }
   .calendar-entry-main:focus-visible { outline:1px solid var(--cal-text); outline-offset:2px; }
   .calendar-warning[hidden] { display:none; }
@@ -713,8 +713,7 @@
                     </div></div></div>
                 <div class="calendar-card">
                 <div class="calendar-nav">
-                  <button class="clock-action calendar-month" id="calendarMonth" type="button" aria-label="Pilih bulan" aria-expanded="false"></button>
-                  <button class="calendar-icon-button" id="calendarToday" type="button" aria-label="Hari ini" title="Hari ini"><span class="calendar-action-icon calendar-today-icon" aria-hidden="true"></span></button>
+                  <button class="clock-action calendar-month" id="calendarMonth" type="button" aria-label="Hari ini" aria-expanded="false" aria-controls="calendarMonthMenu" aria-keyshortcuts="Shift+F10" title="Hari ini; tekan lama untuk navigasi"><span id="calendarMonthLabel"></span><span class="calendar-action-icon calendar-today-icon" aria-hidden="true"></span></button>
                   <button class="calendar-icon-button" id="calendarAdd" type="button" aria-label="Tambah acara" title="Tambah acara"><span class="calendar-action-icon calendar-add-icon" aria-hidden="true"></span></button>
                 </div>
                 <div id="calendarMonthMenu" class="calendar-month-menu" hidden>
@@ -1041,7 +1040,7 @@
 <script src="weather.js?v=5"></script>
 <script src="holiday-data.js?v=2"></script>
 <script src="holiday-update.js?v=1"></script>
-<script src="calendar.js?v=13"></script>
+<script src="calendar.js?v=14"></script>
 <script src="circuit-editor.js?v=13"></script>
 <script>
   // Aliran cahaya dibatasi mask yang sama seperti Android; wallpaper asli tetap utuh.

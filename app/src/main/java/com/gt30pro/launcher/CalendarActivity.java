@@ -406,7 +406,8 @@ public class CalendarActivity extends SwipeBackActivity {
             String kind=holidayKind(entry), name=entry.optString("name");
             LinearLayout row=new LinearLayout(this); row.setOrientation(LinearLayout.VERTICAL);
             row.setPadding(dp(12),dp(8),dp(12),dp(8)); row.setBackground(bg(eventColor));
-            row.addView(singleLine(kind + " · " + dateLabel(date),12,"libur".equals(entry.optString("type")) ? weekend : observance,false));
+            int kindColor = "libur".equals(entry.optString("type")) ? (dark ? 0xFFFFB0B9 : 0xFF85132A) : (dark ? 0xFFFFC98D : 0xFF743B00);
+            row.addView(singleLine(kind + " · " + dateLabel(date),13,kindColor,true));
             row.addView(singleLine(name,17,ink,true));
             row.setContentDescription(kind + ", " + dateLabel(date) + ", " + name + ". Lihat rincian");
             row.setFocusable(true); row.setOnClickListener(v -> showDialog(dialog().setTitle(name).setMessage(kind + "\n" + dateLabel(date)).setNegativeButton("Tutup",null).create()));
@@ -436,12 +437,22 @@ public class CalendarActivity extends SwipeBackActivity {
         LinearLayout card = new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL);
         card.setPadding(dp(8),dp(8),dp(8),dp(8)); card.setBackground(bg(cardColor));
         root.addView(card); page = card;
-        TextView month = button(MONTHS[selected.getMonthValue()-1], this::chooseMonth);
-        month.setContentDescription("Pilih bulan. " + MONTHS[selected.getMonthValue()-1] + " " + selected.getYear());
+        LinearLayout month = new LinearLayout(this) {
+            @Override public void onInitializeAccessibilityNodeInfo(android.view.accessibility.AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(info); info.setClassName(android.widget.Button.class.getName());
+            }
+        };
+        month.setGravity(Gravity.CENTER_VERTICAL); month.setPadding(dp(12),0,dp(12),0); month.setBackground(bg(controlColor));
+        TextView monthText=text(MONTHS[selected.getMonthValue()-1],13,ink);
+        monthText.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO); month.addView(monthText);
+        ImageView todayIcon=new ImageView(this); todayIcon.setImageResource(R.drawable.ic_calendar_today); todayIcon.setColorFilter(ink);
+        todayIcon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        LinearLayout.LayoutParams iconSize=new LinearLayout.LayoutParams(dp(24),dp(24)); iconSize.leftMargin=dp(8); month.addView(todayIcon,iconSize);
+        month.setContentDescription(MONTHS[selected.getMonthValue()-1] + " " + selected.getYear() + ". Ketuk untuk hari ini, tekan lama untuk navigasi kalender");
+        month.setFocusable(true); month.setOnClickListener(v -> { selected=LocalDate.now(); render(); });
+        month.setOnLongClickListener(v -> { chooseMonth(); return true; });
         LinearLayout nav = new LinearLayout(this); nav.setGravity(Gravity.CENTER_VERTICAL);
         nav.addView(month,new LinearLayout.LayoutParams(-2,dp(48)));
-        ImageButton todayButton=actionIcon(R.drawable.ic_calendar_today,"Hari ini",() -> { selected=LocalDate.now(); render(); });
-        nav.addView(todayButton,new LinearLayout.LayoutParams(dp(48),dp(48)));
         nav.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
         ImageButton add = actionIcon(R.drawable.ic_calendar_add,"Tambah acara",this::addEvent);
         add.setBackground(bg(controlColor)); nav.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));

@@ -27,12 +27,12 @@ class Element {
 const key='gt30-calendar-events-v1', storage=new Map(); let confirmAnswer=true;
 function createUI(openMonth=true){
  const ids = {};
- for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarToday','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarTodayAgendaLabel','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel','calendarExpand','calendarYear','calendarStartDate','calendarEndDate','calendarEndTime','calendarType','calendarRepeat','calendarCustomRepeat','calendarInterval','calendarUnit','calendarReminder','calendarCustomRepeatLabel','calendarCustomReminder','calendarCustomReminderLabel','calendarReminderAmount','calendarReminderUnit']) ids[id]=new Element();
- ids.calendarReminderUnit.value='1'; ids.calendarReminderAmount.value='1'; ids.calendarType.value='Pribadi'; ids.calendarUnit.value='day'; ids.calendarReminder.value='-1'; ids.calendarRepeat.value='none'; ids.calendarInterval.value='1';
+ for (const id of ['calendarGrid','calendarForm','calendarStorageNote','calendarError','calendarMonth','calendarMonthLabel','calendarSelected','calendarPrev','calendarNext','calendarEvents','calendarAdd','calendarCancel','calendarTitle','calendarTime','calendarHolidayDetails','calendarTodayAgendaLabel','calendarHolidayStatus','calendarMonthHolidays','calendarRefresh','calendarPage','calendarTheme','calendarThemeIcon','calendarThemeMenu','calendarThemeSystem','calendarThemeLight','calendarThemeDark','calendarMonthMenu','calendarWarning','calendarDayLabel','calendarExpand','calendarYear','calendarStartDate','calendarEndDate','calendarEndTime','calendarType','calendarRepeat','calendarCustomRepeat','calendarInterval','calendarUnit','calendarReminder','calendarCustomRepeatLabel','calendarCustomReminder','calendarCustomReminderLabel','calendarReminderAmount','calendarReminderUnit']) ids[id]=new Element();
+ ids.calendarMonth.appendChild(ids.calendarMonthLabel); ids.calendarReminderUnit.value='1'; ids.calendarReminderAmount.value='1'; ids.calendarType.value='Pribadi'; ids.calendarUnit.value='day'; ids.calendarReminder.value='-1'; ids.calendarRepeat.value='none'; ids.calendarInterval.value='1';
  ids.calendarThemeMenu.hidden=true; ids.calendarMonthMenu.hidden=true; ids.calendarForm.hidden=true; ids.calendarForm.reset=()=>{ids.calendarTitle.value='';ids.calendarTime.value='';};
  const doc={getElementById:id=>ids[id],createElement:()=>new Element()};
  const media={matches:true,addEventListener(type,fn){this.change=fn;}};
- const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer,matchMedia:()=>media,setTimeout,setInterval:()=>0,alert:message=>{ids._alert=message;}};
+ const win={document:doc,localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>confirmAnswer,matchMedia:()=>media,setTimeout,clearTimeout,setInterval:()=>0,alert:message=>{ids._alert=message;}};
  calendar.mount(win); if(openMonth) ids.calendarExpand.fire('click'); ids._win=win; ids._media=media; return ids;
 }
 let ui=createUI();
@@ -41,7 +41,7 @@ assert.deepEqual(ui.calendarGrid.children.slice(0,7).map(e=>e.textContent), ['Se
 ui.calendarGrid.children.forEach((e,i)=>{ if(i<7 || e.attrs['aria-pressed']!==undefined) assert.equal(e.classes.has('weekend'), i%7>=5, 'weekend color for column '+i%7); });
 const weekendDay = ui.calendarGrid.children.find((e,i)=>i>=7 && i%7>=5 && e.attrs['aria-pressed']!==undefined);
 weekendDay.fire('click'); assert(ui.calendarGrid.children.find(e=>e.attrs['aria-pressed']==='true').classes.has('weekend'), 'selected weekend stays red');
-ui.calendarToday.fire('click');
+ui.calendarMonth.fire('click');
 const selected=ui.calendarSelected.textContent;
 ui.calendarAdd.fire('click'); assert.equal(ui.calendarForm.hidden,false);
 ui.calendarTitle.value=' <img src=x> '; ui.calendarTime.value='09:30'; ui.calendarForm.fire('submit');
@@ -52,13 +52,13 @@ ui=createUI(); assert.equal(ui.calendarSelected.textContent,selected); assert.eq
 confirmAnswer=false; ui.calendarEvents.children[0].children[1].fire('click'); assert.equal(JSON.parse(storage.get(key)).length,1);
 confirmAnswer=true; ui.calendarEvents.children[0].children[1].fire('click'); assert.equal(JSON.parse(storage.get(key)).length,0);
 ui.calendarAdd.fire('click'); ui.calendarTitle.value=' '; ui.calendarForm.fire('submit'); assert.equal(ui.calendarError.hidden,false);
-const month=ui.calendarMonth.textContent; ui.calendarNext.fire('click'); assert.notEqual(ui.calendarMonth.textContent,month); ui.calendarToday.fire('click'); assert.equal(ui.calendarMonth.textContent,month);
+const month=ui.calendarMonth.textContent; ui.calendarNext.fire('click'); assert.notEqual(ui.calendarMonth.textContent,month); ui.calendarMonth.fire('click'); assert.equal(ui.calendarMonth.textContent,month);
 storage.set(key,'not valid json'); ui=createUI(); ui.calendarAdd.fire('click'); ui.calendarTitle.value='Temporary'; ui.calendarForm.fire('submit');
 assert.equal(storage.get(key),'not valid json','corrupt saved data must not be overwritten');
 assert.match(ui.calendarStorageNote.textContent,/sementara/);
 const html=fs.readFileSync('preview/index.html','utf8');
 assert.match(html,/id="openCalendarModule"/); assert.match(html,/id="calendarPage"/);
-assert.match(html,/src="calendar\.js\?v=13"/);
+assert.match(html,/src="calendar\.js\?v=14"/);
 assert.match(html,/\.calendar-weekday\.weekend, \.calendar-day\.weekend, \.calendar-day\.holiday \{ color: #b3263b; \}/);
 assert.equal(calendar.holidaysFor('2026-08-17')[0].type,'libur');
 assert.equal(calendar.holidaysFor('2026-04-21')[0].type,'peringatan');
@@ -125,8 +125,8 @@ function drag(x,y,x2,y2) {
 drag(200,100,120,100);assert.notEqual(interactive.calendarMonth.textContent,initialMonth);
 drag(120,100,200,100);assert.equal(interactive.calendarMonth.textContent,initialMonth);
 drag(200,100,190,180);assert.equal(interactive.calendarMonth.textContent,initialMonth);
-interactive.calendarMonth.fire('click');assert(!interactive.calendarMonthMenu.hidden);interactive.calendarNext.fire('click');assert(interactive.calendarMonthMenu.hidden);
-interactive.calendarToday.fire('click');interactive.calendarAdd.fire('click');interactive.calendarTitle.value='Draft';
+interactive.calendarMonth.fire('contextmenu');assert(!interactive.calendarMonthMenu.hidden);interactive.calendarNext.fire('click');assert(interactive.calendarMonthMenu.hidden);
+interactive.calendarMonth.fire('click');interactive.calendarAdd.fire('click');interactive.calendarTitle.value='Draft';
 interactive.calendarGrid.children.find(e=>e.attrs['aria-pressed']==='false').fire('click');assert(interactive.calendarForm.hidden);assert.equal(interactive.calendarTitle.value,'');
 console.log('Calendar preview: swipe, theme selection, system mode and discarded draft: OK');
 
@@ -226,8 +226,8 @@ assert(holidayIndex>=0 && holidayIndex<firstPersonal && firstPersonal<secondPers
 for (const row of rows) { assert.equal(row.children[0].children.length,2);assert.match(row.children[0].children[0].className,/calendar-entry-kind/);assert.match(row.children[0].children[1].className,/calendar-entry-name/); }
 assert(!rows.some(row=>row.textContent.includes('(bukan libur nasional)')));
 assert.match(html,/calendar-entry-name \{[^}]*font-weight:900/);
-assert.match(html,/id="calendarMonth"[\s\S]*?id="calendarToday"[\s\S]*?id="calendarAdd"/);
-assert.match(html,/id="calendarToday"[^>]*aria-label="Hari ini"/);
+assert.match(html,/id="calendarMonth"[^>]*>[\s\S]*?id="calendarMonthLabel"[\s\S]*?calendar-today-icon[\s\S]*?<\/button>/);
+assert(!html.includes('id="calendarToday"'));
 assert(!html.includes('id="calendarAgendaHeading"'));
 assert(!html.includes('Belum ada acara minggu ini.'));
 storage.clear();let empty=createUI();navigateTo(empty,2028,2);empty.calendarExpand.fire('click');
@@ -238,3 +238,14 @@ const emptyMonth=createUI();emptyMonth.calendarNext.fire('click');assert.equal(e
 if(savedHoliday) dataset.entries[todayKeyNow]=savedHoliday;
 assert.match(nativeCalendar,/R\.drawable\.ic_calendar_today/);assert(!nativeCalendar.includes('Belum ada acara minggu ini.'));assert(!nativeCalendar.includes('(bukan libur nasional)'));
 console.log('Calendar month empty-state and native parity: OK');
+
+storage.clear(); let newMonth=createUI(false), initialToday=newMonth.calendarSelected.textContent;
+newMonth.calendarNext.fire('click');assert.notEqual(newMonth.calendarSelected.textContent,initialToday);
+newMonth.calendarMonth.fire('click');assert.equal(newMonth.calendarSelected.textContent,initialToday);assert(newMonth.calendarMonthMenu.hidden);
+assert.match(newMonth.calendarMonth.attrs['aria-label'],/Ketuk untuk hari ini.*tekan lama/);
+newMonth.calendarMonth.fire('keydown',{key:'F10',shiftKey:true});assert(!newMonth.calendarMonthMenu.hidden);assert(newMonth.calendarPrev.focused);
+newMonth.calendarMonthMenu.fire('keydown',{key:'Escape'});assert(newMonth.calendarMonthMenu.hidden);assert(newMonth.calendarMonth.focused);
+assert.match(nativeCalendar,/month.setOnClickListener\(v -> \{ selected=LocalDate.now\(\); render\(\); \}\)/);
+assert.match(nativeCalendar,/month.setOnLongClickListener/);assert.match(nativeCalendar,/0xFF743B00/);
+assert.match(html,/calendar-holiday-entry \.calendar-entry-kind \{[^}]*font-weight:900/);
+console.log('Month control resets today, accessible alternative navigation and stronger holiday labels: OK');

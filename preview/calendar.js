@@ -200,10 +200,10 @@
     }
     function render() {
       var selectedKey = dateKey(selected), todayKey = dateKey(today());
-      byId('calendarMonth').textContent = months[selected.month-1];
+      byId('calendarMonthLabel').textContent = months[selected.month-1];
       byId('calendarYear').textContent = String(selected.year);
       byId('calendarYear').setAttribute('aria-label', 'Tahun ' + selected.year);
-      byId('calendarMonth').setAttribute('aria-label', 'Pilih bulan. ' + months[selected.month-1] + ' ' + selected.year);
+      byId('calendarMonth').setAttribute('aria-label', months[selected.month-1] + ' ' + selected.year + '. Ketuk untuk hari ini, tekan lama untuk navigasi kalender');
       byId('calendarSelected').textContent = label(selected);
       var dayLabel = byId('calendarDayLabel'); if (dayLabel) dayLabel.textContent = selectedKey === todayKey ? 'HARI INI' : 'TANGGAL DIPILIH';
       var holidayDetails = byId('calendarHolidayDetails'); holidayDetails.replaceChildren();
@@ -302,9 +302,37 @@
     win.calendarOnOpen = function () { selected = today(); expanded = false; discardForm(); closeThemeMenu(); closeMonthMenu(); render(); if (updater) updater.refresh(true); };
     byId('calendarExpand').addEventListener('click', function () { expanded = !expanded; closeMonthMenu(); render(); });
     byId('calendarRefresh').addEventListener('click', function () { if (updater) updater.refresh(true); });
-    var monthMenu = byId('calendarMonthMenu');
-    if (monthMenu) byId('calendarMonth').addEventListener('click', function () { monthMenu.hidden = !monthMenu.hidden; this.setAttribute('aria-expanded', String(!monthMenu.hidden)); });
-    function closeMonthMenu() { if (monthMenu) { monthMenu.hidden = true; byId('calendarMonth').setAttribute('aria-expanded','false'); } }
+    var monthMenu = byId('calendarMonthMenu'), monthButton=byId('calendarMonth');
+    var holdTimer=null, holdOrigin=null, suppressMonthClick=false;
+    function openMonthMenu(focusFirst) { if (monthMenu) { monthMenu.hidden=false; monthButton.setAttribute('aria-expanded','true'); if (focusFirst) byId('calendarPrev').focus(); } }
+    function closeMonthMenu() { if (monthMenu) { monthMenu.hidden = true; monthButton.setAttribute('aria-expanded','false'); } }
+    function cancelMonthHold() { if (holdTimer !== null) { win.clearTimeout(holdTimer); holdTimer=null; } }
+    monthButton.addEventListener('click', function (event) {
+      if (suppressMonthClick) { suppressMonthClick=false; event.preventDefault(); return; }
+      closeMonthMenu(); selected=today(); discardForm(); render();
+    });
+    monthButton.addEventListener('pointerdown', function (event) {
+      if (event.isPrimary===false || (event.button != null && event.button!==0)) return;
+      cancelMonthHold(); holdOrigin={x:event.clientX,y:event.clientY};
+      holdTimer=win.setTimeout(function () { holdTimer=null; suppressMonthClick=true; openMonthMenu(); },500);
+    });
+    monthButton.addEventListener('pointermove', function (event) {
+      if (holdOrigin && (Math.abs(event.clientX-holdOrigin.x)>10 || Math.abs(event.clientY-holdOrigin.y)>10)) cancelMonthHold();
+    });
+    function endMonthHold() {
+      cancelMonthHold(); holdOrigin=null;
+      if (suppressMonthClick) win.setTimeout(function () { suppressMonthClick=false; },0);
+    }
+    monthButton.addEventListener('pointerup',endMonthHold);
+    monthButton.addEventListener('pointercancel',endMonthHold);
+    monthButton.addEventListener('contextmenu',function (event) { event.preventDefault(); cancelMonthHold(); if (holdOrigin) suppressMonthClick=true; openMonthMenu(); });
+    monthButton.addEventListener('keydown',function (event) {
+      if (event.key==='ContextMenu' || (event.shiftKey && event.key==='F10')) { event.preventDefault(); openMonthMenu(true); }
+      if (event.key==='Escape' && monthMenu && !monthMenu.hidden) { event.preventDefault(); event.stopPropagation(); closeMonthMenu(); monthButton.focus(); }
+    });
+    if (monthMenu) monthMenu.addEventListener('keydown',function (event) {
+      if (event.key==='Escape' && !monthMenu.hidden) { event.preventDefault(); event.stopPropagation(); closeMonthMenu(); monthButton.focus(); }
+    });
     byId('calendarPrev').addEventListener('click', function () { closeMonthMenu(); changePeriod(-1); });
     byId('calendarNext').addEventListener('click', function () { closeMonthMenu(); changePeriod(1); });
     var gesture = null, suppressClick = false;
@@ -332,7 +360,6 @@
     });
     grid.addEventListener('pointercancel', function () { gesture = null; });
     grid.addEventListener('click', function (e) { if (suppressClick) { e.preventDefault(); e.stopPropagation(); suppressClick = false; } }, true);
-    byId('calendarToday').addEventListener('click', function () { selected = today(); discardForm(); render(); });
     byId('calendarAdd').addEventListener('click', function () {
       form.hidden = !form.hidden; error.hidden = true;
       if (!form.hidden) { byId('calendarStartDate').value=dateKey(selected); byId('calendarEndDate').value=dateKey(selected); byId('calendarTime').value='09:00'; byId('calendarEndTime').value='10:00'; byId('calendarRepeat').value='none'; byId('calendarInterval').value='1'; byId('calendarCustomRepeat').hidden=true; byId('calendarCustomRepeatLabel').hidden=true; byId('calendarReminder').value='-1'; byId('calendarCustomReminder').hidden=true; byId('calendarCustomReminderLabel').hidden=true; byId('calendarReminderAmount').value='1'; byId('calendarTitle').focus(); }
