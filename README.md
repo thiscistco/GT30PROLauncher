@@ -217,3 +217,6 @@ Angka jam dan menit digeser 0,5 px ke kanan tanpa memindahkan titik. Setelah tit
 
 ### Penyesuaian v0.1.217
 Label informasi homescreen diturunkan 20 px berdasarkan skala preview; posisi elemen lainnya tetap.
+
+### Catatan v0.1.218
+Super App memiliki aplikasi **Catatan**: buat, edit, dan hapus catatan dengan konfirmasi. Judul boleh kosong jika isi terisi. Tekan Simpan untuk menyimpan; pembatalan perubahan meminta konfirmasi. Di Android catatan disimpan di basis data privat perangkat tanpa sinkronisasi dan dikecualikan dari backup Android; menghapus aplikasi menghapus catatan. Preview menyimpan data terpisah di penyimpanan browser, bukan di perangkat Android; menghapus data browser juga menghapus catatan preview.

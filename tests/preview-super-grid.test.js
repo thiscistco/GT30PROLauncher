@@ -11,9 +11,11 @@ assert(!page.includes('Aplikasi di dalam launcher'));
 assert(!page.includes('super-card-text'));
 assert.match(page, /id="openClockModule" type="button" aria-label="Jam"><img src="assets\/module-clock\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
 assert.match(page, /id="openCalendarModule" type="button" aria-label="Kalender"><img src="assets\/module-calendar\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
-assert.equal((page.match(/class="super-icon-button"/g) || []).length, 4, 'clock, calendar, timetable and settings remain');
+assert.equal((page.match(/class="super-icon-button"/g) || []).length, 5, 'clock, calendar, timetable, settings and notes remain');
 assert.match(page, /id="superWeather"/);
 assert.match(page, /id="openSettingsModule"/);
+assert.match(page, /id="openNotesModule" type="button" aria-label="Catatan"/);
+assert.match(java,/addModule\(container, R\.drawable\.ic_module_notes, "Catatan", NotesActivity\.class\)/);
 assert.match(java, /addModule\(container, R\.drawable\.ic_module_settings, "Setelan", LauncherSettingsActivity\.class\)/);
 assert.match(page, /id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"/);
 assert.match(page, /id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"><img src="assets\/module-timetable\.svg\?v=1" alt="" aria-hidden="true"><\/button>/);
@@ -34,7 +36,7 @@ assert.match(fs.readFileSync('preview/super-reorder.js','utf8'),/localStorage\.s
 assert.match(java, /int cellWidth = Math\.max\(1, width \/ 4\)/);
 assert.match(java, /params\.width = cellWidth/);
 assert.match(java, /sizeGridCells\(container\)/);
-for (const name of ['clock','calendar','timetable','settings']) {
+for (const name of ['clock','calendar','timetable','settings','notes']) {
  const svg = fs.readFileSync(`preview/assets/module-${name}.svg`, 'utf8');
  const vector = fs.readFileSync(`app/src/main/res/drawable/ic_module_${name}.xml`, 'utf8');
  assert.match(svg, /fill="#ffffff"/); assert.match(vector, /android:fillColor="#FFFFFF"/);
@@ -46,7 +48,7 @@ for (const name of ['clock','calendar','timetable','settings']) {
 console.log('Super App: accessible white dot icons, matching Android/preview four-column grid: OK');
 
 // Module launchers remain plain, while controls inside built-in apps retain glass styling.
-const glass=html.match(/:is\(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage\) :is\(([^\n]*)\) \{/)[1];
+const glass=html.match(/:is\(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage,#notesPage\) :is\(([^\n]*)\) \{/)[1];
 assert(!glass.includes('super-icon-button') && !glass.includes('super-weather'));
 assert(glass.includes('.calendar-icon-button:not(#calendarBack)'));
 assert(!glass.includes('app-back') && !glass.includes('app-theme-button') && glass.includes('clock-action'));

@@ -50,6 +50,7 @@
             android:exported="false" />
 
         <activity android:name=".LauncherSettingsActivity" android:exported="false" />
+        <activity android:name=".NotesActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ClockActivity"

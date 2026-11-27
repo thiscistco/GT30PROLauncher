@@ -18,11 +18,11 @@ assert 'AppUi palette = new AppUi(this)' in (java/'CalendarActivity.java').read_
 clock=(java/'ClockActivity.java').read_text()
 for word in ('clock_tab','timer_draft','ClockAlarms.schedule','showWorld','showTimer','showStopwatch','setColorFilter(ui.ink)'):
     assert word in clock,word
-for prefix in ('clock','weather','super','drawer','timetable'):
+for prefix in ('clock','weather','super','drawer','timetable','notes'):
     for suffix in ('Page','Theme','ThemeIcon','ThemeMenu','ThemeSystem','ThemeLight','ThemeDark'):
         assert f'id="{prefix}{suffix}"' in html, prefix+suffix
     assert f'id="{prefix}Back" type="button" aria-label="Kembali"' in html
-assert "['clock','weather','super','drawer','timetable']" in js
+assert "['clock','weather','super','drawer','timetable','notes']" in js
 assert "win.localStorage.setItem('gt30-calendar-theme',key)" in js
 assert 'prefers-color-scheme: dark' in js
 for css in ('--app-bg:#f4f7fa','--app-bg:#101820','--app-text:#142a3a','--app-text:#f5f8fa','--app-control:#e3eaf0','--app-control:#2a3b49'):

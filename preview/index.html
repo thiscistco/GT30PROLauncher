@@ -598,13 +598,13 @@
   .clock-city { display: flex; align-items: center; gap: 2mm; margin: 2mm 0; font-size: 2.8mm; }
 
   /* Shared Calendar-inspired design tokens for launcher-owned apps. */
-  :is(#clockPage,#weatherPage,#superPage,#drawerPage,#timetablePage) {
+  :is(#clockPage,#weatherPage,#superPage,#drawerPage,#timetablePage,#notesPage) {
     --app-bg:#f4f7fa; --app-card:#fff; --app-text:#142a3a; --app-muted:#405465;
     --app-control:#e3eaf0; --app-border:#c9d5de; --app-selected:#304355; --app-selected-text:#fff; --app-event:#e5ecf2;
     background:var(--app-bg); color:var(--app-text); padding:5mm 4mm 8mm;
     font:800 2.8mm 'Doto', monospace; font-variation-settings:'wght' 800;
   }
-  :is(#clockPage,#weatherPage,#superPage,#drawerPage,#timetablePage)[data-theme="dark"] {
+  :is(#clockPage,#weatherPage,#superPage,#drawerPage,#timetablePage,#notesPage)[data-theme="dark"] {
     color-scheme:dark; --app-bg:#101820; --app-card:#19252f; --app-text:#f5f8fa; --app-muted:#c7d3dd;
     --app-control:#2a3b49; --app-border:#516776; --app-selected:#dce8f0; --app-selected-text:#172a38; --app-event:#263743;
   }
@@ -671,7 +671,7 @@
   .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
   .clock-stage:has([data-clock-panel="alarm"]:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])), .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
   /* Glass-inspired controls: translucent layers, border and soft highlight. */
-  :is(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage) :is(.calendar-icon-button:not(#calendarBack),.clock-action,.weather-refresh-icon) {
+  :is(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage,#notesPage) :is(.calendar-icon-button:not(#calendarBack),.clock-action,.weather-refresh-icon) {
     background:linear-gradient(145deg,rgba(245,252,255,.28),rgba(128,158,174,.12)); border:1px solid rgba(149,177,192,.5); box-shadow:inset 0 1px 0 rgba(255,255,255,.35); backdrop-filter:blur(5px); border-radius:2.5mm;
   }
   #clockPage .clock-tabs::before { content:""; position:absolute; width:7.62mm; height:7.62mm; top:2mm; left:calc(50% - 3.81mm); border-radius:2.5mm; background:linear-gradient(145deg,rgba(190,225,240,.75),rgba(104,144,164,.45)); border:1px solid rgba(184,215,229,.7); box-shadow:inset 0 1px 0 #fff8,0 .5mm 1mm #0003; opacity:0; pointer-events:none; transition:transform .24s ease,opacity .18s ease; }
@@ -682,6 +682,17 @@
   #clockPage .clock-tabs[data-selected="stopwatch"]::before { transform:translateX(12.615mm); }
   #clockPage .clock-tabs button, #clockPage .clock-tabs button.active { position:relative; z-index:1; background:linear-gradient(145deg,rgba(245,252,255,.28),rgba(128,158,174,.12)); border:1px solid rgba(149,177,192,.5); backdrop-filter:blur(4px); }
   @media (prefers-reduced-motion:reduce) { #clockPage .clock-tabs::before { transition:none; } }
+  .notes-page { overflow-y:auto; }
+  .notes-list { padding-bottom:18mm; }
+  .notes-hint { color:var(--app-muted); font-size:2.5mm; line-height:1.4; }
+  .notes-button, .notes-card { width:100%; box-sizing:border-box; margin:1mm 0; padding:2.5mm; border:1px solid var(--app-border); border-radius:2.5mm; color:var(--app-text); background:var(--app-control); font:800 2.8mm Doto,monospace; text-align:left; cursor:pointer; }
+  .notes-card { display:block; background:var(--app-card); overflow:hidden; }
+  .notes-card strong,.notes-card span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .notes-card span { color:var(--app-muted); margin-top:1mm; }
+  .notes-form label { display:block; margin:2mm 0; }
+  .notes-form input,.notes-form textarea { display:block; width:100%; box-sizing:border-box; padding:2mm; color:var(--app-text); background:var(--app-card); border:1px solid var(--app-border); border-radius:2mm; font:700 3mm Doto,monospace; }
+  .notes-form textarea { min-height:30mm; resize:vertical; }
+  .notes-form[hidden] { display:none; }
   .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
@@ -941,6 +952,7 @@
                   <button class="weather-widget super-weather" id="superWeather" type="button" aria-label="Cuaca belum tersedia. Ketuk untuk membuka Cuaca"><svg viewBox="0 0 13 13" aria-hidden="true"></svg></button>
                   <button class="super-icon-button" id="openTimetableModule" type="button" aria-label="Jadwal Mengajar"><img src="assets/module-timetable.svg?v=1" alt="" aria-hidden="true"></button>
                   <button class="super-icon-button" id="openSettingsModule" type="button" aria-label="Setelan"><img src="assets/module-settings.svg?v=1" alt="" aria-hidden="true"></button>
+                  <button class="super-icon-button" id="openNotesModule" type="button" aria-label="Catatan"><img src="assets/module-notes.svg?v=1" alt="" aria-hidden="true"></button>
                 </div>
                 <div class="preview-settings" id="previewSettings" hidden>
                   <h3>Launcher · preview</h3>
@@ -1065,6 +1077,16 @@
                   </details>
                 </div>
               </section>
+              <section class="weather-page notes-page" id="notesPage" aria-label="Catatan di Super App" hidden>
+                <div class="app-top"><button class="app-back" id="notesBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Catatan</span><div class="app-theme"><button class="app-theme-button" id="notesTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="notesThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="notesThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="notesThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="notesThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="notesThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="notesThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
+                <p class="notes-hint" id="notesStatus" role="status">Catatan tersimpan di browser ini, bukan di aplikasi Android. Menghapus data browser menghapus catatan.</p>
+                <div class="notes-list" id="notesListPanel"><button class="notes-button" id="notesAdd" type="button">+ Catatan baru</button><div id="notesList"></div><p class="notes-hint" id="notesEmpty">Belum ada catatan.</p></div>
+                <form class="notes-form notes-list" id="notesForm" hidden><h3 id="notesEditorHeading">Catatan baru</h3>
+                  <label>Judul (opsional)<input id="notesTitle" type="text" maxlength="120"></label>
+                  <label>Isi catatan<textarea id="notesBody" maxlength="20000"></textarea></label>
+                  <button class="notes-button" type="submit">Simpan</button><button class="notes-button" id="notesCancel" type="button">Batal</button><button class="notes-button" id="notesDelete" type="button" hidden>Hapus catatan</button>
+                </form>
+              </section>
               <section class="weather-page" id="weatherPage" aria-label="Cuaca di Super App" hidden>
                 <div class="app-top"><button class="app-back" id="weatherBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Cuaca</span><div class="app-theme"><button class="app-theme-button" id="weatherTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="weatherThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="weatherThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="weatherThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="weatherThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="weatherThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="weatherThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <div class="weather-header"><h2>CUACA</h2><button class="weather-refresh-icon" type="button" id="weatherPageRefresh" aria-label="Aktifkan / perbarui cuaca" title="Aktifkan / perbarui cuaca"><img src="assets/weather-refresh.svg?v=1" alt="" aria-hidden="true"></button></div>
@@ -1175,6 +1197,9 @@
     var back = document.getElementById('clockBack');
     var calendarPage = document.getElementById('calendarPage');
     var timetablePage = document.getElementById('timetablePage');
+    var notesPage = document.getElementById('notesPage');
+    var notesBack = document.getElementById('notesBack');
+    var notesOrigin = document.getElementById('openNotesModule');
     var timetableBack = document.getElementById('timetableBack');
     var timetableOrigin = document.getElementById('openTimetableModule');
     var weatherPage = document.getElementById('weatherPage');
@@ -1200,6 +1225,8 @@
     var lastHomeSwipe = 0;
     var clockOrigin = clockLed;
     function setTab(superActive) {
+      if (!notesPage.hidden && window.notesConfirmLeave && !window.notesConfirmLeave()) return;
+      notesPage.hidden = true;
       if (!superActive) lastHomeSwipe = 0;
       systemPanel.hidden = true;
       previewSettings.hidden = true; superGrid.hidden = false;
@@ -1231,6 +1258,7 @@
     superWeather.addEventListener('click', function () { openWeather(superWeather); });
     homeWeather.addEventListener('click', function () { openWeather(homeWeather); });
     timetableOrigin.addEventListener('click', function () { timetablePage.hidden=false; timetableBack.focus(); if (window.timetableOnOpen) window.timetableOnOpen(); });
+    notesOrigin.addEventListener('click', function () { notesPage.hidden=false; notesBack.focus(); if (window.notesOnOpen) window.notesOnOpen(); });
     clockLed.addEventListener('click', function () { openClock(clockLed); });
     clockLed.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClock(clockLed); }
@@ -1242,6 +1270,7 @@
       if (!systemPanel.hidden) { systemPanel.hidden=true; homeTab.focus(); return; }
       if (!drawerPage.hidden) { drawerPage.hidden = true; homeTab.focus(); return; }
       if (!calendarPage.hidden) { calendarPage.hidden = true; calendarReturn.focus(); return; }
+      if (!notesPage.hidden) { if (window.notesGoBack && window.notesGoBack()) return; notesPage.hidden=true; notesOrigin.focus(); return; }
       if (!timetablePage.hidden) { if (window.timetableCloseEditor && window.timetableCloseEditor()) return; timetablePage.hidden=true; timetableOrigin.focus(); return; }
       if (!weatherPage.hidden) { weatherPage.hidden = true; weatherOrigin.focus(); return; }
       if (!page.hidden) { if (window.clockReturnToHud && window.clockReturnToHud()) { back.focus(); return; } page.hidden = true; clockOrigin.focus(); return; }
@@ -1254,6 +1283,7 @@
     calendarBack.addEventListener('click', goBack);
     weatherBack.addEventListener('click', goBack);
     timetableBack.addEventListener('click', goBack);
+    notesBack.addEventListener('click', goBack);
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') goBack();
     });
@@ -1268,10 +1298,10 @@
       if (window.superDragActive) return;
       if (event.button !== 0 || (drawing && !drawing.hidden)) return;
       var rect = screen.getBoundingClientRect();
-      var internal = !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !timetablePage.hidden || !superPage.hidden || !drawerPage.hidden || !systemPanel.hidden;
+      var internal = !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !notesPage.hidden || !timetablePage.hidden || !superPage.hidden || !drawerPage.hidden || !systemPanel.hidden;
       var bottom = drawerPage.hidden && event.clientY >= rect.top + rect.height * .80 && event.clientY <= rect.bottom;
       var right = internal && event.clientX >= rect.right - rect.width * (32 / 445);
-      var second = internal && !superPage.hidden && page.hidden && calendarPage.hidden && weatherPage.hidden && timetablePage.hidden && drawerPage.hidden && systemPanel.hidden && lastHomeSwipe>0 && Date.now()-lastHomeSwipe<=2000;
+      var second = internal && !superPage.hidden && page.hidden && calendarPage.hidden && weatherPage.hidden && notesPage.hidden && timetablePage.hidden && drawerPage.hidden && systemPanel.hidden && lastHomeSwipe>0 && Date.now()-lastHomeSwipe<=2000;
       if (!internal || bottom || right || second) swipe = { id: event.pointerId, x: event.clientX, y: event.clientY,
         width: rect.width, height: rect.height, top: rect.top, left: rect.left, bottom: bottom, right: right, internal: internal, second: second };
     });
@@ -1303,7 +1333,7 @@
     });
     document.addEventListener('pointercancel', function () { swipe = null; });
     screen.addEventListener('dblclick', function (event) {
-      if (!superPage.hidden || !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !timetablePage.hidden || !drawerPage.hidden || !systemPanel.hidden || !document.getElementById('pathDraw').hidden) return;
+      if (!superPage.hidden || !page.hidden || !calendarPage.hidden || !weatherPage.hidden || !notesPage.hidden || !timetablePage.hidden || !drawerPage.hidden || !systemPanel.hidden || !document.getElementById('pathDraw').hidden) return;
       if (event.target.closest('button, [role="button"]')) return;
       systemPanelTitle.textContent='Layar terkunci · simulasi';
       systemPanelNote.textContent='Preview tidak dapat mengunci perangkat. Di Android, double tap memerlukan izin admin perangkat yang dapat dicabut.';
@@ -1535,6 +1565,7 @@
   })();
 </script>
 <script src="super-reorder.js?v=1"></script>
+<script src="notes.js?v=1"></script>
 <script src="home-position.js?v=1"></script>
 <script src="voice-preview.js?v=2"></script>
 <script src="home-date.js?v=2"></script>

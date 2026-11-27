@@ -16,7 +16,7 @@ let handler,observers=[];
 let classes=new Set(),timer;
 let button={hidden:false,classList:{add(v){classes.add(v);},remove(v){classes.delete(v);}},addEventListener(type,fn){assert.equal(type,'click');handler=fn;}};
 let status={textContent:''};
-let ids=['drawerPage','superPage','clockPage','calendarPage','weatherPage','timetablePage','pathDraw'];
+let ids=['drawerPage','superPage','clockPage','calendarPage','weatherPage','timetablePage','notesPage','pathDraw'];
 let pages=Object.fromEntries(ids.map(id=>[id,{hidden:true}]));
 let elements={homeVoice:button,voicePreviewStatus:status,...pages};
 class Observer { constructor(fn){this.fn=fn;} observe(el,options){assert.deepEqual(Array.from(options.attributeFilter),['hidden']); observers.push([el,this.fn]);} }

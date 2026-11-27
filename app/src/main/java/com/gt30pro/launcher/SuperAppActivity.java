@@ -89,6 +89,7 @@ public class SuperAppActivity extends SwipeBackActivity {
         weatherView.setOnClickListener(v -> startActivity(new Intent(this, WeatherActivity.class)));
         addModule(container, R.drawable.ic_module_timetable, "Jadwal Mengajar", TimeTableActivity.class);
         addModule(container, R.drawable.ic_module_settings, "Setelan", LauncherSettingsActivity.class);
+        addModule(container, R.drawable.ic_module_notes, "Catatan", NotesActivity.class);
         setupReordering(container);
         container.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
             if (r - l != oldR - oldL) sizeGridCells(container);
@@ -137,7 +138,7 @@ public class SuperAppActivity extends SwipeBackActivity {
     }
 
     private void setupReordering(GridLayout grid) {
-        String[] ids={"clock","calendar","weather","timetable","settings"};
+        String[] ids={"clock","calendar","weather","timetable","settings","notes"};
         for (int i=0;i<ids.length;i++) grid.getChildAt(i).setTag(ids[i]);
         java.util.ArrayList<String> order=ModuleOrder.parse(getSharedPreferences("super_app",MODE_PRIVATE).getString("order",""));
         for(int target=0;target<order.size();target++) {

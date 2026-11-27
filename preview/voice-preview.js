@@ -12,7 +12,7 @@
     status.textContent='Simulasi animasi saja: preview tidak mengakses mikrofon. Di APK, ketuk ikon untuk perintah suara lalu ucapkan “yo”. Tekan lama untuk pilihan suara.';
     stopDemo(); button.classList.add('voice-demo'); demoTimer=setTimeout(stopDemo,2400);
   });
-  var pages=['drawerPage','superPage','clockPage','calendarPage','weatherPage','timetablePage','pathDraw']
+  var pages=['drawerPage','superPage','clockPage','calendarPage','weatherPage','timetablePage','notesPage','pathDraw']
     .map(function (id) { return document.getElementById(id); }).filter(Boolean);
   function update() { button.hidden=pages.some(function (page) { return !page.hidden; }); if(button.hidden) stopDemo(); }
   update();

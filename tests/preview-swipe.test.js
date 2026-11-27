@@ -17,10 +17,10 @@ class Element {
 }
 const ids = ['chargeToggle','batteryLed','previewBatteryStatus','previewBatterySource','amberGlow','amberToggle','clockHour','clockMin','clockLed','clockPage','clockBack',
   'settingsGlow','settingsThemeSystem','settingsThemeLight','settingsThemeDark','superThemeSystem','superThemeLight','superThemeDark','systemPanelPreview','systemPanelBack','systemPanelTitle','systemPanelNote','superPage','superGrid','previewSettings','openSettingsModule','tabHome','tabSuper','superBack','openClockModule','clockPageTime','clockPageDate',
-  'calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','timetablePage','timetableBack','openTimetableModule','drawerPage','drawerBack','pathDraw'];
+  'notesPage','notesBack','openNotesModule','calendarPage','calendarBack','openCalendarModule','homeDate','weatherPage','weatherBack','superWeather','homeWeather','timetablePage','timetableBack','openTimetableModule','drawerPage','drawerBack','pathDraw'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements.clockPage.hidden = true; elements.calendarPage.hidden = true; elements.weatherPage.hidden = true; elements.superPage.hidden = true;
-elements.systemPanelPreview.hidden = true; elements.previewSettings.hidden = true; elements.timetablePage.hidden = true; elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
+elements.notesPage.hidden = true; elements.systemPanelPreview.hidden = true; elements.previewSettings.hidden = true; elements.timetablePage.hidden = true; elements.drawerPage.hidden = true; elements.pathDraw.hidden = true;
 const screen = new Element(), separator = new Element(), doc = new Element();
 doc.getElementById = id => elements[id];
 doc.querySelector = selector => selector === '.screen' ? screen : separator;
@@ -72,6 +72,7 @@ elements.calendarBack.fire('click'); assert.strictEqual(elements.calendarPage.hi
 elements.homeDate.fire('keydown', {key:'Enter',preventDefault(){}}); assert.strictEqual(elements.calendarPage.hidden,false);
 swipe(440,100,360,100); assert.strictEqual(elements.calendarPage.hidden,true,'calendar swipe back to home');
 elements.tabSuper.fire('click'); elements.openTimetableModule.fire('click'); assert.strictEqual(elements.timetablePage.hidden,false); elements.timetableBack.fire('click'); assert.strictEqual(elements.timetablePage.hidden,true); assert.strictEqual(elements.superPage.hidden,false);
+elements.openNotesModule.fire('click'); assert.strictEqual(elements.notesPage.hidden,false); elements.notesBack.fire('click'); assert.strictEqual(elements.notesPage.hidden,true); assert.strictEqual(elements.superPage.hidden,false);
 // Home weather opens the same page without Super App and returns to its origin.
 elements.tabHome.fire('click'); let focused=false;
 elements.homeWeather.focus=()=>{ focused=true; };

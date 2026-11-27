@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
-    <cloud-backup><exclude domain="file" path="ai/" /><exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" /></cloud-backup>
-    <device-transfer><exclude domain="file" path="ai/" /><exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" /></device-transfer>
+    <cloud-backup><exclude domain="file" path="ai/" /><exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" /><exclude domain="database" path="notes.db" /><exclude domain="database" path="notes.db-journal" /><exclude domain="database" path="notes.db-wal" /><exclude domain="database" path="notes.db-shm" /></cloud-backup>
+    <device-transfer><exclude domain="file" path="ai/" /><exclude domain="sharedpref" path="launcher_calendar.xml" /><exclude domain="sharedpref" path="weather_cache.xml" /><exclude domain="sharedpref" path="timetable.xml" /><exclude domain="database" path="notes.db" /><exclude domain="database" path="notes.db-journal" /><exclude domain="database" path="notes.db-wal" /><exclude domain="database" path="notes.db-shm" /></device-transfer>
 </data-extraction-rules>
