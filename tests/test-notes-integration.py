@@ -35,3 +35,11 @@ assert 'db.beginTransaction()' in store and 'db.setTransactionSuccessful()' in s
 for file in ('backup_rules.xml','data_extraction_rules.xml'):
     assert 'path="note_reminders.xml"' in (root/'app/src/main/res/xml'/file).read_text()
 print('Notes reminder and backup wiring OK (device behavior requires Android testing)')
+
+# Editor tag changes are part of the same SQLite save and restored with unsaved drafts.
+assert 'store.save(editId,t,b,draftTag)' in activity and 'values.put("tag",tag)' in store
+assert 'out.putString("lastTag",lastTag)' in activity and 'out.putString("draftTag",draftTag)' in activity
+assert 'if(!draftTag.isEmpty()) tags.add(draftTag)' in activity and 'Buat tag baru' in activity
+for description in ('Lokasi: ','Tampilan: ','Catatan baru','Pilih atau buat tag','Tambah item checklist','Selesai'):
+    assert description in activity
+print('Tag editing and accessible icon wiring OK')

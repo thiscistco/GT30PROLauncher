@@ -11,8 +11,8 @@ class Element {
   focus(){this.focused=true;}
 }
 function setup(storage) {
-  const ids={}; for(const id of ['notesForm','notesTitle','notesBody','notesList','notesListPanel','notesStatus','notesEmpty','notesAdd','notesAddChecklist','notesEditorHeading','notesSearch','notesSection','notesLayout','notesSaveStatus']) ids[id]=new Element();
-  ids.notesForm.hidden=true; let confirmation=true, answer=null, timers=new Map(), seq=0;
+  const ids={}; for(const id of ['notesForm','notesTitle','notesBody','notesList','notesListPanel','notesStatus','notesEmpty','notesAdd','notesAddChecklist','notesTag','notesTagMenu','notesTagValue','notesSectionIcon','notesLayoutIcon','notesEditorHeading','notesSearch','notesSection','notesLayout','notesSaveStatus']) ids[id]=new Element();
+  ids.notesForm.hidden=true; ids.notesTagMenu.hidden=true; let confirmation=true, answer=null, timers=new Map(), seq=0;
   const win={document:{getElementById:id=>ids[id],createElement:()=>new Element()},localStorage:storage,confirm:()=>confirmation,prompt:()=>answer,
     setTimeout(fn){let id=++seq;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);}};
   mount(win); return {ids,win,flush(){for(const [k,fn] of Array.from(timers)) {timers.delete(k);fn();}},setConfirm(v){confirmation=v},setPrompt(v){answer=v}};
@@ -21,12 +21,17 @@ const saved=new Map(); let failWrite=false;
 const storage={getItem:k=>saved.has(k)?saved.get(k):null,setItem:(k,v)=>{if(failWrite)throw Error('quota');saved.set(k,v);}};
 let app=setup(storage),e=app.ids, records=()=>JSON.parse(saved.get('gt30-notes-v1'));
 assert(!e.notesEmpty.hidden); e.notesAdd.fire('click'); assert(!e.notesForm.hidden);
+app.setPrompt('Kerja'); e.notesTag.fire('click'); e.notesTagMenu.children[0].fire('click'); assert.equal(e.notesTagValue.textContent,'#Kerja'); app.flush(); assert(!saved.has('gt30-notes-v1'));
 e.notesBody.value='<script>not executable</script>'; e.notesBody.fire('input'); app.flush();
-assert.equal(records().length,1); assert.equal(records()[0].body,'<script>not executable</script>');
+assert.equal(records().length,1); assert.equal(records()[0].body,'<script>not executable</script>'); assert.equal(records()[0].tag,'Kerja');
 assert(e.notesForm.hidden===false); assert(app.win.notesGoBack()); assert(e.notesForm.hidden); assert.equal(e.notesList.children.length,1);
 assert.equal(e.notesList.children[0].children[0].children[0].textContent,'Tanpa judul');
 assert.equal(e.notesList.children[0].children[0].children[1].textContent,'<script>not executable</script>');
 let id=records()[0].id;
+// A second note can select an existing tag and persist it with its first save.
+e.notesAdd.fire('click'); e.notesTag.fire('click'); assert.equal(e.notesTagMenu.children[2].textContent,'Kerja'); e.notesTagMenu.children[2].fire('click'); e.notesBody.value='Salinan tag'; e.notesBody.fire('input'); app.flush(); assert.equal(records()[1].tag,'Kerja'); assert(app.win.notesGoBack());
+// Remove the extra note so subsequent tests retain a single fixture.
+let extra=records()[1].id; saved.set('gt30-notes-v1',JSON.stringify(records().filter(n=>n.id!==extra))); app=setup(storage); e=app.ids;
 // Reload data, edit, then force a save by leaving before debounce.
 app=setup(storage); e=app.ids; e.notesList.children[0].children[0].fire('click');
 e.notesTitle.value='Catatan penting'; e.notesBody.value='Isi baru'; e.notesBody.fire('input'); assert(app.win.notesConfirmLeave());
@@ -42,7 +47,7 @@ let checkLabel=e.notesList.children[0].children[1]; assert.equal(checkLabel.chil
 // Metadata: pin, label, color, archive, restore, trash, recover, permanently delete.
 let actions=()=>e.notesList.children[0].children[e.notesList.children[0].children.length-1].children;
 actions()[0].fire('click'); assert.equal(records()[0].pinned,true);
-app.setPrompt('Kerja'); actions()[3].fire('click'); assert.equal(records()[0].tag,'Kerja');
+app.setPrompt('Belajar'); actions()[3].fire('click'); assert.equal(records()[0].tag,'Belajar');
 app.setPrompt('2'); actions()[4].fire('click'); assert.equal(records()[0].color,2);
 e.notesLayout.fire('click'); assert.equal(e.notesList.className,'notes-grid'); e.notesLayout.fire('click'); assert.equal(e.notesList.className,'notes-staggered'); e.notesLayout.fire('click'); assert.equal(e.notesList.className,'');
 actions()[1].fire('click'); assert.equal(records()[0].state,1); assert.equal(e.notesList.children.length,0);
@@ -52,6 +57,10 @@ e.notesSection.value='2'; e.notesSection.fire('change'); assert.equal(e.notesLis
 actions()[0].fire('click'); assert.equal(records()[0].state,1); assert.equal(e.notesList.children.length,0);
 e.notesSection.value='1'; e.notesSection.fire('change'); actions()[1].fire('click'); assert.equal(records()[0].state,0);
 e.notesSection.value='0'; e.notesSection.fire('change');
+// A failed tag-only change remains in the editor and succeeds on retry.
+e.notesList.children[0].children[0].fire('click'); app.setPrompt('Baru'); e.notesTag.fire('click'); e.notesTagMenu.children[0].fire('click'); failWrite=true; app.flush();
+assert.equal(records()[0].tag,'Belajar'); assert.equal(e.notesTagValue.textContent,'#Baru'); assert(!app.win.notesConfirmLeave());
+failWrite=false; assert(app.win.notesConfirmLeave()); assert.equal(records()[0].tag,'Baru');
 // A failed write keeps editor and existing data; a retry succeeds.
 e.notesList.children[0].children[0].fire('click'); e.notesBody.value='Draft belum tersimpan'; e.notesBody.fire('input'); failWrite=true; app.flush();
 assert(!e.notesForm.hidden); assert.match(e.notesSaveStatus.textContent,/Gagal menyimpan/); assert.equal(records()[0].body,'Isi baru\n☑ Susu'); assert(!app.win.notesConfirmLeave());

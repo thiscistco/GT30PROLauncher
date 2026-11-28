@@ -410,7 +410,7 @@ public class CalendarActivity extends SwipeBackActivity {
     private ImageButton actionIcon(int resource, String description, Runnable click) {
         ImageButton action = new ImageButton(this); action.setImageResource(resource); action.setColorFilter(ink);
         action.setScaleType(ImageView.ScaleType.FIT_CENTER); action.setPadding(dp(12),dp(12),dp(12),dp(12));
-        action.setBackground(new AppUi(this).iconGlass(this,false)); action.setContentDescription(description); action.setTooltipText(description);
+        action.setBackground(bg(controlColor)); action.setContentDescription(description); action.setTooltipText(description);
         action.setOnClickListener(v -> click.run()); return action;
     }
     private TextView singleLine(String value, int size, int color, boolean bold) {
@@ -484,7 +484,7 @@ public class CalendarActivity extends SwipeBackActivity {
         nav.addView(month,new LinearLayout.LayoutParams(-2,dp(48)));
         nav.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
         ImageButton add = actionIcon(R.drawable.ic_calendar_add,"Tambah acara",this::addEvent);
-        add.setBackground(new AppUi(this).iconGlass(this,false)); nav.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        add.setBackground(bg(controlColor)); nav.addView(add,new LinearLayout.LayoutParams(dp(48),dp(48)));
         page.addView(nav); space(8);
         MonthGrid grid = new MonthGrid(); page.addView(grid);
         if(calendarAnimation!=0 && android.animation.ValueAnimator.areAnimatorsEnabled()) {

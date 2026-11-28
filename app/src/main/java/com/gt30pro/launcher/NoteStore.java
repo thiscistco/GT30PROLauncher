@@ -37,9 +37,12 @@ final class NoteStore extends SQLiteOpenHelper {
         }
         return notes;
     }
-    long save(long id,String title,String body) {
+    long save(long id,String title,String body) { return save(id,title,body,null); }
+    long save(long id,String title,String body,String tag) {
+        if(tag!=null && tag.length()>60) return -1;
         if(title==null || body==null || title.length()>NoteText.TITLE_LIMIT || body.length()>NoteText.BODY_LIMIT || (id==0 && !NoteText.valid(title,body))) return -1;
         ContentValues values=new ContentValues(); values.put("title",title); values.put("body",body); values.put("updated",System.currentTimeMillis());
+        if(tag!=null) values.put("tag",tag);
         SQLiteDatabase db=getWritableDatabase();
         if(id==0) return db.insertOrThrow("notes",null,values);
         return db.update("notes",values,"_id=? AND state<>2",new String[]{Long.toString(id)})==1 ? id : -1;

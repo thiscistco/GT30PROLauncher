@@ -29,8 +29,9 @@ for css in ('--app-bg:#f4f7fa','--app-bg:#101820','--app-text:#142a3a','--app-te
     assert css in html, css
 assert 'home-screen-glass' not in html
 assert 'iconGlass(Context c, boolean selected)' in ui and 'GradientDrawable.Orientation.TOP_BOTTOM' in ui
-for activity in ('ClockActivity','CalendarActivity','WeatherActivity','TimeTableActivity'):
-    assert 'iconGlass(' in (java/(activity+'.java')).read_text(), activity
+assert 'iconGlass(' in (java/'ClockActivity.java').read_text()
+for activity in ('CalendarActivity','TimeTableActivity','WeatherActivity','NotesActivity'):
+    assert 'iconGlass(' not in (java/(activity+'.java')).read_text(), activity
 assert 'iconGlass(' not in (java/'SuperAppActivity.java').read_text()
 assert 'button.setBackgroundColor(Color.TRANSPARENT)' in (java/'SuperAppActivity.java').read_text()
 assert 'button.setBackgroundColor(Color.TRANSPARENT)' in ui

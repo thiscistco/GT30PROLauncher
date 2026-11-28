@@ -672,7 +672,7 @@
   .clock-stage { flex:1; min-height:0; position:relative; container-type:size; --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 37.3mm))); }
   .clock-stage:has([data-clock-panel="alarm"]:not([hidden])), .clock-stage:has([data-clock-panel="timer"]:not([hidden])), .clock-stage:has([data-clock-panel="world"]:not([hidden])), .clock-stage:has([data-clock-panel="stopwatch"]:not([hidden])) { --clock-dial-size:max(0px, min(calc(100cqw - 2.4mm), calc(100cqh - 78.6mm))); }
   /* Glass-inspired controls: translucent layers, border and soft highlight. */
-  :is(#calendarPage,#clockPage,#weatherPage,#timetablePage,#drawerPage,#superPage,#notesPage) :is(.calendar-icon-button:not(#calendarBack),.clock-action,.weather-refresh-icon) {
+  #clockPage :is(.calendar-icon-button,.clock-action:has(.calendar-action-icon)) {
     background:linear-gradient(145deg,rgba(245,252,255,.28),rgba(128,158,174,.12)); border:1px solid rgba(149,177,192,.5); box-shadow:inset 0 1px 0 rgba(255,255,255,.35); backdrop-filter:blur(5px); border-radius:2.5mm;
   }
   #clockPage .clock-tabs::before { content:""; position:absolute; width:7.62mm; height:7.62mm; top:2mm; left:calc(50% - 3.81mm); border-radius:2.5mm; background:linear-gradient(145deg,rgba(190,225,240,.75),rgba(104,144,164,.45)); border:1px solid rgba(184,215,229,.7); box-shadow:inset 0 1px 0 #fff8,0 .5mm 1mm #0003; opacity:0; pointer-events:none; transition:transform .24s ease,opacity .18s ease; }
@@ -695,7 +695,32 @@
   .notes-form textarea { min-height:30mm; resize:vertical; }
   .notes-form[hidden] { display:none; }
   .notes-controls { display:flex; gap:1mm; flex-wrap:wrap; }
-  .notes-controls button { flex:1; min-width:15mm; }
+  .notes-controls .notes-icon-button { margin:0; }
+  .notes-toolbar { display:flex; align-items:center; gap:1mm; margin:1mm 0; }
+  .notes-icon-button, .notes-section-control { position:relative; display:grid; place-items:center; box-sizing:border-box; width:7.62mm; height:7.62mm; flex:0 0 7.62mm; padding:1.8mm; border:1px solid var(--app-border); border-radius:2.5mm; background:var(--app-control); color:var(--app-text); cursor:pointer; }
+  .notes-icon-button:focus-visible, .notes-section-control:focus-within { outline:1px solid var(--app-text); outline-offset:1px; }
+  .notes-icon-button[hidden] { display:none; }
+  .notes-icon { display:block; width:100%; height:100%; background:currentColor; mask:var(--notes-icon) center/contain no-repeat; -webkit-mask:var(--notes-icon) center/contain no-repeat; }
+  .notes-section-control select { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+  .notes-tag-value { flex:1; color:var(--app-muted); font-size:2.5mm; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .notes-tag-menu { display:flex; flex-wrap:wrap; gap:1mm; padding:1mm 0; }
+  .notes-tag-menu[hidden] { display:none; }
+  .notes-tag-menu button { width:auto; margin:0; }
+  .notes-icon-notes { --notes-icon:url("assets/notes-notes.svg"); }
+  .notes-icon-archive { --notes-icon:url("assets/notes-archive.svg"); }
+  .notes-icon-trash { --notes-icon:url("assets/notes-trash.svg"); }
+  .notes-icon-list { --notes-icon:url("assets/notes-list.svg"); }
+  .notes-icon-grid { --notes-icon:url("assets/notes-grid.svg"); }
+  .notes-icon-staggered { --notes-icon:url("assets/notes-staggered.svg"); }
+  .notes-icon-tag { --notes-icon:url("assets/notes-tag.svg"); }
+  .notes-icon-checklist { --notes-icon:url("assets/notes-checklist.svg"); }
+  .notes-icon-done { --notes-icon:url("assets/notes-done.svg"); }
+  .notes-icon-backup { --notes-icon:url("assets/notes-backup.svg"); }
+  .notes-icon-pin { --notes-icon:url("assets/notes-pin.svg"); }
+  .notes-icon-unpin { --notes-icon:url("assets/notes-unpin.svg"); }
+  .notes-icon-restore { --notes-icon:url("assets/notes-restore.svg"); }
+  .notes-icon-color { --notes-icon:url("assets/notes-color.svg"); }
+  .notes-icon-add { --notes-icon:url("assets/calendar-add.svg?v=1"); }
   .notes-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1mm; }
   .notes-staggered { columns:2; column-gap:1mm; }
   .notes-staggered .notes-item { break-inside:avoid; display:inline-block; width:100%; }
@@ -1092,17 +1117,25 @@
                 <div class="app-top"><button class="app-back" id="notesBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Catatan</span><div class="app-theme"><button class="app-theme-button" id="notesTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="notesThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="notesThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="notesThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="notesThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="notesThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="notesThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <p class="notes-hint" id="notesStatus" role="status">Catatan tersimpan di browser ini, bukan di aplikasi Android. Menghapus data browser menghapus catatan.</p>
                 <div class="notes-list" id="notesListPanel">
-                  <label>Lokasi <select id="notesSection" class="notes-select"><option value="0">Catatan</option><option value="1">Arsip</option><option value="2">Sampah</option></select></label>
-                  <label>Cari <input id="notesSearch" class="notes-search" type="search" placeholder="Cari judul, isi, atau label"></label>
-                  <button class="notes-button" id="notesLayout" type="button">Tampilan: daftar</button>
-                  <button class="notes-button" id="notesAdd" type="button">+ Catatan baru</button><div id="notesList"></div><p class="notes-hint" id="notesEmpty">Tidak ada catatan.</p>
+                  <div class="notes-toolbar">
+                    <span class="notes-section-control"><span id="notesSectionIcon" class="notes-icon notes-icon-notes" aria-hidden="true"></span><select id="notesSection" aria-label="Lokasi: Catatan" title="Lokasi: Catatan"><option value="0">Catatan</option><option value="1">Arsip</option><option value="2">Sampah</option></select></span>
+                    <button class="notes-icon-button" id="notesLayout" type="button" aria-label="Tampilan: daftar" title="Tampilan: daftar"><span id="notesLayoutIcon" class="notes-icon notes-icon-list" aria-hidden="true"></span></button>
+                    <button class="notes-icon-button" id="notesAdd" type="button" aria-label="Catatan baru" title="Catatan baru"><span class="notes-icon notes-icon-add" aria-hidden="true"></span></button>
+                  </div>
+                  <input id="notesSearch" class="notes-search" type="search" aria-label="Cari catatan" placeholder="Cari judul, isi, atau tag">
+                  <div id="notesList"></div><p class="notes-hint" id="notesEmpty">Tidak ada catatan.</p>
                 </div>
                 <form class="notes-form notes-list" id="notesForm" hidden><h3 id="notesEditorHeading">Catatan baru</h3>
                   <label>Judul (opsional)<input id="notesTitle" type="text" maxlength="120"></label>
                   <label>Isi catatan<textarea id="notesBody" maxlength="20000"></textarea></label>
-                  <button class="notes-button" id="notesAddChecklist" type="button">+ Item checklist</button>
+                  <div class="notes-toolbar">
+                    <button class="notes-icon-button" id="notesTag" type="button" aria-label="Pilih atau buat tag" title="Pilih atau buat tag" aria-expanded="false" aria-controls="notesTagMenu"><span class="notes-icon notes-icon-tag" aria-hidden="true"></span></button>
+                    <span class="notes-tag-value" id="notesTagValue"></span>
+                    <button class="notes-icon-button" id="notesAddChecklist" type="button" aria-label="Tambah item checklist" title="Tambah item checklist"><span class="notes-icon notes-icon-checklist" aria-hidden="true"></span></button>
+                    <button class="notes-icon-button" type="submit" aria-label="Selesai" title="Selesai"><span class="notes-icon notes-icon-done" aria-hidden="true"></span></button>
+                  </div>
+                  <div class="notes-tag-menu" id="notesTagMenu" hidden></div>
                   <p class="notes-hint" id="notesSaveStatus" role="status">Tersimpan otomatis di browser</p>
-                  <button class="notes-button" type="submit">Selesai</button>
                 </form>
               </section>
               <section class="weather-page" id="weatherPage" aria-label="Cuaca di Super App" hidden>

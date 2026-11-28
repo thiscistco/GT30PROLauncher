@@ -142,7 +142,7 @@ public class TimeTableActivity extends SwipeBackActivity {
     private ImageButton action(int resource,String description) {
         ImageButton button=new ImageButton(this); button.setImageResource(resource); button.setColorFilter(ui.ink);
         button.setScaleType(ImageView.ScaleType.FIT_CENTER); button.setPadding(dp(12),dp(12),dp(12),dp(12));
-        button.setBackground(ui.iconGlass(this,false)); button.setContentDescription(description); button.setTooltipText(description); return button;
+        button.setBackground(ui.surface(this,ui.control)); button.setContentDescription(description); button.setTooltipText(description); return button;
     }
     private void storeCell(JSONObject row,int day,JSONObject value) throws org.json.JSONException {
         JSONArray cells=row.optJSONArray("cells"); if(cells==null)cells=new JSONArray(); cells.put(day,value==null?JSONObject.NULL:value); row.put("cells",cells); persist(); render();

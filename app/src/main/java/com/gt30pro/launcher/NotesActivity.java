@@ -14,7 +14,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -25,7 +26,8 @@ import java.util.ArrayList;
 public final class NotesActivity extends SwipeBackActivity {
     private AppUi ui; private Typeface font; private NoteStore store;
     private LinearLayout content, cards; private EditText title,body,search; private TextView saveStatus;
-    private boolean editing; private long editId; private String lastTitle="",lastBody="";
+    private boolean editing; private long editId; private String lastTitle="",lastBody="",lastTag="",draftTag="";
+    private TextView tagValue;
     private int section=NoteStore.ACTIVE; private String query=""; private int layout;
     private static final int EXPORT_TXT=601, EXPORT_PDF=602, BACKUP_WRITE=603, BACKUP_READ=604;
     private String exportTitle="",exportBody="";
@@ -41,6 +43,13 @@ public final class NotesActivity extends SwipeBackActivity {
         Button b=new Button(this); b.setAllCaps(false); b.setText(label); b.setTypeface(font); b.setTextColor(ui.ink);
         b.setMinHeight(dp(48)); b.setBackground(ui.surface(this,ui.control)); b.setOnClickListener(v -> click.run()); return b;
     }
+    private ImageButton icon(int resource,String description,Runnable click) {
+        ImageButton b=new ImageButton(this); b.setImageResource(resource); b.setColorFilter(ui.ink); b.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        b.setPadding(dp(12),dp(12),dp(12),dp(12)); b.setBackground(ui.surface(this,ui.control)); b.setContentDescription(description); b.setTooltipText(description); b.setOnClickListener(v->click.run()); return b;
+    }
+    private void addIcon(LinearLayout row,int resource,String description,Runnable click) {
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(dp(48),dp(48)); p.setMargins(0,0,dp(6),0); row.addView(icon(resource,description,click),p);
+    }
     private void add(View view) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2); p.setMargins(0,dp(4),0,dp(4)); content.addView(view,p); }
     private TextWatcher watcher(Runnable run) { return new TextWatcher() { public void beforeTextChanged(CharSequence s,int a,int c,int n) {} public void onTextChanged(CharSequence s,int a,int before,int count) {} public void afterTextChanged(Editable e) { run.run(); } }; }
     @Override protected void onCreate(Bundle state) {
@@ -54,9 +63,9 @@ public final class NotesActivity extends SwipeBackActivity {
         page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1)); setContentView(page);
         if(state!=null) { section=state.getInt("section",NoteStore.ACTIVE); query=state.getString("query",""); exportTitle=state.getString("exportTitle",""); exportBody=state.getString("exportBody",""); }
         if(state!=null && state.getBoolean("editing")) {
-            editId=state.getLong("id"); lastTitle=state.getString("lastTitle",""); lastBody=state.getString("lastBody",""); editing=true;
+            editId=state.getLong("id"); lastTitle=state.getString("lastTitle",""); lastBody=state.getString("lastBody",""); lastTag=state.getString("lastTag",""); draftTag=state.getString("draftTag",lastTag); editing=true;
             editor(state.getString("title",""),state.getString("body",""));
-            if(!lastTitle.equals(title.getText().toString()) || !lastBody.equals(body.getText().toString())) queueSave();
+            if(!lastTitle.equals(title.getText().toString()) || !lastBody.equals(body.getText().toString()) || !lastTag.equals(draftTag)) queueSave();
         } else {
             showList(); long requested=getIntent().getLongExtra("note_id",0);
             if(requested>0) try { for(NoteStore.Note note:store.list()) if(note.id==requested && note.state!=NoteStore.TRASH) { openEditor(note); break; } } catch(SQLiteException e) { message("Tidak dapat membuka catatan."); }
@@ -67,7 +76,7 @@ public final class NotesActivity extends SwipeBackActivity {
     @Override protected void onSaveInstanceState(Bundle out) {
         if(editing) saveDraft(false);
         super.onSaveInstanceState(out); out.putBoolean("editing",editing); out.putInt("section",section); out.putString("query",query); out.putString("exportTitle",exportTitle); out.putString("exportBody",exportBody);
-        if(editing && title!=null && body!=null) { out.putLong("id",editId); out.putString("lastTitle",lastTitle); out.putString("lastBody",lastBody); out.putString("title",title.getText().toString()); out.putString("body",body.getText().toString()); }
+        if(editing && title!=null && body!=null) { out.putLong("id",editId); out.putString("lastTitle",lastTitle); out.putString("lastBody",lastBody); out.putString("lastTag",lastTag); out.putString("draftTag",draftTag); out.putString("title",title.getText().toString()); out.putString("body",body.getText().toString()); }
     }
     @Override protected void onDestroy() { handler.removeCallbacks(autoSave); if(store!=null) store.close(); super.onDestroy(); }
     private void message(String msg) { Toast.makeText(this,msg,Toast.LENGTH_LONG).show(); }
@@ -75,13 +84,16 @@ public final class NotesActivity extends SwipeBackActivity {
     private void showList() {
         handler.removeCallbacks(autoSave); editing=false; title=null; body=null; content.removeAllViews();
         add(text("Tersimpan lokal; catatan terhapus jika aplikasi dihapus. Tidak tersinkronisasi.",12,ui.muted));
-        add(button(section==NoteStore.ACTIVE?"Catatan ▾":section==NoteStore.ARCHIVE?"Arsip ▾":"Sampah ▾",() -> ui.dialog(this).setTitle("Tampilkan")
-            .setItems(new String[]{"Catatan","Arsip","Sampah"},(d,w)->{section=w; showList();}).show()));
-        search=field("Cari judul, isi, atau label",200,false); search.setContentDescription("Cari catatan"); search.setText(query); add(search);
+        LinearLayout controls=new LinearLayout(this); controls.setGravity(Gravity.CENTER_VERTICAL);
+        String[] names={"Catatan","Arsip","Sampah"}; int[] locations={R.drawable.ic_notes_notes,R.drawable.ic_notes_archive,R.drawable.ic_notes_trash};
+        addIcon(controls,locations[section],"Lokasi: "+names[section],() -> ui.dialog(this).setTitle("Tampilkan")
+            .setItems(names,(d,w)->{section=w; showList();}).show());
+        int[] layouts={R.drawable.ic_notes_list,R.drawable.ic_notes_grid,R.drawable.ic_notes_staggered};
+        addIcon(controls,layouts[layout],"Tampilan: "+new String[]{"daftar","kotak","staggered"}[layout],() -> { layout=(layout+1)%3; getPreferences(MODE_PRIVATE).edit().putInt("layout",layout).apply(); showList(); });
+        if(section==NoteStore.ACTIVE) addIcon(controls,R.drawable.ic_calendar_add,"Catatan baru",() -> openEditor(null));
+        addIcon(controls,R.drawable.ic_notes_backup,"Cadangkan atau pulihkan",this::backupMenu); add(controls);
+        search=field("Cari judul, isi, atau tag",200,false); search.setContentDescription("Cari catatan"); search.setText(query); add(search);
         search.addTextChangedListener(watcher(() -> { query=search.getText().toString(); renderCards(); }));
-        add(button("Tampilan: "+new String[]{"daftar","kotak","staggered"}[layout],() -> { layout=(layout+1)%3; getPreferences(MODE_PRIVATE).edit().putInt("layout",layout).apply(); showList(); }));
-        if(section==NoteStore.ACTIVE) add(button("+ Catatan baru",() -> openEditor(null)));
-        add(button("Cadangkan / pulihkan",this::backupMenu));
         cards=new LinearLayout(this); cards.setOrientation(LinearLayout.VERTICAL); add(cards); renderCards();
     }
     private void renderCards() {
@@ -237,7 +249,7 @@ public final class NotesActivity extends SwipeBackActivity {
         ui.dialog(this).setTitle("Label catatan").setView(input).setNegativeButton("Batal",null)
           .setPositiveButton("Simpan",(d,w)->mutate(() -> store.metadata(note.id,note.pinned,input.getText().toString().trim(),note.color))).show();
     }
-    private void openEditor(NoteStore.Note note) { editId=note==null?0:note.id; lastTitle=note==null?"":note.title; lastBody=note==null?"":note.body; editing=true; editor(lastTitle,lastBody); }
+    private void openEditor(NoteStore.Note note) { editId=note==null?0:note.id; lastTitle=note==null?"":note.title; lastBody=note==null?"":note.body; lastTag=note==null?"":note.tag; draftTag=lastTag; editing=true; editor(lastTitle,lastBody); }
     private EditText field(String hint,int limit,boolean multiline) {
         EditText e=new EditText(this); e.setHint(hint); e.setTextColor(ui.ink); e.setHintTextColor(ui.muted); e.setTypeface(font); e.setTextSize(16);
         e.setPadding(dp(12),dp(12),dp(12),dp(12)); e.setBackground(ui.surface(this,ui.card)); e.setFilters(new InputFilter[]{new InputFilter.LengthFilter(limit)});
@@ -251,7 +263,10 @@ public final class NotesActivity extends SwipeBackActivity {
         body=field("Tulis catatan",NoteText.BODY_LIMIT,true); body.setContentDescription("Isi catatan"); body.setText(initialBody); add(body);
         saveStatus=text("Tersimpan otomatis di perangkat",12,ui.muted); add(saveStatus);
         title.addTextChangedListener(watcher(this::queueSave)); body.addTextChangedListener(watcher(this::queueSave));
-        add(button("+ Item checklist",() -> {
+        LinearLayout tools=new LinearLayout(this); tools.setGravity(Gravity.CENTER_VERTICAL);
+        addIcon(tools,R.drawable.ic_notes_tag,"Pilih atau buat tag",this::chooseTag);
+        tagValue=text("",13,ui.muted); tools.addView(tagValue,new LinearLayout.LayoutParams(0,-2,1)); updateTagValue();
+        addIcon(tools,R.drawable.ic_notes_checklist,"Tambah item checklist",() -> {
             EditText item=field("Nama item",200,false);
             ui.dialog(this).setTitle("Tambah item checklist").setView(item).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{
                 String value=item.getText().toString().trim(); if(value.isEmpty()) return;
@@ -259,18 +274,35 @@ public final class NotesActivity extends SwipeBackActivity {
                 if(current.length()+addition.length()>NoteText.BODY_LIMIT) { message("Catatan terlalu panjang."); return; }
                 body.append(addition);
             }).show();
-        }));
-        add(button("Selesai",this::finishEditor));
+        });
+        addIcon(tools,R.drawable.ic_notes_done,"Selesai",this::finishEditor); add(tools);
+    }
+    private void updateTagValue() { if(tagValue!=null) { tagValue.setText(draftTag.isEmpty()?"":"#"+draftTag); tagValue.setContentDescription(draftTag.isEmpty()?"Tidak ada tag":"Tag: "+draftTag); } }
+    private void chooseTag() {
+        java.util.TreeSet<String> tags=new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        try { for(NoteStore.Note n:store.list()) if(!n.tag.isEmpty()) tags.add(n.tag); }
+        catch(SQLiteException e) { message("Daftar tag tidak dapat dibaca."); return; }
+        if(!draftTag.isEmpty()) tags.add(draftTag);
+        ArrayList<String> values=new ArrayList<>(); values.add("+ Buat tag baru"); values.add("Tanpa tag"); values.addAll(tags);
+        ui.dialog(this).setTitle("Pilih tag").setItems(values.toArray(new String[0]),(d,which)->{
+            if(which==0) {
+                EditText input=field("Nama tag",60,false);
+                ui.dialog(this).setTitle("Buat tag").setView(input).setNegativeButton("Batal",null).setPositiveButton("Pilih",(x,y)->{
+                    String value=input.getText().toString().trim(); if(value.isEmpty()) { message("Nama tag tidak boleh kosong."); return; }
+                    draftTag=value; updateTagValue(); queueSave();
+                }).show();
+            } else { draftTag=which==1?"":values.get(which); updateTagValue(); queueSave(); }
+        }).show();
     }
     private void queueSave() { handler.removeCallbacks(autoSave); if(saveStatus!=null) saveStatus.setText("Menyimpan…"); handler.postDelayed(autoSave,600); }
     private boolean saveDraft(boolean report) {
         handler.removeCallbacks(autoSave); if(!editing || title==null || body==null) return true;
         String t=title.getText().toString(), b=body.getText().toString();
-        if(t.equals(lastTitle) && b.equals(lastBody)) { if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true; }
+        if(t.equals(lastTitle) && b.equals(lastBody) && draftTag.equals(lastTag)) { if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true; }
         if(editId==0 && !NoteText.valid(t,b)) { if(saveStatus!=null) saveStatus.setText("Catatan kosong belum disimpan"); return t.trim().isEmpty() && b.trim().isEmpty(); }
         try {
-            long id=store.save(editId,t,b); if(id<=0) { if(saveStatus!=null) saveStatus.setText("Gagal menyimpan; teks masih di editor"); if(report) message("Tidak dapat menyimpan catatan."); return false; }
-            editId=id; lastTitle=t; lastBody=b; if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true;
+            long id=store.save(editId,t,b,draftTag); if(id<=0) { if(saveStatus!=null) saveStatus.setText("Gagal menyimpan; teks masih di editor"); if(report) message("Tidak dapat menyimpan catatan."); return false; }
+            editId=id; lastTitle=t; lastBody=b; lastTag=draftTag; if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true;
         } catch(SQLiteException e) { if(saveStatus!=null) saveStatus.setText("Gagal menyimpan; teks masih di editor"); if(report) message("Tidak dapat menyimpan catatan."); return false; }
     }
     private void finishEditor() { if(saveDraft(true)) { hideKeyboard(); showList(); } }
