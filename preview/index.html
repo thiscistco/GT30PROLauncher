@@ -694,6 +694,14 @@
   .notes-form input,.notes-form textarea { display:block; width:100%; box-sizing:border-box; padding:2mm; color:var(--app-text); background:var(--app-card); border:1px solid var(--app-border); border-radius:2mm; font:700 3mm Doto,monospace; }
   .notes-form textarea { min-height:30mm; resize:vertical; }
   .notes-form[hidden] { display:none; }
+  .notes-controls { display:flex; gap:1mm; flex-wrap:wrap; }
+  .notes-controls button { flex:1; min-width:15mm; }
+  .notes-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1mm; }
+  .notes-item { min-width:0; border-radius:2.5mm; }
+  .notes-item .notes-button { font-size:2.3mm; }
+  .notes-search, .notes-select { width:100%; box-sizing:border-box; padding:2mm; color:var(--app-text); background:var(--app-card); border:1px solid var(--app-border); border-radius:2mm; font:700 2.8mm Doto,monospace; }
+  .notes-color-1 { background:#ffe2d7; } .notes-color-2 { background:#fff1c9; } .notes-color-3 { background:#ddf1dc; } .notes-color-4 { background:#dceaff; }
+  #notesPage[data-theme="dark"] .notes-color-1 { background:#52332f; } #notesPage[data-theme="dark"] .notes-color-2 { background:#51452b; } #notesPage[data-theme="dark"] .notes-color-3 { background:#304c38; } #notesPage[data-theme="dark"] .notes-color-4 { background:#304052; }
   .clock-hud { position:absolute; inset:1.2mm; display:flex; justify-content:center; align-items:flex-start; background:var(--app-card); border:1px solid var(--app-border); border-radius:3mm; }
   .clock-hud[hidden], .clock-panel-scroll[hidden] { display:none; }
   .clock-hud-dial { width:var(--clock-dial-size); height:var(--clock-dial-size); flex:none; overflow:visible; }
@@ -1081,11 +1089,18 @@
               <section class="weather-page notes-page" id="notesPage" aria-label="Catatan di Super App" hidden>
                 <div class="app-top"><button class="app-back" id="notesBack" type="button" aria-label="Kembali" title="Kembali"><span class="calendar-action-icon calendar-back-icon" aria-hidden="true"></span></button><span class="app-title">Catatan</span><div class="app-theme"><button class="app-theme-button" id="notesTheme" type="button" aria-label="Pilih tema aplikasi" aria-expanded="false" aria-controls="notesThemeMenu"><span class="calendar-theme-icon calendar-theme-system" id="notesThemeIcon" aria-hidden="true"></span></button><div class="app-theme-menu" id="notesThemeMenu" role="group" aria-label="Pilihan tema aplikasi" hidden><button class="app-theme-option" id="notesThemeSystem" type="button" aria-label="Ikuti perangkat" title="Ikuti perangkat" aria-pressed="true"><span class="calendar-theme-icon calendar-theme-system" aria-hidden="true"></span></button><button class="app-theme-option" id="notesThemeLight" type="button" aria-label="Terang" title="Terang" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-light" aria-hidden="true"></span></button><button class="app-theme-option" id="notesThemeDark" type="button" aria-label="Gelap" title="Gelap" aria-pressed="false"><span class="calendar-theme-icon calendar-theme-dark" aria-hidden="true"></span></button></div></div></div>
                 <p class="notes-hint" id="notesStatus" role="status">Catatan tersimpan di browser ini, bukan di aplikasi Android. Menghapus data browser menghapus catatan.</p>
-                <div class="notes-list" id="notesListPanel"><button class="notes-button" id="notesAdd" type="button">+ Catatan baru</button><div id="notesList"></div><p class="notes-hint" id="notesEmpty">Belum ada catatan.</p></div>
+                <div class="notes-list" id="notesListPanel">
+                  <label>Lokasi <select id="notesSection" class="notes-select"><option value="0">Catatan</option><option value="1">Arsip</option><option value="2">Sampah</option></select></label>
+                  <label>Cari <input id="notesSearch" class="notes-search" type="search" placeholder="Cari judul, isi, atau label"></label>
+                  <button class="notes-button" id="notesLayout" type="button">Tampilan: daftar</button>
+                  <button class="notes-button" id="notesAdd" type="button">+ Catatan baru</button><div id="notesList"></div><p class="notes-hint" id="notesEmpty">Tidak ada catatan.</p>
+                </div>
                 <form class="notes-form notes-list" id="notesForm" hidden><h3 id="notesEditorHeading">Catatan baru</h3>
                   <label>Judul (opsional)<input id="notesTitle" type="text" maxlength="120"></label>
                   <label>Isi catatan<textarea id="notesBody" maxlength="20000"></textarea></label>
-                  <button class="notes-button" type="submit">Simpan</button><button class="notes-button" id="notesCancel" type="button">Batal</button><button class="notes-button" id="notesDelete" type="button" hidden>Hapus catatan</button>
+                  <button class="notes-button" id="notesAddChecklist" type="button">+ Item checklist</button>
+                  <p class="notes-hint" id="notesSaveStatus" role="status">Tersimpan otomatis di browser</p>
+                  <button class="notes-button" type="submit">Selesai</button>
                 </form>
               </section>
               <section class="weather-page" id="weatherPage" aria-label="Cuaca di Super App" hidden>

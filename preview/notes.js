@@ -1,19 +1,21 @@
-/* Browser-only local notes. Android notes are stored separately on the device. */
+/* Browser-only local notes. Android notes use a separate database. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory;
   else factory(root);
 })(typeof window === 'undefined' ? null : window, function mountNotes(win) {
   'use strict';
   var doc=win.document, byId=function (id) { return doc.getElementById(id); };
-  var key='gt30-notes-v1', notes=[], writable=true, editing=null, originalTitle='', originalBody='';
+  var key='gt30-notes-v1', notes=[], writable=true, editing=null, lastTitle='', lastBody='', timer=null, section=0, grid=false;
   var form=byId('notesForm'), title=byId('notesTitle'), body=byId('notesBody'), list=byId('notesList'), panel=byId('notesListPanel'), status=byId('notesStatus');
-  if (!form || !title || !body || !list || !panel || !status) return;
-  function validRecord(n) { return n && typeof n.id==='string' && n.id.length>0 && typeof n.title==='string' && n.title.length<=120 && typeof n.body==='string' && n.body.length<=20000 && typeof n.updated==='number' && Number.isFinite(n.updated) && (n.title.trim() || n.body.trim()); }
+  var search=byId('notesSearch'), sectionSelect=byId('notesSection'), layout=byId('notesLayout'), saveStatus=byId('notesSaveStatus');
+  if (!form || !title || !body || !list || !panel || !status || !search || !sectionSelect || !layout || !saveStatus) return;
+  function validRecord(n) { return n && typeof n.id==='string' && n.id.length>0 && typeof n.title==='string' && n.title.length<=120 && typeof n.body==='string' && n.body.length<=20000 && typeof n.updated==='number' && Number.isFinite(n.updated) && (n.pinned===undefined || typeof n.pinned==='boolean') && (n.state===undefined || [0,1,2].includes(n.state)) && (n.previousState===undefined || [0,1].includes(n.previousState)) && (n.tag===undefined || (typeof n.tag==='string' && n.tag.length<=60)) && (n.color===undefined || ([0,1,2,3,4].includes(n.color))); }
   function load() {
     try {
       var raw=win.localStorage.getItem(key), value=raw===null?[]:JSON.parse(raw);
       if(!Array.isArray(value) || !value.every(validRecord) || new Set(value.map(function (n) { return n.id; })).size!==value.length) throw new Error('Invalid notes');
-      notes=value; writable=true;
+      notes=value.map(function(n){return Object.assign({pinned:false,state:0,previousState:0,tag:'',color:0},n);}); writable=true;
+      grid=win.localStorage.getItem('gt30-notes-grid')==='1';
     } catch (_) { notes=[]; writable=false; }
     status.textContent=writable ? 'Catatan tersimpan di browser ini, bukan di aplikasi Android. Menghapus data browser menghapus catatan.' : 'Penyimpanan catatan tidak tersedia atau data tidak dapat dibaca. Data lama tidak ditimpa.';
   }
@@ -23,45 +25,71 @@
     catch (_) { status.textContent='Tidak dapat menyimpan catatan. Perubahan tetap di editor.'; return false; }
   }
   function render() {
-    list.textContent='';
-    var ordered=notes.slice().sort(function(a,b) { return b.updated-a.updated; });
-    byId('notesEmpty').hidden=ordered.length!==0 || !writable;
-    byId('notesAdd').disabled=!writable;
+    list.textContent=''; list.className=grid?'notes-grid':''; layout.textContent=grid?'Tampilan: kotak':'Tampilan: daftar'; sectionSelect.value=String(section);
+    var q=search.value.trim().toLocaleLowerCase(), ordered=notes.filter(function(n){return n.state===section && (!q || (n.title+'\n'+n.body+'\n'+n.tag).toLocaleLowerCase().includes(q));}).sort(function(a,b) { return Number(b.pinned)-Number(a.pinned) || b.updated-a.updated; });
+    byId('notesEmpty').hidden=ordered.length!==0 || !writable; byId('notesAdd').hidden=section!==0; byId('notesAdd').disabled=!writable;
     ordered.forEach(function(n) {
-      var button=doc.createElement('button'), heading=doc.createElement('strong'), summary=doc.createElement('span');
-      button.type='button'; button.className='notes-card'; heading.textContent=n.title.trim() || 'Tanpa judul'; summary.textContent=n.body;
-      button.appendChild(heading); if(n.body.trim()) button.appendChild(summary);
-      button.setAttribute('aria-label','Buka catatan '+heading.textContent); button.addEventListener('click',function () { open(n); }); list.appendChild(button);
+      var wrap=doc.createElement('div'), button=doc.createElement('button'), heading=doc.createElement('strong'), summary=doc.createElement('span'), actions=doc.createElement('div');
+      wrap.className='notes-item notes-color-'+n.color; button.type='button'; button.className='notes-card notes-color-'+n.color;
+      heading.textContent=(n.pinned?'📌 ':'')+(n.title.trim() || 'Tanpa judul'); summary.textContent=n.body;
+      button.appendChild(heading); if(n.body.trim()) button.appendChild(summary); if(n.tag) { var tag=doc.createElement('span'); tag.textContent='#'+n.tag; button.appendChild(tag); }
+      button.setAttribute('aria-label','Buka catatan '+(n.title.trim() || 'Tanpa judul')); button.addEventListener('click',function () { if(n.state!==2) open(n); }); wrap.appendChild(button);
+      actions.className='notes-controls';
+      function action(label,fn) { var b=doc.createElement('button'); b.type='button'; b.className='notes-button'; b.textContent=label; b.addEventListener('click',fn); actions.appendChild(b); }
+      if(n.state===2) {
+        action('Pulihkan',function(){update(n,{state:n.previousState===1?1:0,previousState:0});});
+        action('Hapus permanen',function(){if(win.confirm('Hapus permanen? Catatan tidak dapat dipulihkan.')) { var next=notes.filter(function(x){return x.id!==n.id;}); if(persist(next)) render(); }});
+      } else {
+        action(n.pinned?'Lepas pin':'Pin',function(){update(n,{pinned:!n.pinned});});
+        action(n.state===1?'Buka arsip':'Arsip',function(){update(n,{state:n.state===1?0:1});});
+        action('Sampah',function(){if(win.confirm('Pindahkan catatan ke Sampah?')) update(n,{previousState:n.state,state:2});});
+        action('Label',function(){var x=win.prompt('Label catatan (maksimal 60 karakter)',n.tag); if(x!==null) update(n,{tag:x.trim().slice(0,60)});});
+        action('Warna',function(){var x=win.prompt('Warna: 0 bawaan, 1 merah, 2 kuning, 3 hijau, 4 biru',String(n.color)); if(x!==null && /^[0-4]$/.test(x.trim())) update(n,{color:Number(x.trim())});});
+      }
+      if(n.state!==2) {
+        n.body.split('\n').forEach(function(line,index){
+          if(!line.startsWith('☐ ') && !line.startsWith('☑ ')) return;
+          var label=doc.createElement('label'), check=doc.createElement('input'), caption=doc.createElement('span');
+          check.type='checkbox'; check.checked=line.startsWith('☑ '); caption.textContent=line.slice(2);
+          check.addEventListener('change',function(){ var lines=n.body.split('\n'); lines[index]=(check.checked?'☑ ':'☐ ')+line.slice(2); var next=notes.map(function(x){return x.id===n.id?Object.assign({},x,{body:lines.join('\n'),updated:Date.now()}):x;}); if(persist(next)) render(); else check.checked=!check.checked; });
+          label.appendChild(check); label.appendChild(caption); wrap.appendChild(label);
+        });
+      }
+      wrap.appendChild(actions); list.appendChild(wrap);
     });
   }
+  function update(n,values) { var next=notes.map(function(x){return x.id===n.id?Object.assign({},x,values,{updated:Date.now()}):x;}); if(persist(next)) render(); }
   function open(n) {
-    editing=n ? n.id : ''; originalTitle=n ? n.title : ''; originalBody=n ? n.body : '';
-    title.value=originalTitle; body.value=originalBody; panel.hidden=true; form.hidden=false;
-    byId('notesDelete').hidden=!n; byId('notesEditorHeading').textContent=n?'Edit catatan':'Catatan baru'; title.focus();
+    editing=n ? n.id : ''; lastTitle=n ? n.title : ''; lastBody=n ? n.body : '';
+    title.value=lastTitle; body.value=lastBody; panel.hidden=true; form.hidden=false;
+    byId('notesEditorHeading').textContent=n?'Edit catatan':'Catatan baru'; saveStatus.textContent='Tersimpan otomatis di browser'; title.focus();
   }
-  function closeEditor() { editing=null; form.hidden=true; panel.hidden=false; render(); byId('notesAdd').focus(); }
-  function dirty() { return title.value!==originalTitle || body.value!==originalBody; }
-  function confirmEditor() { return !dirty() || win.confirm('Buang perubahan catatan yang belum disimpan?'); }
+  function cancelTimer() { if(timer!==null) win.clearTimeout(timer); timer=null; }
   function newId() { var id; do { id=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2); } while(notes.some(function(n){return n.id===id;})); return id; }
-  byId('notesAdd').addEventListener('click',function () { if(writable) open(null); });
-  byId('notesCancel').addEventListener('click',function () { if(confirmEditor()) closeEditor(); });
-  form.addEventListener('submit',function(e) {
-    e.preventDefault(); if(editing===null) return;
-    var t=title.value, b=body.value;
-    if((!t.trim() && !b.trim()) || t.length>120 || b.length>20000) { status.textContent='Isi judul atau catatan sebelum menyimpan.'; return; }
+  function save() {
+    cancelTimer(); if(editing===null) return true;
+    var t=title.value,b=body.value;
+    if(t===lastTitle && b===lastBody) { saveStatus.textContent='Tersimpan di browser'; return true; }
+    if(t.length>120 || b.length>20000) { saveStatus.textContent='Teks melebihi batas.'; return false; }
+    if(!editing && !t.trim() && !b.trim()) { saveStatus.textContent='Catatan kosong belum disimpan'; return true; }
     var id=editing || newId(), next=notes.slice(), index=next.findIndex(function(n){return n.id===id;});
-    if(editing && index<0) { status.textContent='Catatan tidak ditemukan; perubahan tetap di editor.'; return; }
-    var note={id:id,title:t,body:b,updated:Date.now()}; if(index<0) next.push(note); else next[index]=note;
-    if(persist(next)) { status.textContent='Catatan disimpan di browser ini, bukan di aplikasi Android.'; closeEditor(); }
-  });
-  byId('notesDelete').addEventListener('click',function () {
-    if(!editing || !win.confirm('Hapus catatan ini? Tindakan tidak dapat dibatalkan.')) return;
-    var next=notes.filter(function(n){return n.id!==editing;});
-    if(next.length===notes.length) { status.textContent='Catatan tidak ditemukan.'; return; }
-    if(persist(next)) { status.textContent='Catatan dihapus dari browser ini.'; closeEditor(); }
-  });
+    if(editing && index<0) { saveStatus.textContent='Catatan tidak ditemukan; perubahan tetap di editor.'; return false; }
+    var n=index<0 ? {id:id,pinned:false,state:0,previousState:0,tag:'',color:0} : next[index];
+    var note=Object.assign({},n,{title:t,body:b,updated:Date.now()}); if(index<0) next.push(note); else next[index]=note;
+    if(!persist(next)) { saveStatus.textContent='Gagal menyimpan; teks masih di editor.'; return false; }
+    editing=id; lastTitle=t; lastBody=b; saveStatus.textContent='Tersimpan di browser'; return true;
+  }
+  function queue() { cancelTimer(); saveStatus.textContent='Menyimpan…'; timer=win.setTimeout(save,600); }
+  function closeEditor() { if(!save()) return false; editing=null; form.hidden=true; panel.hidden=false; render(); byId('notesAdd').focus(); return true; }
+  byId('notesAdd').addEventListener('click',function () { if(writable) open(null); });
+  title.addEventListener('input',queue); body.addEventListener('input',queue);
+  byId('notesAddChecklist').addEventListener('click',function(){ var value=win.prompt('Nama item checklist',''); if(value===null || !value.trim()) return; var addition=(body.value && !body.value.endsWith('\n')?'\n':'')+'☐ '+value.trim().slice(0,200); if(body.value.length+addition.length>20000) { saveStatus.textContent='Catatan terlalu panjang.'; return; } body.value+=addition; queue(); });
+  form.addEventListener('submit',function(e) { e.preventDefault(); closeEditor(); });
+  search.addEventListener('input',render); sectionSelect.addEventListener('change',function(){section=Number(sectionSelect.value)||0; render();});
+  layout.addEventListener('click',function(){grid=!grid; try{win.localStorage.setItem('gt30-notes-grid',grid?'1':'0');}catch(_){} render();});
+  if(doc.addEventListener) doc.addEventListener('visibilitychange',function(){if(doc.hidden) save();});
   win.notesOnOpen=function () { load(); editing=null; form.hidden=true; panel.hidden=false; render(); };
-  win.notesGoBack=function () { if(editing===null) return false; if(confirmEditor()) closeEditor(); return true; };
-  win.notesConfirmLeave=function () { if(editing===null) return true; if(!confirmEditor()) return false; closeEditor(); return true; };
+  win.notesGoBack=function () { if(editing===null) return false; closeEditor(); return true; };
+  win.notesConfirmLeave=function () { return editing===null || closeEditor(); };
   load(); render();
 });

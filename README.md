@@ -219,10 +219,15 @@ Angka jam dan menit digeser 0,5 px ke kanan tanpa memindahkan titik. Setelah tit
 Label informasi homescreen diturunkan 20 px berdasarkan skala preview; posisi elemen lainnya tetap.
 
 ### Catatan v0.1.218
-Super App memiliki aplikasi **Catatan**: buat, edit, dan hapus catatan dengan konfirmasi. Judul boleh kosong jika isi terisi. Tekan Simpan untuk menyimpan; pembatalan perubahan meminta konfirmasi. Di Android catatan disimpan di basis data privat perangkat tanpa sinkronisasi dan dikecualikan dari backup Android; menghapus aplikasi menghapus catatan. Preview menyimpan data terpisah di penyimpanan browser, bukan di perangkat Android; menghapus data browser juga menghapus catatan preview.
+Super App memiliki aplikasi **Catatan**; lihat fitur dan batasan terkini pada bagian v0.1.221. Di Android catatan disimpan di basis data privat perangkat tanpa sinkronisasi dan dikecualikan dari backup Android; menghapus aplikasi menghapus catatan. Preview menyimpan data terpisah di penyimpanan browser, bukan di perangkat Android; menghapus data browser juga menghapus catatan preview.
 
 ### Penyesuaian v0.1.219
 Hanya angka suhu di homescreen digeser 5 px ke kanan dan 5 px ke bawah berdasarkan skala preview; ikon cuaca tidak dipindahkan.
 
 ### Penyesuaian v0.1.220
 Angka suhu di homescreen digeser 2 px ke kiri dan 2 px ke atas berdasarkan skala preview. Ikon cuaca homescreen diperkecil 15% dari pusatnya; ikon cuaca di Super App tidak berubah.
+
+### Catatan v0.1.221 (tahap pertama)
+Catatan tersimpan otomatis setelah mengetik dan saat halaman meninggalkan fokus. Tambah pencarian judul/isi/label, sematan, arsip, sampah dan pemulihan, label tunggal, warna, daftar/kotak dan checklist. Gunakan menu catatan untuk mengubah properti; pada Sampah tersedia hapus permanen. Catatan lama dimigrasikan tanpa dihapus. Di Android, bagikan teks atau ekspor TXT/PDF melalui pemilih dokumen (penyedia Google Drive dapat dipilih jika tersedia). Ini **bukan sinkronisasi Google Drive**. Preview menggunakan penyimpanan browser terpisah dan tidak menyediakan ekspor atau berbagi.
+
+Editor visual kaya format, lampiran gambar/kamera/audio/sketsa, pengingat catatan, kunci perangkat/biometrik, serta sinkronisasi Google Drive dan backup/impor keseluruhan belum tersedia. Ekspor tidak otomatis mencadangkan semua catatan. Catatan tetap disimpan tanpa enkripsi tambahan di database privat aplikasi; jangan menganggapnya terkunci. Cadangan Android otomatis masih mengecualikan database catatan. Menghapus aplikasi menghapus data lokal.

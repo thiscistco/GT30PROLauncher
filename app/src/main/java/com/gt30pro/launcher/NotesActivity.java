@@ -1,85 +1,168 @@
 package com.gt30pro.launcher;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.Editable;
 import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 
-/** Local notes: explicit save, confirmation before discarding or deleting. */
+/** Local notes: debounced auto-save, search, organization and recoverable deletion. */
 public final class NotesActivity extends SwipeBackActivity {
     private AppUi ui; private Typeface font; private NoteStore store;
-    private LinearLayout content; private EditText title,body;
-    private boolean editing; private long editId;
-    private String originalTitle="",originalBody="";
+    private LinearLayout content, cards; private EditText title,body,search; private TextView saveStatus;
+    private boolean editing; private long editId; private String lastTitle="",lastBody="";
+    private int section=NoteStore.ACTIVE; private String query=""; private boolean grid;
+    private static final int EXPORT_TXT=601, EXPORT_PDF=602;
+    private String exportTitle="",exportBody="";
+    private final Handler handler=new Handler();
+    private final Runnable autoSave=() -> saveDraft(false);
+    private static final int[] LIGHT={0,0xFFFFE2D7,0xFFFFF1C9,0xFFDDF1DC,0xFFDCEAFF};
+    private static final int[] DARK={0,0xFF52332F,0xFF51452B,0xFF304C38,0xFF304052};
+    private static final String[] COLORS={"Bawaan","Merah","Kuning","Hijau","Biru"};
     @Override protected boolean supportsBottomSwipe() { return !editing; }
     private int dp(int n) { return ui.dp(this,n); }
-    private TextView text(String value,int size,int color) {
-        TextView t=new TextView(this); t.setText(value); t.setTextSize(size); t.setTextColor(color); t.setTypeface(font); return t;
-    }
+    private TextView text(String value,int size,int color) { TextView t=new TextView(this); t.setText(value); t.setTextSize(size); t.setTextColor(color); t.setTypeface(font); return t; }
     private Button button(String label,Runnable click) {
         Button b=new Button(this); b.setAllCaps(false); b.setText(label); b.setTypeface(font); b.setTextColor(ui.ink);
         b.setMinHeight(dp(48)); b.setBackground(ui.surface(this,ui.control)); b.setOnClickListener(v -> click.run()); return b;
     }
     private void add(View view) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2); p.setMargins(0,dp(4),0,dp(4)); content.addView(view,p); }
+    private TextWatcher watcher(Runnable run) { return new TextWatcher() { public void beforeTextChanged(CharSequence s,int a,int c,int n) {} public void onTextChanged(CharSequence s,int a,int before,int count) {} public void afterTextChanged(Editable e) { run.run(); } }; }
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state); ui=new AppUi(this); ui.window(this); font=Typeface.createFromAsset(getAssets(),"fonts/Doto.ttf"); store=new NoteStore(this);
+        grid=getPreferences(MODE_PRIVATE).getBoolean("grid",false);
         LinearLayout page=new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL); page.setBackgroundColor(ui.canvas);
         page.setOnApplyWindowInsetsListener((v,insets) -> { page.setPadding(dp(20),dp(16)+insets.getSystemWindowInsetTop(),dp(20),dp(16)+insets.getSystemWindowInsetBottom()); return insets; });
         LinearLayout header=ui.header(this,font,"Catatan"); header.getChildAt(0).setOnClickListener(v -> onBackPressed()); page.addView(header);
         ScrollView scroll=new ScrollView(this); scroll.setFillViewport(true);
         content=new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(0,0,0,dp(80)); scroll.addView(content);
         page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1)); setContentView(page);
+        if(state!=null) { section=state.getInt("section",NoteStore.ACTIVE); query=state.getString("query",""); exportTitle=state.getString("exportTitle",""); exportBody=state.getString("exportBody",""); }
         if(state!=null && state.getBoolean("editing")) {
-            editId=state.getLong("id"); originalTitle=state.getString("originalTitle",""); originalBody=state.getString("originalBody",""); editing=true;
+            editId=state.getLong("id"); lastTitle=state.getString("lastTitle",""); lastBody=state.getString("lastBody",""); editing=true;
             editor(state.getString("title",""),state.getString("body",""));
+            if(!lastTitle.equals(title.getText().toString()) || !lastBody.equals(body.getText().toString())) queueSave();
         } else showList();
     }
-    @Override protected void onResume() {
-        super.onResume(); AppUi current=new AppUi(this);
-        if(ui!=null && (ui.dark!=current.dark || !ui.choice.equals(current.choice))) recreate();
-    }
+    @Override protected void onResume() { super.onResume(); AppUi current=new AppUi(this); if(ui!=null && (ui.dark!=current.dark || !ui.choice.equals(current.choice))) recreate(); }
+    @Override protected void onPause() { if(editing) saveDraft(false); super.onPause(); }
     @Override protected void onSaveInstanceState(Bundle out) {
-        super.onSaveInstanceState(out); out.putBoolean("editing",editing);
-        if(editing && title!=null && body!=null) {
-            out.putLong("id",editId); out.putString("originalTitle",originalTitle); out.putString("originalBody",originalBody);
-            out.putString("title",title.getText().toString()); out.putString("body",body.getText().toString());
-        }
+        if(editing) saveDraft(false);
+        super.onSaveInstanceState(out); out.putBoolean("editing",editing); out.putInt("section",section); out.putString("query",query); out.putString("exportTitle",exportTitle); out.putString("exportBody",exportBody);
+        if(editing && title!=null && body!=null) { out.putLong("id",editId); out.putString("lastTitle",lastTitle); out.putString("lastBody",lastBody); out.putString("title",title.getText().toString()); out.putString("body",body.getText().toString()); }
     }
-    @Override protected void onDestroy() { if(store!=null) store.close(); super.onDestroy(); }
+    @Override protected void onDestroy() { handler.removeCallbacks(autoSave); if(store!=null) store.close(); super.onDestroy(); }
     private void message(String msg) { Toast.makeText(this,msg,Toast.LENGTH_LONG).show(); }
-    private void hideKeyboard() {
-        View focused=getCurrentFocus(); InputMethodManager imm=(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        if(focused!=null && imm!=null) imm.hideSoftInputFromWindow(focused.getWindowToken(),0);
-    }
+    private void hideKeyboard() { View focused=getCurrentFocus(); InputMethodManager imm=(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE); if(focused!=null && imm!=null) imm.hideSoftInputFromWindow(focused.getWindowToken(),0); }
     private void showList() {
-        editing=false; title=null; body=null; content.removeAllViews();
-        add(text("Tersimpan hanya di perangkat ini. Menghapus aplikasi juga menghapus catatan.",12,ui.muted));
+        handler.removeCallbacks(autoSave); editing=false; title=null; body=null; content.removeAllViews();
+        add(text("Tersimpan lokal; catatan terhapus jika aplikasi dihapus. Tidak tersinkronisasi.",12,ui.muted));
+        add(button(section==NoteStore.ACTIVE?"Catatan ▾":section==NoteStore.ARCHIVE?"Arsip ▾":"Sampah ▾",() -> ui.dialog(this).setTitle("Tampilkan")
+            .setItems(new String[]{"Catatan","Arsip","Sampah"},(d,w)->{section=w; showList();}).show()));
+        search=field("Cari judul, isi, atau label",200,false); search.setContentDescription("Cari catatan"); search.setText(query); add(search);
+        search.addTextChangedListener(watcher(() -> { query=search.getText().toString(); renderCards(); }));
+        add(button(grid?"Tampilan: kotak":"Tampilan: daftar",() -> { grid=!grid; getPreferences(MODE_PRIVATE).edit().putBoolean("grid",grid).apply(); showList(); }));
+        if(section==NoteStore.ACTIVE) add(button("+ Catatan baru",() -> openEditor(null)));
+        cards=new LinearLayout(this); cards.setOrientation(LinearLayout.VERTICAL); add(cards); renderCards();
+    }
+    private void renderCards() {
+        if(cards==null) return; cards.removeAllViews();
         final ArrayList<NoteStore.Note> notes;
-        try { notes=store.list(); } catch(SQLiteException e) { add(text("Catatan tidak dapat dibaca. Data lama tidak dihapus.",14,ui.ink)); return; }
-        add(button("+ Catatan baru",() -> openEditor(null)));
-        if(notes.isEmpty()) { add(text("Belum ada catatan.",14,ui.muted)); return; }
-        for(NoteStore.Note note:notes) {
-            LinearLayout card=new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL); card.setPadding(dp(12),dp(10),dp(12),dp(10)); card.setBackground(ui.surface(this,ui.card));
-            TextView heading=text(NoteText.displayTitle(note.title),16,ui.ink); heading.setTypeface(font,Typeface.BOLD); heading.setMaxLines(1); heading.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(heading);
-            if(!note.body.trim().isEmpty()) { TextView summary=text(note.body,13,ui.muted); summary.setMaxLines(2); summary.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(summary); }
-            card.setFocusable(true); card.setContentDescription("Buka catatan " + NoteText.displayTitle(note.title)); card.setOnClickListener(v -> openEditor(note)); add(card);
+        try { notes=store.list(); } catch(SQLiteException e) { cards.addView(text("Catatan tidak dapat dibaca. Data lama tidak dihapus.",14,ui.ink)); return; }
+        ArrayList<NoteStore.Note> visible=new ArrayList<>();
+        for(NoteStore.Note n:notes) if(n.state==section && NoteSearch.matches(n.title,n.body,n.tag,query)) visible.add(n);
+        if(visible.isEmpty()) { cards.addView(text("Tidak ada catatan.",14,ui.muted)); return; }
+        if(!grid) for(NoteStore.Note note:visible) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2); p.setMargins(0,dp(4),0,dp(4)); cards.addView(card(note),p); }
+        else {
+            for(int i=0;i<visible.size();i+=2) {
+                LinearLayout row=new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL);
+                for(int j=i;j<Math.min(i+2,visible.size());j++) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-2,1); p.setMargins(dp(2),dp(4),dp(2),dp(4)); row.addView(card(visible.get(j)),p); }
+                if(i+1>=visible.size()) row.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));
+                cards.addView(row);
+            }
         }
     }
-    private void openEditor(NoteStore.Note note) {
-        editId=note==null?0:note.id; originalTitle=note==null?"":note.title; originalBody=note==null?"":note.body;
-        editing=true; editor(originalTitle,originalBody);
+    private View card(NoteStore.Note note) {
+        LinearLayout card=new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL); card.setPadding(dp(12),dp(10),dp(12),dp(10));
+        int index=Math.max(0,Math.min(note.color,LIGHT.length-1)); int color=index==0?ui.card:(ui.dark?DARK[index]:LIGHT[index]); card.setBackground(ui.surface(this,color));
+        TextView heading=text((note.pinned!=0?"📌 ":"")+NoteText.displayTitle(note.title),16,ui.ink); heading.setTypeface(font,Typeface.BOLD); heading.setMaxLines(1); heading.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(heading);
+        if(!note.body.trim().isEmpty()) { TextView summary=text(note.body,13,ui.muted); summary.setMaxLines(2); summary.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(summary); }
+        if(!note.tag.isEmpty()) card.addView(text("#"+note.tag,12,ui.muted));
+        card.setFocusable(true); card.setContentDescription("Catatan " + NoteText.displayTitle(note.title) + ". Ketuk untuk pilihan");
+        card.setOnClickListener(v -> noteMenu(note)); return card;
     }
+    private void noteMenu(NoteStore.Note note) {
+        if(note.state==NoteStore.TRASH) {
+            ui.dialog(this).setTitle(NoteText.displayTitle(note.title)).setItems(new String[]{"Pulihkan","Hapus permanen"},(d,w)->{
+                if(w==0) mutate(() -> store.restore(note.id));
+                else ui.dialog(this).setTitle("Hapus permanen?").setMessage("Catatan tidak dapat dipulihkan.").setNegativeButton("Batal",null).setPositiveButton("Hapus",(x,y)->mutate(() -> store.deletePermanently(note.id))).show();
+            }).show(); return;
+        }
+        String[] actions={"Buka / edit",note.pinned!=0?"Lepas sematan":"Sematkan","Ubah label","Ubah warna",note.state==NoteStore.ARCHIVE?"Kembalikan dari arsip":"Arsipkan","Pindah ke sampah","Bagikan teks","Ekspor TXT","Ekspor PDF","Checklist"};
+        ui.dialog(this).setTitle(NoteText.displayTitle(note.title)).setItems(actions,(d,w)->{
+            if(w==0) openEditor(note);
+            else if(w==1) mutate(() -> store.metadata(note.id,note.pinned==0?1:0,note.tag,note.color));
+            else if(w==2) editTag(note);
+            else if(w==3) ui.dialog(this).setTitle("Warna catatan").setItems(COLORS,(x,y)->mutate(() -> store.metadata(note.id,note.pinned,note.tag,y))).show();
+            else if(w==4) mutate(() -> store.archive(note.id,note.state!=NoteStore.ARCHIVE));
+            else if(w==5) ui.dialog(this).setTitle("Pindah ke sampah?").setMessage("Catatan dapat dipulihkan dari Sampah.").setNegativeButton("Batal",null).setPositiveButton("Pindah",(x,y)->mutate(() -> store.trash(note.id))).show();
+            else if(w==6) { Intent share=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT,NoteExport.text(note.title,note.body)); try { startActivity(Intent.createChooser(share,"Bagikan catatan")); } catch(RuntimeException e) { message("Tidak ada aplikasi berbagi."); } }
+            else if(w==7 || w==8) export(note,w==8);
+            else if(w==9) checklist(note);
+        }).show();
+    }
+    private void checklist(NoteStore.Note note) {
+        final ArrayList<NoteChecklist.Item> items=NoteChecklist.items(note.body);
+        if(items.isEmpty()) { message("Belum ada item checklist. Tambahkan dari editor."); return; }
+        String[] labels=new String[items.size()]; boolean[] checked=new boolean[items.size()];
+        for(int i=0;i<items.size();i++) { labels[i]=items.get(i).text; checked[i]=items.get(i).checked; }
+        final String[] current={note.body};
+        ui.dialog(this).setTitle("Checklist").setMultiChoiceItems(labels,checked,(dialog,which,isChecked)->{
+            String next=NoteChecklist.toggle(current[0],items.get(which).line,isChecked);
+            try {
+                if(store.save(note.id,note.title,next)<=0) throw new SQLiteException("Note missing");
+                current[0]=next;
+            } catch(SQLiteException e) { ((android.app.AlertDialog)dialog).getListView().setItemChecked(which,!isChecked); message("Checklist gagal disimpan."); }
+        }).setPositiveButton("Selesai",(d,w)->renderCards()).setOnCancelListener(d->renderCards()).show();
+    }
+    private void export(NoteStore.Note note,boolean pdf) {
+        exportTitle=note.title; exportBody=note.body;
+        Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(pdf?"application/pdf":"text/plain");
+        intent.putExtra(Intent.EXTRA_TITLE,pdf?"catatan.pdf":"catatan.txt");
+        try { startActivityForResult(intent,pdf?EXPORT_PDF:EXPORT_TXT); } catch(RuntimeException e) { message("Pemilih dokumen tidak tersedia."); }
+    }
+    @Override protected void onActivityResult(int request,int result,Intent data) {
+        super.onActivityResult(request,result,data);
+        if((request!=EXPORT_TXT && request!=EXPORT_PDF) || result!=RESULT_OK || data==null || data.getData()==null) return;
+        try(java.io.OutputStream out=getContentResolver().openOutputStream(data.getData(),"w")) {
+            if(out==null) throw new java.io.IOException("No output stream");
+            if(request==EXPORT_PDF) NoteExport.writePdf(out,exportTitle,exportBody); else NoteExport.writeText(out,exportTitle,exportBody);
+            message("Catatan diekspor.");
+        } catch(java.io.IOException | RuntimeException e) { message("Ekspor gagal. Periksa lokasi penyimpanan."); }
+    }
+    private interface Change { boolean run(); }
+    private void mutate(Change action) { try { if(!action.run()) message("Catatan tidak ditemukan."); } catch(SQLiteException e) { message("Tidak dapat mengubah catatan."); } renderCards(); }
+    private void editTag(NoteStore.Note note) {
+        EditText input=field("Label",60,false); input.setText(note.tag);
+        ui.dialog(this).setTitle("Label catatan").setView(input).setNegativeButton("Batal",null)
+          .setPositiveButton("Simpan",(d,w)->mutate(() -> store.metadata(note.id,note.pinned,input.getText().toString().trim(),note.color))).show();
+    }
+    private void openEditor(NoteStore.Note note) { editId=note==null?0:note.id; lastTitle=note==null?"":note.title; lastBody=note==null?"":note.body; editing=true; editor(lastTitle,lastBody); }
     private EditText field(String hint,int limit,boolean multiline) {
         EditText e=new EditText(this); e.setHint(hint); e.setTextColor(ui.ink); e.setHintTextColor(ui.muted); e.setTypeface(font); e.setTextSize(16);
         e.setPadding(dp(12),dp(12),dp(12),dp(12)); e.setBackground(ui.surface(this,ui.card)); e.setFilters(new InputFilter[]{new InputFilter.LengthFilter(limit)});
@@ -91,29 +174,30 @@ public final class NotesActivity extends SwipeBackActivity {
         content.removeAllViews(); add(text(editId==0?"Catatan baru":"Edit catatan",18,ui.ink));
         title=field("Judul (opsional)",NoteText.TITLE_LIMIT,false); title.setContentDescription("Judul catatan, opsional"); title.setText(initialTitle); add(title);
         body=field("Tulis catatan",NoteText.BODY_LIMIT,true); body.setContentDescription("Isi catatan"); body.setText(initialBody); add(body);
-        add(button("Simpan",this::save)); add(button("Batal",this::cancelEditor));
-        if(editId!=0) add(button("Hapus catatan",this::confirmDelete));
-    }
-    private void save() {
-        String t=title.getText().toString(), b=body.getText().toString();
-        if(!NoteText.valid(t,b)) { message("Isi judul atau catatan sebelum menyimpan."); return; }
-        try { if(!store.save(editId,t,b)) { message("Catatan tidak tersimpan atau sudah tidak ada."); return; } }
-        catch(SQLiteException e) { message("Tidak dapat menyimpan catatan. Perubahan masih di editor."); return; }
-        hideKeyboard(); showList(); message("Catatan disimpan.");
-    }
-    private void confirmDelete() {
-        ui.dialog(this).setTitle("Hapus catatan?").setMessage("Catatan yang dihapus tidak dapat dipulihkan.")
-            .setNegativeButton("Batal",null).setPositiveButton("Hapus",(d,w) -> {
-                try { if(!store.delete(editId)) { message("Catatan tidak ditemukan."); return; } }
-                catch(SQLiteException e) { message("Tidak dapat menghapus catatan."); return; }
-                hideKeyboard(); showList(); message("Catatan dihapus.");
+        saveStatus=text("Tersimpan otomatis di perangkat",12,ui.muted); add(saveStatus);
+        title.addTextChangedListener(watcher(this::queueSave)); body.addTextChangedListener(watcher(this::queueSave));
+        add(button("+ Item checklist",() -> {
+            EditText item=field("Nama item",200,false);
+            ui.dialog(this).setTitle("Tambah item checklist").setView(item).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{
+                String value=item.getText().toString().trim(); if(value.isEmpty()) return;
+                String current=body.getText().toString(), addition=(current.isEmpty() || current.endsWith("\n")?"":"\n")+"☐ "+value;
+                if(current.length()+addition.length()>NoteText.BODY_LIMIT) { message("Catatan terlalu panjang."); return; }
+                body.append(addition);
             }).show();
+        }));
+        add(button("Selesai",this::finishEditor));
     }
-    private void cancelEditor() {
-        if(!originalTitle.equals(title.getText().toString()) || !originalBody.equals(body.getText().toString())) {
-            ui.dialog(this).setTitle("Buang perubahan?").setMessage("Perubahan belum disimpan.")
-                .setNegativeButton("Lanjutkan mengedit",null).setPositiveButton("Buang",(d,w)->{ hideKeyboard(); showList(); }).show();
-        } else { hideKeyboard(); showList(); }
+    private void queueSave() { handler.removeCallbacks(autoSave); if(saveStatus!=null) saveStatus.setText("Menyimpan…"); handler.postDelayed(autoSave,600); }
+    private boolean saveDraft(boolean report) {
+        handler.removeCallbacks(autoSave); if(!editing || title==null || body==null) return true;
+        String t=title.getText().toString(), b=body.getText().toString();
+        if(t.equals(lastTitle) && b.equals(lastBody)) { if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true; }
+        if(editId==0 && !NoteText.valid(t,b)) { if(saveStatus!=null) saveStatus.setText("Catatan kosong belum disimpan"); return t.trim().isEmpty() && b.trim().isEmpty(); }
+        try {
+            long id=store.save(editId,t,b); if(id<=0) { if(saveStatus!=null) saveStatus.setText("Gagal menyimpan; teks masih di editor"); if(report) message("Tidak dapat menyimpan catatan."); return false; }
+            editId=id; lastTitle=t; lastBody=b; if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true;
+        } catch(SQLiteException e) { if(saveStatus!=null) saveStatus.setText("Gagal menyimpan; teks masih di editor"); if(report) message("Tidak dapat menyimpan catatan."); return false; }
     }
-    @Override public void onBackPressed() { if(editing) cancelEditor(); else super.onBackPressed(); }
+    private void finishEditor() { if(saveDraft(true)) { hideKeyboard(); showList(); } }
+    @Override public void onBackPressed() { if(editing) finishEditor(); else super.onBackPressed(); }
 }
