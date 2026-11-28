@@ -5,17 +5,17 @@
 })(typeof window === 'undefined' ? null : window, function mountNotes(win) {
   'use strict';
   var doc=win.document, byId=function (id) { return doc.getElementById(id); };
-  var key='gt30-notes-v1', notes=[], writable=true, editing=null, lastTitle='', lastBody='', lastTag='', draftTag='', timer=null, section=0, layoutMode=0;
+  var key='gt30-notes-v1', notes=[], writable=true, editing=null, lastTitle='', lastBody='', lastTag='[]', draftTag=[], timer=null, section=0, layoutMode=0;
   var form=byId('notesForm'), title=byId('notesTitle'), body=byId('notesBody'), list=byId('notesList'), panel=byId('notesListPanel'), status=byId('notesStatus');
   var search=byId('notesSearch'), sectionSelect=byId('notesSection'), layout=byId('notesLayout'), saveStatus=byId('notesSaveStatus');
   var tagButton=byId('notesTag'), tagMenu=byId('notesTagMenu'), tagValue=byId('notesTagValue');
   if (!form || !title || !body || !list || !panel || !status || !search || !sectionSelect || !layout || !saveStatus || !tagButton || !tagMenu || !tagValue) return;
-  function validRecord(n) { return n && typeof n.id==='string' && n.id.length>0 && typeof n.title==='string' && n.title.length<=120 && typeof n.body==='string' && n.body.length<=20000 && typeof n.updated==='number' && Number.isFinite(n.updated) && (n.pinned===undefined || typeof n.pinned==='boolean') && (n.state===undefined || [0,1,2].includes(n.state)) && (n.previousState===undefined || [0,1].includes(n.previousState)) && (n.tag===undefined || (typeof n.tag==='string' && n.tag.length<=60)) && (n.color===undefined || ([0,1,2,3,4].includes(n.color))); }
+  function validRecord(n) { return n && typeof n.id==='string' && n.id.length>0 && typeof n.title==='string' && n.title.length<=120 && typeof n.body==='string' && n.body.length<=20000 && typeof n.updated==='number' && Number.isFinite(n.updated) && (n.pinned===undefined || typeof n.pinned==='boolean') && (n.state===undefined || [0,1,2].includes(n.state)) && (n.previousState===undefined || [0,1].includes(n.previousState)) && (n.tag===undefined || (typeof n.tag==='string' && n.tag.length<=60)) && (n.tags===undefined || (Array.isArray(n.tags) && n.tags.length<=20 && n.tags.every(function(t,i,a){return typeof t==='string' && t.length>0 && t.length<=60 && t===t.trim() && a.findIndex(function(v){return typeof v==='string' && v.toLocaleLowerCase()===t.toLocaleLowerCase();})===i;}))) && (n.color===undefined || ([0,1,2,3,4].includes(n.color)));  }
   function load() {
     try {
       var raw=win.localStorage.getItem(key), value=raw===null?[]:JSON.parse(raw);
       if(!Array.isArray(value) || !value.every(validRecord) || new Set(value.map(function (n) { return n.id; })).size!==value.length) throw new Error('Invalid notes');
-      notes=value.map(function(n){return Object.assign({pinned:false,state:0,previousState:0,tag:'',color:0},n);}); writable=true;
+      notes=value.map(function(n){var item=Object.assign({pinned:false,state:0,previousState:0,tag:'',color:0},n); if(item.tags===undefined) item.tags=item.tag?[item.tag]:[]; return item;}); writable=true;
       var storedLayout=win.localStorage.getItem('gt30-notes-layout'); layoutMode=storedLayout===null ? (win.localStorage.getItem('gt30-notes-grid')==='1'?1:0) : Number(storedLayout); if(![0,1,2].includes(layoutMode)) layoutMode=0;
     } catch (_) { notes=[]; writable=false; }
     status.textContent=writable ? 'Catatan tersimpan di browser ini, bukan di aplikasi Android. Menghapus data browser menghapus catatan.' : 'Penyimpanan catatan tidak tersedia atau data tidak dapat dibaca. Data lama tidak ditimpa.';
@@ -30,13 +30,13 @@
     var layoutName='Tampilan: '+['daftar','kotak','staggered'][layoutMode], sectionName='Lokasi: '+['Catatan','Arsip','Sampah'][section];
     layout.setAttribute('aria-label',layoutName); layout.setAttribute('title',layoutName); byId('notesLayoutIcon').className='notes-icon notes-icon-'+['list','grid','staggered'][layoutMode];
     sectionSelect.value=String(section); sectionSelect.setAttribute('aria-label',sectionName); sectionSelect.setAttribute('title',sectionName); byId('notesSectionIcon').className='notes-icon notes-icon-'+['notes','archive','trash'][section];
-    var q=search.value.trim().toLocaleLowerCase(), ordered=notes.filter(function(n){return n.state===section && (!q || (n.title+'\n'+n.body+'\n'+n.tag).toLocaleLowerCase().includes(q));}).sort(function(a,b) { return Number(b.pinned)-Number(a.pinned) || b.updated-a.updated; });
+    var q=search.value.trim().toLocaleLowerCase(), ordered=notes.filter(function(n){return n.state===section && (!q || (n.title+'\n'+n.body+'\n'+n.tags.join(' ')).toLocaleLowerCase().includes(q));}).sort(function(a,b) { return Number(b.pinned)-Number(a.pinned) || b.updated-a.updated; });
     byId('notesEmpty').hidden=ordered.length!==0 || !writable; byId('notesAdd').hidden=section!==0; byId('notesAdd').disabled=!writable;
     ordered.forEach(function(n) {
       var wrap=doc.createElement('div'), button=doc.createElement('button'), heading=doc.createElement('strong'), summary=doc.createElement('span'), actions=doc.createElement('div');
       wrap.className='notes-item notes-color-'+n.color; button.type='button'; button.className='notes-card notes-color-'+n.color;
       heading.textContent=(n.pinned?'📌 ':'')+(n.title.trim() || 'Tanpa judul'); summary.textContent=n.body;
-      button.appendChild(heading); if(n.body.trim()) button.appendChild(summary); if(n.tag) { var tag=doc.createElement('span'); tag.textContent='#'+n.tag; button.appendChild(tag); }
+      button.appendChild(heading); if(n.body.trim()) button.appendChild(summary); if(n.tags.length) { var tag=doc.createElement('span'); tag.textContent=n.tags.map(function(x){return '#'+x;}).join('  '); button.appendChild(tag); }
       button.setAttribute('aria-label','Buka catatan '+(n.title.trim() || 'Tanpa judul')); button.addEventListener('click',function () { if(n.state!==2) open(n); }); wrap.appendChild(button);
       actions.className='notes-controls';
       function action(label,icon,fn) { var b=doc.createElement('button'), symbol=doc.createElement('span'); b.type='button'; b.className='notes-icon-button'; b.setAttribute('aria-label',label); b.setAttribute('title',label); symbol.className='notes-icon notes-icon-'+icon; symbol.setAttribute('aria-hidden','true'); b.appendChild(symbol); b.addEventListener('click',fn); actions.appendChild(b); }
@@ -47,7 +47,7 @@
         action(n.pinned?'Lepas pin':'Pin',n.pinned?'unpin':'pin',function(){update(n,{pinned:!n.pinned});});
         action(n.state===1?'Buka arsip':'Arsip',n.state===1?'restore':'archive',function(){update(n,{state:n.state===1?0:1});});
         action('Sampah','trash',function(){if(win.confirm('Pindahkan catatan ke Sampah?')) update(n,{previousState:n.state,state:2});});
-        action('Tag','tag',function(){var x=win.prompt('Label catatan (maksimal 60 karakter)',n.tag); if(x!==null) update(n,{tag:x.trim().slice(0,60)});});
+        action('Tag','tag',function(){open(n); showTags();});
         action('Warna','color',function(){var x=win.prompt('Warna: 0 bawaan, 1 merah, 2 kuning, 3 hijau, 4 biru',String(n.color)); if(x!==null && /^[0-4]$/.test(x.trim())) update(n,{color:Number(x.trim())});});
       }
       if(n.state!==2) {
@@ -64,20 +64,25 @@
   }
   function update(n,values) { var next=notes.map(function(x){return x.id===n.id?Object.assign({},x,values,{updated:Date.now()}):x;}); if(persist(next)) render(); }
   function open(n) {
-    editing=n ? n.id : ''; lastTitle=n ? n.title : ''; lastBody=n ? n.body : ''; lastTag=n ? n.tag : ''; draftTag=lastTag; updateTag(); closeTagMenu();
+    editing=n ? n.id : ''; lastTitle=n ? n.title : ''; lastBody=n ? n.body : ''; lastTag=JSON.stringify(n ? n.tags : []); draftTag=n ? n.tags.slice() : []; updateTag(); closeTagMenu();
     title.value=lastTitle; body.value=lastBody; panel.hidden=true; form.hidden=false;
     byId('notesEditorHeading').textContent=n?'Edit catatan':'Catatan baru'; saveStatus.textContent='Tersimpan otomatis di browser'; title.focus();
   }
-  function updateTag() { tagValue.textContent=draftTag?'#'+draftTag:''; tagValue.setAttribute('aria-label',draftTag?'Tag: '+draftTag:'Tidak ada tag'); }
+  function updateTag() { var display=draftTag.map(function(t){return '#'+t;}).join('  '); tagValue.textContent=display; tagValue.setAttribute('aria-label',display?'Tag: '+display:'Tidak ada tag'); }
   function closeTagMenu() { tagMenu.hidden=true; tagButton.setAttribute('aria-expanded','false'); }
-  function tagChoice(label,fn) { var b=doc.createElement('button'); b.type='button'; b.className='notes-button'; b.textContent=label; b.addEventListener('click',fn); tagMenu.appendChild(b); }
-  function selectTag(value) { draftTag=value; updateTag(); closeTagMenu(); queue(); }
+  function tagChoice(label,fn,selected) { var b=doc.createElement('button'); b.type='button'; b.className='notes-button'; b.textContent=label; if(selected!==undefined) b.setAttribute('aria-pressed',String(selected)); b.addEventListener('click',fn); tagMenu.appendChild(b); }
+  function selectTag(value) {
+    var index=draftTag.findIndex(function(t){return t.toLocaleLowerCase()===value.toLocaleLowerCase();});
+    if(index>=0) draftTag.splice(index,1); else if(draftTag.length<20) draftTag.push(value); else { saveStatus.textContent='Maksimal 20 tag.'; return; }
+    updateTag(); queue(); showTags();
+  }
   function showTags() {
     tagMenu.textContent='';
-    tagChoice('+ Buat tag baru',function(){var value=win.prompt('Nama tag (maksimal 60 karakter)',''); if(value===null) return; value=value.trim().slice(0,60); if(value) selectTag(value); });
-    tagChoice('Tanpa tag',function(){selectTag('');});
-    var tags=Array.from(new Set(notes.map(function(n){return n.tag;}).filter(Boolean))); if(draftTag && !tags.includes(draftTag)) tags.push(draftTag);
-    tags.sort(function(a,b){return a.localeCompare(b);}); tags.forEach(function(value){tagChoice(value,function(){selectTag(value);});});
+    tagChoice('+ Buat tag baru',function(){var value=win.prompt('Nama tag (maksimal 60 karakter)',''); if(value===null) return; value=value.trim().slice(0,60); if(value && !draftTag.some(function(t){return t.toLocaleLowerCase()===value.toLocaleLowerCase();})) selectTag(value); });
+    tagChoice('Hapus semua tag',function(){draftTag=[]; updateTag(); queue(); showTags();});
+    var tags=[]; notes.forEach(function(n){ n.tags.forEach(function(tag){if(!tags.some(function(t){return t.toLocaleLowerCase()===tag.toLocaleLowerCase();})) tags.push(tag);});});
+    draftTag.forEach(function(tag){if(!tags.some(function(t){return t.toLocaleLowerCase()===tag.toLocaleLowerCase();})) tags.push(tag);});
+    tags.sort(function(a,b){return a.localeCompare(b);}); tags.forEach(function(value){var selected=draftTag.some(function(t){return t.toLocaleLowerCase()===value.toLocaleLowerCase();}); tagChoice(value,function(){selectTag(value);},selected);});
     tagMenu.hidden=false; tagButton.setAttribute('aria-expanded','true');
   }
   function cancelTimer() { if(timer!==null) win.clearTimeout(timer); timer=null; }
@@ -85,15 +90,15 @@
   function save() {
     cancelTimer(); if(editing===null) return true;
     var t=title.value,b=body.value;
-    if(t===lastTitle && b===lastBody && draftTag===lastTag) { saveStatus.textContent='Tersimpan di browser'; return true; }
+    if(t===lastTitle && b===lastBody && JSON.stringify(draftTag)===lastTag) { saveStatus.textContent='Tersimpan di browser'; return true; }
     if(t.length>120 || b.length>20000) { saveStatus.textContent='Teks melebihi batas.'; return false; }
     if(!editing && !t.trim() && !b.trim()) { saveStatus.textContent='Catatan kosong belum disimpan'; return true; }
     var id=editing || newId(), next=notes.slice(), index=next.findIndex(function(n){return n.id===id;});
     if(editing && index<0) { saveStatus.textContent='Catatan tidak ditemukan; perubahan tetap di editor.'; return false; }
     var n=index<0 ? {id:id,pinned:false,state:0,previousState:0,tag:'',color:0} : next[index];
-    var note=Object.assign({},n,{title:t,body:b,tag:draftTag,updated:Date.now()}); if(index<0) next.push(note); else next[index]=note;
+    var note=Object.assign({},n,{title:t,body:b,tags:draftTag.slice(),updated:Date.now()}); if(index<0) next.push(note); else next[index]=note;
     if(!persist(next)) { saveStatus.textContent='Gagal menyimpan; teks masih di editor.'; return false; }
-    editing=id; lastTitle=t; lastBody=b; lastTag=draftTag; saveStatus.textContent='Tersimpan di browser'; return true;
+    editing=id; lastTitle=t; lastBody=b; lastTag=JSON.stringify(draftTag); saveStatus.textContent='Tersimpan di browser'; return true;
   }
   function queue() { cancelTimer(); saveStatus.textContent='Menyimpan…'; timer=win.setTimeout(save,600); }
   function closeEditor() { if(!save()) return false; editing=null; form.hidden=true; panel.hidden=false; render(); byId('notesAdd').focus(); return true; }

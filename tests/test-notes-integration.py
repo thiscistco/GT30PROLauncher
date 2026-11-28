@@ -10,7 +10,7 @@ assert 'onSaveInstanceState' in activity and 'lastTitle' in activity and 'lastBo
 assert 'InputFilter.LengthFilter(limit)' in activity and 'NoteText.valid(t,b)' in activity
 assert 'postDelayed(autoSave,600)' in activity and 'onPause() { if(editing) saveDraft(false)' in activity
 assert 'setTitle("Hapus permanen?")' in activity and 'Catatan dapat dipulihkan dari Sampah.' in activity
-assert 'NoteSearch.matches(n.title,n.body,n.tag,query)' in activity and 'ACTION_SEND' in activity
+assert 'NoteSearch.matches(n.title,n.body,tagDisplay(n),query)' in activity and 'ACTION_SEND' in activity
 assert 'ACTION_CREATE_DOCUMENT' in activity and 'NoteExport.writePdf' in activity and 'NoteExport.writeText' in activity
 assert 'supportsBottomSwipe() { return !editing; }' in activity
 assert 'SQLiteOpenHelper' in store and 'insertOrThrow' in store
@@ -37,9 +37,9 @@ for file in ('backup_rules.xml','data_extraction_rules.xml'):
 print('Notes reminder and backup wiring OK (device behavior requires Android testing)')
 
 # Editor tag changes are part of the same SQLite save and restored with unsaved drafts.
-assert 'store.save(editId,t,b,draftTag)' in activity and 'values.put("tag",tag)' in store
+assert 'store.saveWithTags(editId,t,b,draftTag,format)' in activity and 'values.put("tags",tags)' in store
 assert 'out.putString("lastTag",lastTag)' in activity and 'out.putString("draftTag",draftTag)' in activity
-assert 'if(!draftTag.isEmpty()) tags.add(draftTag)' in activity and 'Buat tag baru' in activity
+assert 'available.addAll(selected)' in activity and 'Buat tag' in activity
 for description in ('Lokasi: ','Tampilan: ','Catatan baru','Pilih atau buat tag','Tambah item checklist','Selesai'):
     assert description in activity
 print('Tag editing and accessible icon wiring OK')

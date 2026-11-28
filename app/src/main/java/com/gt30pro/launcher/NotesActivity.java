@@ -26,7 +26,7 @@ import java.util.ArrayList;
 public final class NotesActivity extends SwipeBackActivity {
     private AppUi ui; private Typeface font; private NoteStore store;
     private LinearLayout content, cards; private EditText title,body,search; private TextView saveStatus;
-    private boolean editing; private long editId; private String lastTitle="",lastBody="",lastTag="",draftTag="";
+    private boolean editing; private long editId; private String lastTitle="",lastBody="",lastTag="[]",draftTag="[]",lastFormat="[]";
     private TextView tagValue;
     private int section=NoteStore.ACTIVE; private String query=""; private int layout;
     private static final int EXPORT_TXT=601, EXPORT_PDF=602, BACKUP_WRITE=603, BACKUP_READ=604;
@@ -63,9 +63,9 @@ public final class NotesActivity extends SwipeBackActivity {
         page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1)); setContentView(page);
         if(state!=null) { section=state.getInt("section",NoteStore.ACTIVE); query=state.getString("query",""); exportTitle=state.getString("exportTitle",""); exportBody=state.getString("exportBody",""); }
         if(state!=null && state.getBoolean("editing")) {
-            editId=state.getLong("id"); lastTitle=state.getString("lastTitle",""); lastBody=state.getString("lastBody",""); lastTag=state.getString("lastTag",""); draftTag=state.getString("draftTag",lastTag); editing=true;
-            editor(state.getString("title",""),state.getString("body",""));
-            if(!lastTitle.equals(title.getText().toString()) || !lastBody.equals(body.getText().toString()) || !lastTag.equals(draftTag)) queueSave();
+            editId=state.getLong("id"); lastTitle=state.getString("lastTitle",""); lastBody=state.getString("lastBody",""); lastTag=state.getString("lastTag","[]"); draftTag=state.getString("draftTag",lastTag); lastFormat=state.getString("lastFormat","[]"); editing=true;
+            editor(state.getString("title",""),state.getCharSequence("styledBody",state.getString("body","")),null);
+            if(!lastTitle.equals(title.getText().toString()) || !lastBody.equals(body.getText().toString()) || !lastTag.equals(draftTag) || !lastFormat.equals(currentFormat())) queueSave();
         } else {
             showList(); long requested=getIntent().getLongExtra("note_id",0);
             if(requested>0) try { for(NoteStore.Note note:store.list()) if(note.id==requested && note.state!=NoteStore.TRASH) { openEditor(note); break; } } catch(SQLiteException e) { message("Tidak dapat membuka catatan."); }
@@ -76,7 +76,7 @@ public final class NotesActivity extends SwipeBackActivity {
     @Override protected void onSaveInstanceState(Bundle out) {
         if(editing) saveDraft(false);
         super.onSaveInstanceState(out); out.putBoolean("editing",editing); out.putInt("section",section); out.putString("query",query); out.putString("exportTitle",exportTitle); out.putString("exportBody",exportBody);
-        if(editing && title!=null && body!=null) { out.putLong("id",editId); out.putString("lastTitle",lastTitle); out.putString("lastBody",lastBody); out.putString("lastTag",lastTag); out.putString("draftTag",draftTag); out.putString("title",title.getText().toString()); out.putString("body",body.getText().toString()); }
+        if(editing && title!=null && body!=null) { out.putLong("id",editId); out.putString("lastTitle",lastTitle); out.putString("lastBody",lastBody); out.putString("lastTag",lastTag); out.putString("draftTag",draftTag); out.putString("lastFormat",lastFormat); out.putString("draftFormat",currentFormat()); out.putString("title",title.getText().toString()); out.putString("body",body.getText().toString()); out.putCharSequence("styledBody",new android.text.SpannableString(body.getText())); }
     }
     @Override protected void onDestroy() { handler.removeCallbacks(autoSave); if(store!=null) store.close(); super.onDestroy(); }
     private void message(String msg) { Toast.makeText(this,msg,Toast.LENGTH_LONG).show(); }
@@ -101,7 +101,7 @@ public final class NotesActivity extends SwipeBackActivity {
         final ArrayList<NoteStore.Note> notes;
         try { notes=store.list(); } catch(SQLiteException e) { cards.addView(text("Catatan tidak dapat dibaca. Data lama tidak dihapus.",14,ui.ink)); return; }
         ArrayList<NoteStore.Note> visible=new ArrayList<>();
-        for(NoteStore.Note n:notes) if(n.state==section && NoteSearch.matches(n.title,n.body,n.tag,query)) visible.add(n);
+        for(NoteStore.Note n:notes) if(n.state==section && NoteSearch.matches(n.title,n.body,tagDisplay(n),query)) visible.add(n);
         if(visible.isEmpty()) { cards.addView(text("Tidak ada catatan.",14,ui.muted)); return; }
         if(layout==0) for(NoteStore.Note note:visible) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2); p.setMargins(0,dp(4),0,dp(4)); cards.addView(card(note),p); }
         else if(layout==2) {
@@ -124,7 +124,7 @@ public final class NotesActivity extends SwipeBackActivity {
         int index=Math.max(0,Math.min(note.color,LIGHT.length-1)); int color=index==0?ui.card:(ui.dark?DARK[index]:LIGHT[index]); card.setBackground(ui.surface(this,color));
         TextView heading=text((note.pinned!=0?"📌 ":"")+NoteText.displayTitle(note.title),16,ui.ink); heading.setTypeface(font,Typeface.BOLD); heading.setMaxLines(1); heading.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(heading);
         if(!note.body.trim().isEmpty()) { TextView summary=text(note.body,13,ui.muted); summary.setMaxLines(2); summary.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(summary); }
-        if(!note.tag.isEmpty()) card.addView(text("#"+note.tag,12,ui.muted));
+        String tags=tagDisplay(note); if(!tags.isEmpty()) card.addView(text(tags,12,ui.muted));
         card.setFocusable(true); card.setContentDescription("Catatan " + NoteText.displayTitle(note.title) + ". Ketuk untuk pilihan");
         card.setOnClickListener(v -> noteMenu(note)); return card;
     }
@@ -244,12 +244,16 @@ public final class NotesActivity extends SwipeBackActivity {
     }
     private interface Change { boolean run(); }
     private void mutate(Change action) { try { if(!action.run()) message("Catatan tidak ditemukan."); } catch(SQLiteException e) { message("Tidak dapat mengubah catatan."); } renderCards(); }
-    private void editTag(NoteStore.Note note) {
-        EditText input=field("Label",60,false); input.setText(note.tag);
-        ui.dialog(this).setTitle("Label catatan").setView(input).setNegativeButton("Batal",null)
-          .setPositiveButton("Simpan",(d,w)->mutate(() -> store.metadata(note.id,note.pinned,input.getText().toString().trim(),note.color))).show();
+    private String tagDisplay(NoteStore.Note note) {
+        try { return NoteTags.display(NoteTags.read(note.tags,note.tag)); }
+        catch(org.json.JSONException e) { return "Tag tidak dapat dibaca"; }
     }
-    private void openEditor(NoteStore.Note note) { editId=note==null?0:note.id; lastTitle=note==null?"":note.title; lastBody=note==null?"":note.body; lastTag=note==null?"":note.tag; draftTag=lastTag; editing=true; editor(lastTitle,lastBody); }
+    private void editTag(NoteStore.Note note) { if(openEditor(note)) chooseTag(); }
+    private boolean openEditor(NoteStore.Note note) {
+        try { lastTag=note==null?"[]":NoteTags.write(NoteTags.read(note.tags,note.tag)); lastFormat=note==null?"[]":NoteFormats.write(NoteFormats.read(note.format,note.body.length()),note.body.length()); }
+        catch(org.json.JSONException e) { message("Tag rusak; catatan tidak diubah."); return false; }
+        editId=note==null?0:note.id; lastTitle=note==null?"":note.title; lastBody=note==null?"":note.body; draftTag=lastTag; editing=true; editor(lastTitle,lastBody,lastFormat); return true;
+    }
     private EditText field(String hint,int limit,boolean multiline) {
         EditText e=new EditText(this); e.setHint(hint); e.setTextColor(ui.ink); e.setHintTextColor(ui.muted); e.setTypeface(font); e.setTextSize(16);
         e.setPadding(dp(12),dp(12),dp(12),dp(12)); e.setBackground(ui.surface(this,ui.card)); e.setFilters(new InputFilter[]{new InputFilter.LengthFilter(limit)});
@@ -257,10 +261,18 @@ public final class NotesActivity extends SwipeBackActivity {
         else { e.setSingleLine(true); e.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES); }
         return e;
     }
-    private void editor(String initialTitle,String initialBody) {
+    private void editor(String initialTitle,CharSequence initialBody,String format) {
         content.removeAllViews(); add(text(editId==0?"Catatan baru":"Edit catatan",18,ui.ink));
         title=field("Judul (opsional)",NoteText.TITLE_LIMIT,false); title.setContentDescription("Judul catatan, opsional"); title.setText(initialTitle); add(title);
-        body=field("Tulis catatan",NoteText.BODY_LIMIT,true); body.setContentDescription("Isi catatan"); body.setText(initialBody); add(body);
+        body=field("Tulis catatan",NoteText.BODY_LIMIT,true); body.setContentDescription("Isi catatan"); body.setText(initialBody); try { if(format!=null) NoteFormatEditor.apply(body.getText(),format); } catch(org.json.JSONException e) { message("Format catatan rusak; teks tetap terlihat."); } add(body);
+        LinearLayout formatting=new LinearLayout(this); formatting.setGravity(Gravity.CENTER_VERTICAL);
+        addIcon(formatting,R.drawable.ic_notes_bold,"Tebal",()->toggleFormat("bold"));
+        addIcon(formatting,R.drawable.ic_notes_italic,"Miring",()->toggleFormat("italic"));
+        addIcon(formatting,R.drawable.ic_notes_underline,"Garis bawah",()->toggleFormat("underline"));
+        addIcon(formatting,R.drawable.ic_notes_bullet,"Daftar berpoin",()->insertPrefix("• "));
+        addIcon(formatting,R.drawable.ic_notes_numbered,"Daftar bernomor",()->insertPrefix("1. "));
+        addIcon(formatting,R.drawable.ic_notes_table,"Sisipkan tabel teks",this::insertTable);
+        android.widget.HorizontalScrollView toolbar=new android.widget.HorizontalScrollView(this); toolbar.setHorizontalScrollBarEnabled(false); toolbar.addView(formatting); add(toolbar);
         saveStatus=text("Tersimpan otomatis di perangkat",12,ui.muted); add(saveStatus);
         title.addTextChangedListener(watcher(this::queueSave)); body.addTextChangedListener(watcher(this::queueSave));
         LinearLayout tools=new LinearLayout(this); tools.setGravity(Gravity.CENTER_VERTICAL);
@@ -277,32 +289,74 @@ public final class NotesActivity extends SwipeBackActivity {
         });
         addIcon(tools,R.drawable.ic_notes_done,"Selesai",this::finishEditor); add(tools);
     }
-    private void updateTagValue() { if(tagValue!=null) { tagValue.setText(draftTag.isEmpty()?"":"#"+draftTag); tagValue.setContentDescription(draftTag.isEmpty()?"Tidak ada tag":"Tag: "+draftTag); } }
+    private void updateTagValue() {
+        if(tagValue==null) return;
+        try { String display=NoteTags.display(NoteTags.read(draftTag,"")); tagValue.setText(display); tagValue.setContentDescription(display.isEmpty()?"Tidak ada tag":"Tag: "+display); }
+        catch(org.json.JSONException e) { tagValue.setText("Tag tidak dapat dibaca"); }
+    }
     private void chooseTag() {
-        java.util.TreeSet<String> tags=new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        try { for(NoteStore.Note n:store.list()) if(!n.tag.isEmpty()) tags.add(n.tag); }
-        catch(SQLiteException e) { message("Daftar tag tidak dapat dibaca."); return; }
-        if(!draftTag.isEmpty()) tags.add(draftTag);
-        ArrayList<String> values=new ArrayList<>(); values.add("+ Buat tag baru"); values.add("Tanpa tag"); values.addAll(tags);
-        ui.dialog(this).setTitle("Pilih tag").setItems(values.toArray(new String[0]),(d,which)->{
-            if(which==0) {
-                EditText input=field("Nama tag",60,false);
-                ui.dialog(this).setTitle("Buat tag").setView(input).setNegativeButton("Batal",null).setPositiveButton("Pilih",(x,y)->{
-                    String value=input.getText().toString().trim(); if(value.isEmpty()) { message("Nama tag tidak boleh kosong."); return; }
-                    draftTag=value; updateTagValue(); queueSave();
-                }).show();
-            } else { draftTag=which==1?"":values.get(which); updateTagValue(); queueSave(); }
+        try {
+            java.util.TreeSet<String> available=new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            for(NoteStore.Note n:store.list()) available.addAll(NoteTags.read(n.tags,n.tag));
+            final ArrayList<String> selected=NoteTags.read(draftTag,""); available.addAll(selected);
+            final ArrayList<String> values=new ArrayList<>(available); boolean[] checked=new boolean[values.size()];
+            for(int i=0;i<values.size();i++) for(String tag:selected) if(tag.equalsIgnoreCase(values.get(i))) checked[i]=true;
+            ui.dialog(this).setTitle("Pilih tag")
+                .setMultiChoiceItems(values.toArray(new String[0]),checked,(d,index,on)->{
+                    String value=values.get(index); if(on && selected.size()>=NoteTags.MAX_COUNT) { ((android.app.AlertDialog)d).getListView().setItemChecked(index,false); message("Maksimal 20 tag."); }
+                    else if(on) selected.add(value); else { for(int i=selected.size()-1;i>=0;i--) if(selected.get(i).equalsIgnoreCase(value)) selected.remove(i); }
+                }).setNegativeButton("Batal",null).setNeutralButton("+ Tag baru",(d,w)->{
+                    EditText input=field("Nama tag",NoteTags.MAX_LENGTH,false);
+                    ui.dialog(this).setTitle("Buat tag").setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(x,y)->{
+                        String value=input.getText().toString().trim(); if(value.isEmpty()) { message("Nama tag tidak boleh kosong."); return; }
+                        boolean exists=false; for(String tag:selected) if(tag.equalsIgnoreCase(value)) exists=true;
+                        if(!exists && selected.size()>=NoteTags.MAX_COUNT) { message("Maksimal 20 tag."); return; }
+                        if(!exists) selected.add(value); applyTags(selected);
+                    }).show();
+                }).setPositiveButton("Pilih",(d,w)->applyTags(selected)).show();
+        } catch(SQLiteException | org.json.JSONException e) { message("Daftar tag tidak dapat dibaca; data tidak diubah."); }
+    }
+    private void applyTags(ArrayList<String> selected) {
+        try { draftTag=NoteTags.write(selected); updateTagValue(); queueSave(); }
+        catch(org.json.JSONException e) { message("Tag tidak valid."); }
+    }
+    private String currentFormat() {
+        try { return NoteFormatEditor.capture(body.getText()); } catch(org.json.JSONException e) { return null; }
+    }
+    private void toggleFormat(String style) {
+        if(!NoteFormatEditor.toggle(body.getText(),body.getSelectionStart(),body.getSelectionEnd(),style)) { message("Pilih teks yang ingin diformat."); return; }
+        body.invalidate(); queueSave();
+    }
+    private void insertTable() {
+        LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER);
+        android.widget.NumberPicker rows=new android.widget.NumberPicker(this), cols=new android.widget.NumberPicker(this);
+        rows.setMinValue(1); rows.setMaxValue(10); rows.setValue(3); cols.setMinValue(1); cols.setMaxValue(6); cols.setValue(3);
+        LinearLayout a=new LinearLayout(this); a.setOrientation(LinearLayout.VERTICAL); a.addView(text("Baris",14,ui.ink)); a.addView(rows); row.addView(a);
+        LinearLayout b=new LinearLayout(this); b.setOrientation(LinearLayout.VERTICAL); b.addView(text("Kolom",14,ui.ink)); b.addView(cols); row.addView(b);
+        ui.dialog(this).setTitle("Tabel teks").setMessage("Sel adalah teks biasa; lebar tidak menyesuaikan otomatis.").setView(row).setNegativeButton("Batal",null).setPositiveButton("Sisipkan",(d,w)->{
+            StringBuilder result=new StringBuilder(); int cursor=Math.max(0,body.getSelectionStart()); android.text.Editable e=body.getText();
+            if(cursor>0 && e.charAt(cursor-1)!='\n') result.append('\n');
+            for(int r=0;r<rows.getValue();r++) { result.append('│'); for(int c=0;c<cols.getValue();c++) result.append("    │"); result.append('\n'); }
+            if(e.length()+result.length()>NoteText.BODY_LIMIT) { message("Catatan terlalu panjang."); return; }
+            e.insert(cursor,result); body.requestFocus();
         }).show();
+    }
+    private void insertPrefix(String prefix) {
+        int cursor=Math.max(0,body.getSelectionStart()); android.text.Editable editable=body.getText(); int line=cursor;
+        while(line>0 && editable.charAt(line-1)!='\n') line--;
+        if(editable.length()+prefix.length()>NoteText.BODY_LIMIT) { message("Catatan terlalu panjang."); return; }
+        editable.insert(line,prefix); body.requestFocus();
     }
     private void queueSave() { handler.removeCallbacks(autoSave); if(saveStatus!=null) saveStatus.setText("Menyimpan…"); handler.postDelayed(autoSave,600); }
     private boolean saveDraft(boolean report) {
         handler.removeCallbacks(autoSave); if(!editing || title==null || body==null) return true;
-        String t=title.getText().toString(), b=body.getText().toString();
-        if(t.equals(lastTitle) && b.equals(lastBody) && draftTag.equals(lastTag)) { if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true; }
+        String t=title.getText().toString(), b=body.getText().toString(), format=currentFormat();
+        if(format==null) { if(saveStatus!=null) saveStatus.setText("Format terlalu rumit; teks masih di editor"); if(report) message("Format terlalu rumit untuk disimpan."); return false; }
+        if(t.equals(lastTitle) && b.equals(lastBody) && draftTag.equals(lastTag) && format.equals(lastFormat)) { if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true; }
         if(editId==0 && !NoteText.valid(t,b)) { if(saveStatus!=null) saveStatus.setText("Catatan kosong belum disimpan"); return t.trim().isEmpty() && b.trim().isEmpty(); }
         try {
-            long id=store.save(editId,t,b,draftTag); if(id<=0) { if(saveStatus!=null) saveStatus.setText("Gagal menyimpan; teks masih di editor"); if(report) message("Tidak dapat menyimpan catatan."); return false; }
-            editId=id; lastTitle=t; lastBody=b; lastTag=draftTag; if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true;
+            long id=store.saveWithTags(editId,t,b,draftTag,format); if(id<=0) { if(saveStatus!=null) saveStatus.setText("Gagal menyimpan; teks masih di editor"); if(report) message("Tidak dapat menyimpan catatan."); return false; }
+            editId=id; lastTitle=t; lastBody=b; lastTag=draftTag; lastFormat=format; if(saveStatus!=null) saveStatus.setText("Tersimpan di perangkat"); return true;
         } catch(SQLiteException e) { if(saveStatus!=null) saveStatus.setText("Gagal menyimpan; teks masih di editor"); if(report) message("Tidak dapat menyimpan catatan."); return false; }
     }
     private void finishEditor() { if(saveDraft(true)) { hideKeyboard(); showList(); } }

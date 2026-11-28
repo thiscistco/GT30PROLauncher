@@ -706,6 +706,7 @@
   .notes-tag-menu { display:flex; flex-wrap:wrap; gap:1mm; padding:1mm 0; }
   .notes-tag-menu[hidden] { display:none; }
   .notes-tag-menu button { width:auto; margin:0; }
+  .notes-tag-menu button[aria-pressed="true"] { background:var(--app-selected); color:var(--app-selected-text); }
   .notes-icon-notes { --notes-icon:url("assets/notes-notes.svg"); }
   .notes-icon-archive { --notes-icon:url("assets/notes-archive.svg"); }
   .notes-icon-trash { --notes-icon:url("assets/notes-trash.svg"); }

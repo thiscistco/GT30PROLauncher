@@ -23,13 +23,13 @@ let app=setup(storage),e=app.ids, records=()=>JSON.parse(saved.get('gt30-notes-v
 assert(!e.notesEmpty.hidden); e.notesAdd.fire('click'); assert(!e.notesForm.hidden);
 app.setPrompt('Kerja'); e.notesTag.fire('click'); e.notesTagMenu.children[0].fire('click'); assert.equal(e.notesTagValue.textContent,'#Kerja'); app.flush(); assert(!saved.has('gt30-notes-v1'));
 e.notesBody.value='<script>not executable</script>'; e.notesBody.fire('input'); app.flush();
-assert.equal(records().length,1); assert.equal(records()[0].body,'<script>not executable</script>'); assert.equal(records()[0].tag,'Kerja');
+assert.equal(records().length,1); assert.equal(records()[0].body,'<script>not executable</script>'); assert.deepEqual(records()[0].tags,['Kerja']);
 assert(e.notesForm.hidden===false); assert(app.win.notesGoBack()); assert(e.notesForm.hidden); assert.equal(e.notesList.children.length,1);
 assert.equal(e.notesList.children[0].children[0].children[0].textContent,'Tanpa judul');
 assert.equal(e.notesList.children[0].children[0].children[1].textContent,'<script>not executable</script>');
 let id=records()[0].id;
 // A second note can select an existing tag and persist it with its first save.
-e.notesAdd.fire('click'); e.notesTag.fire('click'); assert.equal(e.notesTagMenu.children[2].textContent,'Kerja'); e.notesTagMenu.children[2].fire('click'); e.notesBody.value='Salinan tag'; e.notesBody.fire('input'); app.flush(); assert.equal(records()[1].tag,'Kerja'); assert(app.win.notesGoBack());
+e.notesAdd.fire('click'); e.notesTag.fire('click'); assert.equal(e.notesTagMenu.children[2].textContent,'Kerja'); e.notesTagMenu.children[2].fire('click'); e.notesBody.value='Salinan tag'; e.notesBody.fire('input'); app.flush(); assert.deepEqual(records()[1].tags,['Kerja']); assert(app.win.notesGoBack());
 // Remove the extra note so subsequent tests retain a single fixture.
 let extra=records()[1].id; saved.set('gt30-notes-v1',JSON.stringify(records().filter(n=>n.id!==extra))); app=setup(storage); e=app.ids;
 // Reload data, edit, then force a save by leaving before debounce.
@@ -47,7 +47,7 @@ let checkLabel=e.notesList.children[0].children[1]; assert.equal(checkLabel.chil
 // Metadata: pin, label, color, archive, restore, trash, recover, permanently delete.
 let actions=()=>e.notesList.children[0].children[e.notesList.children[0].children.length-1].children;
 actions()[0].fire('click'); assert.equal(records()[0].pinned,true);
-app.setPrompt('Belajar'); actions()[3].fire('click'); assert.equal(records()[0].tag,'Belajar');
+actions()[3].fire('click'); app.setPrompt('Belajar'); e.notesTagMenu.children[0].fire('click'); assert(app.win.notesConfirmLeave()); assert.deepEqual(records()[0].tags,['Kerja','Belajar']);
 app.setPrompt('2'); actions()[4].fire('click'); assert.equal(records()[0].color,2);
 e.notesLayout.fire('click'); assert.equal(e.notesList.className,'notes-grid'); e.notesLayout.fire('click'); assert.equal(e.notesList.className,'notes-staggered'); e.notesLayout.fire('click'); assert.equal(e.notesList.className,'');
 actions()[1].fire('click'); assert.equal(records()[0].state,1); assert.equal(e.notesList.children.length,0);
@@ -59,8 +59,8 @@ e.notesSection.value='1'; e.notesSection.fire('change'); actions()[1].fire('clic
 e.notesSection.value='0'; e.notesSection.fire('change');
 // A failed tag-only change remains in the editor and succeeds on retry.
 e.notesList.children[0].children[0].fire('click'); app.setPrompt('Baru'); e.notesTag.fire('click'); e.notesTagMenu.children[0].fire('click'); failWrite=true; app.flush();
-assert.equal(records()[0].tag,'Belajar'); assert.equal(e.notesTagValue.textContent,'#Baru'); assert(!app.win.notesConfirmLeave());
-failWrite=false; assert(app.win.notesConfirmLeave()); assert.equal(records()[0].tag,'Baru');
+assert.deepEqual(records()[0].tags,['Kerja','Belajar']); assert.equal(e.notesTagValue.textContent,'#Kerja  #Belajar  #Baru'); assert(!app.win.notesConfirmLeave());
+failWrite=false; assert(app.win.notesConfirmLeave()); assert.deepEqual(records()[0].tags,['Kerja','Belajar','Baru']);
 // A failed write keeps editor and existing data; a retry succeeds.
 e.notesList.children[0].children[0].fire('click'); e.notesBody.value='Draft belum tersimpan'; e.notesBody.fire('input'); failWrite=true; app.flush();
 assert(!e.notesForm.hidden); assert.match(e.notesSaveStatus.textContent,/Gagal menyimpan/); assert.equal(records()[0].body,'Isi baru\n☑ Susu'); assert(!app.win.notesConfirmLeave());

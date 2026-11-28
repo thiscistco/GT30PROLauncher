@@ -12,12 +12,16 @@ cat > "$DIR/com/gt30pro/launcher/NoteStore.java" <<'STUB'
 package com.gt30pro.launcher;
 final class NoteStore {
  static final class Note {
-  final long id,updated; final String title,body,tag; final int pinned,state,previousState,color;
+  final long id,updated; final String title,body,tag,tags,format; final int pinned,state,previousState,color;
   Note(long id,String title,String body,long updated,int pinned,int state,int previousState,String tag,int color) {
-   this.id=id;this.title=title;this.body=body;this.updated=updated;this.pinned=pinned;this.state=state;this.previousState=previousState;this.tag=tag;this.color=color;
+   this(id,title,body,updated,pinned,state,previousState,tag,color,null,null);
+  }
+  Note(long id,String title,String body,long updated,int pinned,int state,int previousState,String tag,int color,String tags,String format) {
+   this.id=id;this.title=title;this.body=body;this.updated=updated;this.pinned=pinned;this.state=state;this.previousState=previousState;this.tag=tag;this.color=color;this.tags=tags;this.format=format;
   }
  }
 }
 STUB
-"$JAVA" -Dsun.boot.class.path="$ANDROID" -cp "$TOOLS" com.sun.tools.javac.Main -source 8 -target 8 -bootclasspath "$ANDROID" -d "$DIR" "$JSON_JAVA_SOURCE"/*.java "$DIR/com/gt30pro/launcher/NoteStore.java" app/src/main/java/com/gt30pro/launcher/NoteText.java app/src/main/java/com/gt30pro/launcher/NoteBackup.java tests/NoteBackupTest.java
+"$JAVA" -Dsun.boot.class.path="$ANDROID" -cp "$TOOLS" com.sun.tools.javac.Main -source 8 -target 8 -bootclasspath "$ANDROID" -d "$DIR" "$JSON_JAVA_SOURCE"/*.java "$DIR/com/gt30pro/launcher/NoteStore.java" app/src/main/java/com/gt30pro/launcher/NoteText.java app/src/main/java/com/gt30pro/launcher/NoteTags.java app/src/main/java/com/gt30pro/launcher/NoteFormats.java app/src/main/java/com/gt30pro/launcher/NoteBackup.java tests/NoteBackupTest.java tests/NoteTagsFormatsTest.java
 "$JAVA" -cp "$DIR" com.gt30pro.launcher.NoteBackupTest
+"$JAVA" -cp "$DIR" com.gt30pro.launcher.NoteTagsFormatsTest

@@ -241,3 +241,8 @@ Belum tersedia: folder/kategori, editor visual kaya format, lampiran gambar/kame
 
 ### Catatan v0.1.223
 Saat membuat atau mengedit catatan, ikon tag membuka pilihan tag yang sudah dipakai atau membuat tag baru. Satu catatan masih memiliki satu tag; tag baru tersimpan bersama catatan ketika judul atau isi diisi. Ikon dengan nama aksesibilitas menggantikan tombol lokasi, tampilan, catatan baru, tag, checklist dan selesai. Preview memakai data browser terpisah. Glassmorphism dibatasi pada kontrol ikon Jam; Kalender, Jadwal Mengajar, Cuaca dan Catatan menggunakan kontrol tanpa efek kaca.
+
+### Catatan v0.1.224
+Satu catatan dapat menyimpan sampai 20 tag, masing-masing hingga 60 karakter. Catatan lama dan cadangan versi sebelumnya tetap dapat dibuka; tag lama menjadi satu tag. Pemilihan tag dan format tersimpan bersama isi. Di Android toolbar editor menyediakan tebal, miring dan garis bawah untuk teks yang dipilih, serta awalan daftar dan tabel teks sederhana (bukan tabel dengan sel atau lebar otomatis). Ekspor TXT/PDF dan berbagi tetap berupa teks biasa tanpa format. Cadangan JSON baru menyertakan tag dan format; versi lama aplikasi tidak dapat membuka format cadangan baru.
+
+Preview mendukung beberapa tag tetapi belum memiliki editor format visual. Pengambilan foto kamera dan penyisipan gambar atau file belum tersedia. Catatan tetap lokal dan tidak terkunci atau tersinkronisasi otomatis.

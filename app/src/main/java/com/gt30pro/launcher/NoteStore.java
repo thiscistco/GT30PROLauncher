@@ -12,37 +12,52 @@ import java.util.ArrayList;
 final class NoteStore extends SQLiteOpenHelper {
     static final int ACTIVE=0, ARCHIVE=1, TRASH=2;
     static final class Note {
-        final long id; final String title,body,tag; final long updated; final int pinned,state,previousState,color;
+        final long id; final String title,body,tag,tags,format; final long updated; final int pinned,state,previousState,color;
         Note(long id,String title,String body,long updated,int pinned,int state,int previousState,String tag,int color) {
-            this.id=id; this.title=title; this.body=body; this.updated=updated; this.pinned=pinned; this.state=state; this.previousState=previousState; this.tag=tag; this.color=color;
+            this(id,title,body,updated,pinned,state,previousState,tag,color,null,null);
+        }
+        Note(long id,String title,String body,long updated,int pinned,int state,int previousState,String tag,int color,String tags,String format) {
+            this.id=id; this.title=title; this.body=body; this.updated=updated; this.pinned=pinned; this.state=state; this.previousState=previousState; this.tag=tag; this.color=color; this.tags=tags; this.format=format;
         }
     }
-    NoteStore(Context c) { super(c,"notes.db",null,2,db -> { }); }
+    NoteStore(Context c) { super(c,"notes.db",null,3,db -> { }); }
     @Override public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE notes (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, body TEXT NOT NULL, updated INTEGER NOT NULL, pinned INTEGER NOT NULL DEFAULT 0, state INTEGER NOT NULL DEFAULT 0, previous_state INTEGER NOT NULL DEFAULT 0, tag TEXT NOT NULL DEFAULT '', color INTEGER NOT NULL DEFAULT 0)");
+        db.execSQL("CREATE TABLE notes (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, body TEXT NOT NULL, updated INTEGER NOT NULL, pinned INTEGER NOT NULL DEFAULT 0, state INTEGER NOT NULL DEFAULT 0, previous_state INTEGER NOT NULL DEFAULT 0, tag TEXT NOT NULL DEFAULT '', color INTEGER NOT NULL DEFAULT 0, tags TEXT DEFAULT NULL, format TEXT DEFAULT NULL)");
     }
     @Override public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion) {
-        if(oldVersion==1 && newVersion==2) {
+        if(oldVersion<1 || oldVersion>2 || newVersion!=3) throw new SQLiteException("Unsupported notes database version");
+        if(oldVersion==1) {
             db.execSQL("ALTER TABLE notes ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0");
             db.execSQL("ALTER TABLE notes ADD COLUMN state INTEGER NOT NULL DEFAULT 0");
             db.execSQL("ALTER TABLE notes ADD COLUMN previous_state INTEGER NOT NULL DEFAULT 0");
             db.execSQL("ALTER TABLE notes ADD COLUMN tag TEXT NOT NULL DEFAULT ''");
             db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT 0");
-        } else throw new SQLiteException("Unsupported notes database version");
+        }
+        db.execSQL("ALTER TABLE notes ADD COLUMN tags TEXT DEFAULT NULL");
+        db.execSQL("ALTER TABLE notes ADD COLUMN format TEXT DEFAULT NULL");
     }
     ArrayList<Note> list() {
         ArrayList<Note> notes=new ArrayList<>();
-        try(Cursor c=getReadableDatabase().query("notes",new String[]{"_id","title","body","updated","pinned","state","previous_state","tag","color"},null,null,null,null,"pinned DESC, updated DESC, _id DESC")) {
-            while(c.moveToNext()) notes.add(new Note(c.getLong(0),c.getString(1),c.getString(2),c.getLong(3),c.getInt(4),c.getInt(5),c.getInt(6),c.getString(7),c.getInt(8)));
+        try(Cursor c=getReadableDatabase().query("notes",new String[]{"_id","title","body","updated","pinned","state","previous_state","tag","color","tags","format"},null,null,null,null,"pinned DESC, updated DESC, _id DESC")) {
+            while(c.moveToNext()) notes.add(new Note(c.getLong(0),c.getString(1),c.getString(2),c.getLong(3),c.getInt(4),c.getInt(5),c.getInt(6),c.getString(7),c.getInt(8),c.isNull(9)?null:c.getString(9),c.isNull(10)?null:c.getString(10)));
         }
         return notes;
     }
     long save(long id,String title,String body) { return save(id,title,body,null); }
     long save(long id,String title,String body,String tag) {
         if(tag!=null && tag.length()>60) return -1;
+        return saveInternal(id,title,body,tag,null,null);
+    }
+    long saveWithTags(long id,String title,String body,String tags,String format) {
+        try { NoteTags.read(tags,""); NoteFormats.read(format,body.length()); } catch(org.json.JSONException ex) { return -1; }
+        return saveInternal(id,title,body,null,tags,format);
+    }
+    private long saveInternal(long id,String title,String body,String tag,String tags,String format) {
         if(title==null || body==null || title.length()>NoteText.TITLE_LIMIT || body.length()>NoteText.BODY_LIMIT || (id==0 && !NoteText.valid(title,body))) return -1;
         ContentValues values=new ContentValues(); values.put("title",title); values.put("body",body); values.put("updated",System.currentTimeMillis());
         if(tag!=null) values.put("tag",tag);
+        if(tags!=null) values.put("tags",tags);
+        if(format!=null) values.put("format",format);
         SQLiteDatabase db=getWritableDatabase();
         if(id==0) return db.insertOrThrow("notes",null,values);
         return db.update("notes",values,"_id=? AND state<>2",new String[]{Long.toString(id)})==1 ? id : -1;
@@ -70,7 +85,7 @@ final class NoteStore extends SQLiteOpenHelper {
         try {
             for(Note n:notes) {
                 ContentValues v=new ContentValues(); v.put("title",n.title); v.put("body",n.body); v.put("updated",n.updated);
-                v.put("pinned",n.pinned); v.put("state",n.state); v.put("previous_state",n.previousState); v.put("tag",n.tag); v.put("color",n.color);
+                v.put("pinned",n.pinned); v.put("state",n.state); v.put("previous_state",n.previousState); v.put("tag",n.tag); v.put("color",n.color); if(n.tags!=null) v.put("tags",n.tags); if(n.format!=null) v.put("format",n.format);
                 db.insertOrThrow("notes",null,v);
             }
             db.setTransactionSuccessful();
