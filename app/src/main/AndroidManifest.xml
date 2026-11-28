@@ -79,6 +79,7 @@
         </receiver>
 
         <receiver android:name=".CalendarReminderReceiver" android:exported="false" />
+        <receiver android:name=".NoteReminderReceiver" android:exported="false" />
         <receiver android:name=".ClockAlertReceiver" android:exported="false" />
         <receiver android:name=".ClockRestoreReceiver" android:exported="false">
             <intent-filter>

@@ -5,7 +5,7 @@
 })(typeof window === 'undefined' ? null : window, function mountNotes(win) {
   'use strict';
   var doc=win.document, byId=function (id) { return doc.getElementById(id); };
-  var key='gt30-notes-v1', notes=[], writable=true, editing=null, lastTitle='', lastBody='', timer=null, section=0, grid=false;
+  var key='gt30-notes-v1', notes=[], writable=true, editing=null, lastTitle='', lastBody='', timer=null, section=0, layoutMode=0;
   var form=byId('notesForm'), title=byId('notesTitle'), body=byId('notesBody'), list=byId('notesList'), panel=byId('notesListPanel'), status=byId('notesStatus');
   var search=byId('notesSearch'), sectionSelect=byId('notesSection'), layout=byId('notesLayout'), saveStatus=byId('notesSaveStatus');
   if (!form || !title || !body || !list || !panel || !status || !search || !sectionSelect || !layout || !saveStatus) return;
@@ -15,7 +15,7 @@
       var raw=win.localStorage.getItem(key), value=raw===null?[]:JSON.parse(raw);
       if(!Array.isArray(value) || !value.every(validRecord) || new Set(value.map(function (n) { return n.id; })).size!==value.length) throw new Error('Invalid notes');
       notes=value.map(function(n){return Object.assign({pinned:false,state:0,previousState:0,tag:'',color:0},n);}); writable=true;
-      grid=win.localStorage.getItem('gt30-notes-grid')==='1';
+      var storedLayout=win.localStorage.getItem('gt30-notes-layout'); layoutMode=storedLayout===null ? (win.localStorage.getItem('gt30-notes-grid')==='1'?1:0) : Number(storedLayout); if(![0,1,2].includes(layoutMode)) layoutMode=0;
     } catch (_) { notes=[]; writable=false; }
     status.textContent=writable ? 'Catatan tersimpan di browser ini, bukan di aplikasi Android. Menghapus data browser menghapus catatan.' : 'Penyimpanan catatan tidak tersedia atau data tidak dapat dibaca. Data lama tidak ditimpa.';
   }
@@ -25,7 +25,7 @@
     catch (_) { status.textContent='Tidak dapat menyimpan catatan. Perubahan tetap di editor.'; return false; }
   }
   function render() {
-    list.textContent=''; list.className=grid?'notes-grid':''; layout.textContent=grid?'Tampilan: kotak':'Tampilan: daftar'; sectionSelect.value=String(section);
+    list.textContent=''; list.className=layoutMode===1?'notes-grid':layoutMode===2?'notes-staggered':''; layout.textContent='Tampilan: '+['daftar','kotak','staggered'][layoutMode]; sectionSelect.value=String(section);
     var q=search.value.trim().toLocaleLowerCase(), ordered=notes.filter(function(n){return n.state===section && (!q || (n.title+'\n'+n.body+'\n'+n.tag).toLocaleLowerCase().includes(q));}).sort(function(a,b) { return Number(b.pinned)-Number(a.pinned) || b.updated-a.updated; });
     byId('notesEmpty').hidden=ordered.length!==0 || !writable; byId('notesAdd').hidden=section!==0; byId('notesAdd').disabled=!writable;
     ordered.forEach(function(n) {
@@ -86,7 +86,7 @@
   byId('notesAddChecklist').addEventListener('click',function(){ var value=win.prompt('Nama item checklist',''); if(value===null || !value.trim()) return; var addition=(body.value && !body.value.endsWith('\n')?'\n':'')+'☐ '+value.trim().slice(0,200); if(body.value.length+addition.length>20000) { saveStatus.textContent='Catatan terlalu panjang.'; return; } body.value+=addition; queue(); });
   form.addEventListener('submit',function(e) { e.preventDefault(); closeEditor(); });
   search.addEventListener('input',render); sectionSelect.addEventListener('change',function(){section=Number(sectionSelect.value)||0; render();});
-  layout.addEventListener('click',function(){grid=!grid; try{win.localStorage.setItem('gt30-notes-grid',grid?'1':'0');}catch(_){} render();});
+  layout.addEventListener('click',function(){layoutMode=(layoutMode+1)%3; try{win.localStorage.setItem('gt30-notes-layout',String(layoutMode));}catch(_){} render();});
   if(doc.addEventListener) doc.addEventListener('visibilitychange',function(){if(doc.hidden) save();});
   win.notesOnOpen=function () { load(); editing=null; form.hidden=true; panel.hidden=false; render(); };
   win.notesGoBack=function () { if(editing===null) return false; closeEditor(); return true; };

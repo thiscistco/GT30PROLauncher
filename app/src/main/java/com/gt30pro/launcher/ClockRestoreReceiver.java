@@ -15,6 +15,7 @@ public class ClockRestoreReceiver extends BroadcastReceiver {
                 || "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED".equals(action)) {
             ClockAlarms.restore(context);
             CalendarReminders.restore(context);
+            NoteReminders.restore(context);
         }
     }
 }

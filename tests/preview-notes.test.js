@@ -44,7 +44,7 @@ let actions=()=>e.notesList.children[0].children[e.notesList.children[0].childre
 actions()[0].fire('click'); assert.equal(records()[0].pinned,true);
 app.setPrompt('Kerja'); actions()[3].fire('click'); assert.equal(records()[0].tag,'Kerja');
 app.setPrompt('2'); actions()[4].fire('click'); assert.equal(records()[0].color,2);
-e.notesLayout.fire('click'); assert.equal(e.notesList.className,'notes-grid');
+e.notesLayout.fire('click'); assert.equal(e.notesList.className,'notes-grid'); e.notesLayout.fire('click'); assert.equal(e.notesList.className,'notes-staggered'); e.notesLayout.fire('click'); assert.equal(e.notesList.className,'');
 actions()[1].fire('click'); assert.equal(records()[0].state,1); assert.equal(e.notesList.children.length,0);
 e.notesSection.value='1'; e.notesSection.fire('change'); assert.equal(e.notesList.children.length,1);
 actions()[2].fire('click'); assert.equal(records()[0].state,2); assert.equal(records()[0].previousState,1);

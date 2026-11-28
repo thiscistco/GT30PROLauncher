@@ -697,6 +697,8 @@
   .notes-controls { display:flex; gap:1mm; flex-wrap:wrap; }
   .notes-controls button { flex:1; min-width:15mm; }
   .notes-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1mm; }
+  .notes-staggered { columns:2; column-gap:1mm; }
+  .notes-staggered .notes-item { break-inside:avoid; display:inline-block; width:100%; }
   .notes-item { min-width:0; border-radius:2.5mm; }
   .notes-item .notes-button { font-size:2.3mm; }
   .notes-search, .notes-select { width:100%; box-sizing:border-box; padding:2mm; color:var(--app-text); background:var(--app-card); border:1px solid var(--app-border); border-radius:2mm; font:700 2.8mm Doto,monospace; }

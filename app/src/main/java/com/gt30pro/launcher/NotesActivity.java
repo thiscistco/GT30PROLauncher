@@ -26,8 +26,8 @@ public final class NotesActivity extends SwipeBackActivity {
     private AppUi ui; private Typeface font; private NoteStore store;
     private LinearLayout content, cards; private EditText title,body,search; private TextView saveStatus;
     private boolean editing; private long editId; private String lastTitle="",lastBody="";
-    private int section=NoteStore.ACTIVE; private String query=""; private boolean grid;
-    private static final int EXPORT_TXT=601, EXPORT_PDF=602;
+    private int section=NoteStore.ACTIVE; private String query=""; private int layout;
+    private static final int EXPORT_TXT=601, EXPORT_PDF=602, BACKUP_WRITE=603, BACKUP_READ=604;
     private String exportTitle="",exportBody="";
     private final Handler handler=new Handler();
     private final Runnable autoSave=() -> saveDraft(false);
@@ -45,7 +45,7 @@ public final class NotesActivity extends SwipeBackActivity {
     private TextWatcher watcher(Runnable run) { return new TextWatcher() { public void beforeTextChanged(CharSequence s,int a,int c,int n) {} public void onTextChanged(CharSequence s,int a,int before,int count) {} public void afterTextChanged(Editable e) { run.run(); } }; }
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state); ui=new AppUi(this); ui.window(this); font=Typeface.createFromAsset(getAssets(),"fonts/Doto.ttf"); store=new NoteStore(this);
-        grid=getPreferences(MODE_PRIVATE).getBoolean("grid",false);
+        layout=getPreferences(MODE_PRIVATE).getInt("layout",getPreferences(MODE_PRIVATE).getBoolean("grid",false)?1:0); if(layout<0 || layout>2) layout=0;
         LinearLayout page=new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL); page.setBackgroundColor(ui.canvas);
         page.setOnApplyWindowInsetsListener((v,insets) -> { page.setPadding(dp(20),dp(16)+insets.getSystemWindowInsetTop(),dp(20),dp(16)+insets.getSystemWindowInsetBottom()); return insets; });
         LinearLayout header=ui.header(this,font,"Catatan"); header.getChildAt(0).setOnClickListener(v -> onBackPressed()); page.addView(header);
@@ -57,7 +57,10 @@ public final class NotesActivity extends SwipeBackActivity {
             editId=state.getLong("id"); lastTitle=state.getString("lastTitle",""); lastBody=state.getString("lastBody",""); editing=true;
             editor(state.getString("title",""),state.getString("body",""));
             if(!lastTitle.equals(title.getText().toString()) || !lastBody.equals(body.getText().toString())) queueSave();
-        } else showList();
+        } else {
+            showList(); long requested=getIntent().getLongExtra("note_id",0);
+            if(requested>0) try { for(NoteStore.Note note:store.list()) if(note.id==requested && note.state!=NoteStore.TRASH) { openEditor(note); break; } } catch(SQLiteException e) { message("Tidak dapat membuka catatan."); }
+        }
     }
     @Override protected void onResume() { super.onResume(); AppUi current=new AppUi(this); if(ui!=null && (ui.dark!=current.dark || !ui.choice.equals(current.choice))) recreate(); }
     @Override protected void onPause() { if(editing) saveDraft(false); super.onPause(); }
@@ -76,8 +79,9 @@ public final class NotesActivity extends SwipeBackActivity {
             .setItems(new String[]{"Catatan","Arsip","Sampah"},(d,w)->{section=w; showList();}).show()));
         search=field("Cari judul, isi, atau label",200,false); search.setContentDescription("Cari catatan"); search.setText(query); add(search);
         search.addTextChangedListener(watcher(() -> { query=search.getText().toString(); renderCards(); }));
-        add(button(grid?"Tampilan: kotak":"Tampilan: daftar",() -> { grid=!grid; getPreferences(MODE_PRIVATE).edit().putBoolean("grid",grid).apply(); showList(); }));
+        add(button("Tampilan: "+new String[]{"daftar","kotak","staggered"}[layout],() -> { layout=(layout+1)%3; getPreferences(MODE_PRIVATE).edit().putInt("layout",layout).apply(); showList(); }));
         if(section==NoteStore.ACTIVE) add(button("+ Catatan baru",() -> openEditor(null)));
+        add(button("Cadangkan / pulihkan",this::backupMenu));
         cards=new LinearLayout(this); cards.setOrientation(LinearLayout.VERTICAL); add(cards); renderCards();
     }
     private void renderCards() {
@@ -87,8 +91,14 @@ public final class NotesActivity extends SwipeBackActivity {
         ArrayList<NoteStore.Note> visible=new ArrayList<>();
         for(NoteStore.Note n:notes) if(n.state==section && NoteSearch.matches(n.title,n.body,n.tag,query)) visible.add(n);
         if(visible.isEmpty()) { cards.addView(text("Tidak ada catatan.",14,ui.muted)); return; }
-        if(!grid) for(NoteStore.Note note:visible) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2); p.setMargins(0,dp(4),0,dp(4)); cards.addView(card(note),p); }
-        else {
+        if(layout==0) for(NoteStore.Note note:visible) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2); p.setMargins(0,dp(4),0,dp(4)); cards.addView(card(note),p); }
+        else if(layout==2) {
+            LinearLayout row=new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout left=new LinearLayout(this),right=new LinearLayout(this); left.setOrientation(LinearLayout.VERTICAL); right.setOrientation(LinearLayout.VERTICAL);
+            row.addView(left,new LinearLayout.LayoutParams(0,-2,1)); row.addView(right,new LinearLayout.LayoutParams(0,-2,1));
+            for(int i=0;i<visible.size();i++) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2); p.setMargins(dp(2),dp(4),dp(2),dp(4)); (i%2==0?left:right).addView(card(visible.get(i)),p); }
+            cards.addView(row);
+        } else {
             for(int i=0;i<visible.size();i+=2) {
                 LinearLayout row=new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL);
                 for(int j=i;j<Math.min(i+2,visible.size());j++) { LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-2,1); p.setMargins(dp(2),dp(4),dp(2),dp(4)); row.addView(card(visible.get(j)),p); }
@@ -113,18 +123,81 @@ public final class NotesActivity extends SwipeBackActivity {
                 else ui.dialog(this).setTitle("Hapus permanen?").setMessage("Catatan tidak dapat dipulihkan.").setNegativeButton("Batal",null).setPositiveButton("Hapus",(x,y)->mutate(() -> store.deletePermanently(note.id))).show();
             }).show(); return;
         }
-        String[] actions={"Buka / edit",note.pinned!=0?"Lepas sematan":"Sematkan","Ubah label","Ubah warna",note.state==NoteStore.ARCHIVE?"Kembalikan dari arsip":"Arsipkan","Pindah ke sampah","Bagikan teks","Ekspor TXT","Ekspor PDF","Checklist"};
+        String[] actions={"Buka / edit",note.pinned!=0?"Lepas sematan":"Sematkan","Ubah label","Ubah warna",note.state==NoteStore.ARCHIVE?"Kembalikan dari arsip":"Arsipkan","Pindah ke sampah","Bagikan teks","Ekspor TXT","Ekspor PDF","Checklist","Pengingat"};
         ui.dialog(this).setTitle(NoteText.displayTitle(note.title)).setItems(actions,(d,w)->{
             if(w==0) openEditor(note);
             else if(w==1) mutate(() -> store.metadata(note.id,note.pinned==0?1:0,note.tag,note.color));
             else if(w==2) editTag(note);
             else if(w==3) ui.dialog(this).setTitle("Warna catatan").setItems(COLORS,(x,y)->mutate(() -> store.metadata(note.id,note.pinned,note.tag,y))).show();
             else if(w==4) mutate(() -> store.archive(note.id,note.state!=NoteStore.ARCHIVE));
-            else if(w==5) ui.dialog(this).setTitle("Pindah ke sampah?").setMessage("Catatan dapat dipulihkan dari Sampah.").setNegativeButton("Batal",null).setPositiveButton("Pindah",(x,y)->mutate(() -> store.trash(note.id))).show();
+            else if(w==5) ui.dialog(this).setTitle("Pindah ke sampah?").setMessage("Catatan dapat dipulihkan dari Sampah. Pengingat dibatalkan.").setNegativeButton("Batal",null).setPositiveButton("Pindah",(x,y)->mutate(() -> { boolean ok=store.trash(note.id); if(ok) NoteReminders.cancel(this,note.id); return ok; })).show();
             else if(w==6) { Intent share=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT,NoteExport.text(note.title,note.body)); try { startActivity(Intent.createChooser(share,"Bagikan catatan")); } catch(RuntimeException e) { message("Tidak ada aplikasi berbagi."); } }
             else if(w==7 || w==8) export(note,w==8);
             else if(w==9) checklist(note);
+            else if(w==10) reminderMenu(note);
         }).show();
+    }
+    private void reminderMenu(NoteStore.Note note) {
+        long existing=NoteReminders.prefs(this).getLong(Long.toString(note.id),0);
+        String message=existing>0?"Dijadwalkan: "+android.text.format.DateFormat.getDateFormat(this).format(new java.util.Date(existing))+" "+android.text.format.DateFormat.getTimeFormat(this).format(new java.util.Date(existing)):"Belum ada pengingat.";
+        if(!NoteReminders.exact(this)) message+=" Izin alarm tepat belum aktif; pengingat dapat terlambat.";
+        android.app.AlertDialog.Builder dialog=ui.dialog(this).setTitle("Pengingat catatan").setMessage(message).setNegativeButton("Batal",null)
+            .setPositiveButton("Atur waktu",(d,w)->chooseReminderTime(note));
+        if(existing>0) dialog.setNeutralButton("Hapus pengingat",(d,w)->{NoteReminders.cancel(this,note.id); message("Pengingat dibatalkan.");});
+        dialog.show();
+    }
+    private void chooseReminderTime(NoteStore.Note note) {
+        if(android.os.Build.VERSION.SDK_INT>=33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},605); message("Izinkan notifikasi, lalu atur pengingat lagi."); return;
+        }
+        android.app.NotificationManager notifications=(android.app.NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        android.app.NotificationChannel channel=notifications.getNotificationChannel("note_reminders");
+        if(!notifications.areNotificationsEnabled() || (channel!=null && channel.getImportance()==android.app.NotificationManager.IMPORTANCE_NONE)) { message("Aktifkan notifikasi pengingat catatan di setelan perangkat."); return; }
+        java.util.Calendar cal=java.util.Calendar.getInstance(); cal.add(java.util.Calendar.MINUTE,5);
+        new android.app.DatePickerDialog(this,(view,year,month,day)->{
+            cal.set(java.util.Calendar.YEAR,year); cal.set(java.util.Calendar.MONTH,month); cal.set(java.util.Calendar.DAY_OF_MONTH,day);
+            new android.app.TimePickerDialog(this,(clock,hour,minute)->{
+                cal.set(java.util.Calendar.HOUR_OF_DAY,hour); cal.set(java.util.Calendar.MINUTE,minute); cal.set(java.util.Calendar.SECOND,0); cal.set(java.util.Calendar.MILLISECOND,0);
+                if(cal.getTimeInMillis()<=System.currentTimeMillis()) { message("Pilih waktu yang akan datang."); return; }
+                if(NoteReminders.set(this,note.id,cal.getTimeInMillis())) message(NoteReminders.exact(this)?"Pengingat dijadwalkan.":"Pengingat dijadwalkan; dapat terlambat tanpa izin alarm tepat.");
+                else message("Pengingat tidak dapat dijadwalkan.");
+            },cal.get(java.util.Calendar.HOUR_OF_DAY),cal.get(java.util.Calendar.MINUTE),android.text.format.DateFormat.is24HourFormat(this)).show();
+        },cal.get(java.util.Calendar.YEAR),cal.get(java.util.Calendar.MONTH),cal.get(java.util.Calendar.DAY_OF_MONTH)).show();
+    }
+    private void backupMenu() {
+        ui.dialog(this).setTitle("Cadangan manual").setMessage("Berkas tidak terenkripsi. Pilih Google Drive pada pemilih dokumen jika tersedia. Bukan sinkronisasi otomatis.")
+            .setNegativeButton("Batal",null).setNeutralButton("Pulihkan salinan",(d,w)->ui.dialog(this).setTitle("Pulihkan sebagai salinan?")
+                .setMessage("Semua catatan dalam cadangan ditambahkan sebagai salinan; catatan yang sudah ada tidak ditimpa. Impor ulang menghasilkan duplikat.")
+                .setNegativeButton("Batal",null).setPositiveButton("Pilih berkas",(x,y)->chooseBackup(false)).show())
+            .setPositiveButton("Buat cadangan",(d,w)->chooseBackup(true)).show();
+    }
+    private void chooseBackup(boolean write) {
+        Intent i=new Intent(write?Intent.ACTION_CREATE_DOCUMENT:Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json");
+        if(write) i.putExtra(Intent.EXTRA_TITLE,"GT30-catatan-backup.json");
+        try { startActivityForResult(i,write?BACKUP_WRITE:BACKUP_READ); } catch(RuntimeException e) { message("Pemilih dokumen tidak tersedia."); }
+    }
+    private void processBackup(android.net.Uri uri,boolean write) {
+        final Context context=getApplicationContext(); message(write?"Membuat cadangan…":"Memulihkan cadangan…");
+        new Thread(() -> {
+            String result;
+            try(NoteStore db=new NoteStore(context)) {
+                if(write) {
+                    byte[] data=NoteBackup.encode(db.list());
+                    try(java.io.OutputStream out=context.getContentResolver().openOutputStream(uri,"w")) {
+                        if(out==null) throw new java.io.IOException("Penyimpanan tidak tersedia"); out.write(data); out.flush();
+                    }
+                    result="Cadangan dibuat. Pastikan unggahan penyedia selesai.";
+                } else {
+                    ArrayList<NoteStore.Note> copies;
+                    try(java.io.InputStream in=context.getContentResolver().openInputStream(uri)) {
+                        if(in==null) throw new java.io.IOException("Berkas tidak tersedia"); copies=NoteBackup.decode(NoteBackup.read(in));
+                    }
+                    db.importCopies(copies); result=copies.size()+" salinan catatan dipulihkan.";
+                }
+            } catch(Exception ex) { result=write?"Cadangan gagal; periksa lokasi dan koneksi.":"Pemulihan gagal; tidak ada catatan yang diimpor."; }
+            final String done=result;
+            runOnUiThread(() -> { if(!isFinishing() && !isDestroyed()) { message(done); if(!editing) renderCards(); } });
+        },"notes-backup").start();
     }
     private void checklist(NoteStore.Note note) {
         final ArrayList<NoteChecklist.Item> items=NoteChecklist.items(note.body);
@@ -148,7 +221,9 @@ public final class NotesActivity extends SwipeBackActivity {
     }
     @Override protected void onActivityResult(int request,int result,Intent data) {
         super.onActivityResult(request,result,data);
-        if((request!=EXPORT_TXT && request!=EXPORT_PDF) || result!=RESULT_OK || data==null || data.getData()==null) return;
+        if(result!=RESULT_OK || data==null || data.getData()==null) return;
+        if(request==BACKUP_WRITE || request==BACKUP_READ) { processBackup(data.getData(),request==BACKUP_WRITE); return; }
+        if(request!=EXPORT_TXT && request!=EXPORT_PDF) return;
         try(java.io.OutputStream out=getContentResolver().openOutputStream(data.getData(),"w")) {
             if(out==null) throw new java.io.IOException("No output stream");
             if(request==EXPORT_PDF) NoteExport.writePdf(out,exportTitle,exportBody); else NoteExport.writeText(out,exportTitle,exportBody);

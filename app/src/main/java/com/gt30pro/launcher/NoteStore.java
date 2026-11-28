@@ -61,5 +61,17 @@ final class NoteStore extends SQLiteOpenHelper {
         android.database.sqlite.SQLiteStatement stmt=getWritableDatabase().compileStatement("UPDATE notes SET state=CASE WHEN previous_state=1 THEN 1 ELSE 0 END, previous_state=0,updated=? WHERE _id=? AND state=2");
         try { stmt.bindLong(1,System.currentTimeMillis()); stmt.bindLong(2,id); return stmt.executeUpdateDelete()==1; } finally { stmt.close(); }
     }
+    /** Append copies atomically. Existing IDs and data are never overwritten. */
+    void importCopies(ArrayList<Note> notes) {
+        SQLiteDatabase db=getWritableDatabase(); db.beginTransaction();
+        try {
+            for(Note n:notes) {
+                ContentValues v=new ContentValues(); v.put("title",n.title); v.put("body",n.body); v.put("updated",n.updated);
+                v.put("pinned",n.pinned); v.put("state",n.state); v.put("previous_state",n.previousState); v.put("tag",n.tag); v.put("color",n.color);
+                db.insertOrThrow("notes",null,v);
+            }
+            db.setTransactionSuccessful();
+        } finally { db.endTransaction(); }
+    }
     boolean deletePermanently(long id) { return getWritableDatabase().delete("notes","_id=? AND state=2",new String[]{Long.toString(id)})==1; }
 }

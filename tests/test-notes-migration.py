@@ -21,3 +21,14 @@ old.execute(restore,(125,1)); assert old.execute('SELECT state,previous_state FR
 old.execute('UPDATE notes SET state=0 WHERE _id=1'); old.execute(trash,(126,1)); old.execute(restore,(127,1)); assert old.execute('SELECT state,previous_state FROM notes').fetchone()==(0,0)
 assert old.execute('SELECT title,body FROM notes').fetchone()==('asli','isi lama')
 print('Notes database: v1-to-v2 migration and active/archive trash restoration OK')
+# Import is append-only and rolls back the entire batch on a database failure.
+assert 'db.beginTransaction()' in src and 'db.setTransactionSuccessful()' in src and 'db.endTransaction()' in src
+assert 'db.insertOrThrow("notes",null,v)' in src
+before=old.execute('SELECT COUNT(*) FROM notes').fetchone()[0]; old.commit()
+try:
+ with old:
+  old.execute('INSERT INTO notes (title,body,updated) VALUES (?,?,?)',('copy','safe',123))
+  old.execute('INSERT INTO notes (title,body,updated) VALUES (?,?,?)',(None,'invalid',123))
+except sqlite3.IntegrityError: pass
+assert old.execute('SELECT COUNT(*) FROM notes').fetchone()[0]==before
+print('Import transaction rollback preserves existing notes OK')
